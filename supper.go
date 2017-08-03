@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"path"
 
 	"github.com/Tympanix/supper/providers"
 	"github.com/Tympanix/supper/types"
@@ -16,12 +14,6 @@ type Application struct {
 }
 
 func main() {
-
-	file, _ := os.Open("./supper.go")
-
-	fmt.Println(path.Base(file.Name()))
-
-	return
 
 	app := &Application{
 		new(provider.Subscene),
