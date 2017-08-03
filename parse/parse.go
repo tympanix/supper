@@ -33,9 +33,22 @@ func NewCollection(tags []string) Collection {
 }
 
 // Filename returns the filename of the file without extension
-func Filename(file *os.File) string {
+func Filename(file os.FileInfo) string {
 	f := path.Base(file.Name())
 	return strings.TrimSuffix(f, path.Ext(f))
+}
+
+var abbreviationRegexp = regexp.MustCompile(`[A-Z](\.)`)
+var illegalcharsRegexp = regexp.MustCompile(`[^\w\s&'_\(\)]`)
+
+// CleanName returns the movie name cleaned from punctuation
+func CleanName(name string) string {
+	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
+		return strings.Replace(match, ".", "", -1)
+	})
+
+	name = strings.Replace(name, ".", " ", -1)
+	return illegalcharsRegexp.ReplaceAllString(name, "")
 }
 
 // Source parses the source from a filename

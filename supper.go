@@ -1,31 +1,40 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/Tympanix/supper/app"
 	"github.com/Tympanix/supper/providers"
-	"github.com/Tympanix/supper/types"
 )
-
-// Application is an configuration instance of the application
-type Application struct {
-	types.Provider
-}
 
 func main() {
 
-	app := &Application{
-		new(provider.Subscene),
+	app := &application.Application{
+		Provider: new(provider.Subscene),
 	}
 
-	subs, err := app.Search("Guardians of the galaxy")
+	flag.Parse()
+	root := flag.Arg(0)
+
+	if len(root) == 0 {
+		log.Println("Missing file root")
+		os.Exit(1)
+	}
+
+	log.Printf("Walking: %s\n", root)
+
+	media, err := app.FindMedia(root)
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		os.Exit(1)
 	}
 
-	for _, s := range subs {
-		fmt.Println(s)
+	for _, m := range media {
+		fmt.Println(m)
 	}
+
 }

@@ -23,7 +23,7 @@ type Movie struct {
 var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]?\((\d{4})\)[\W_]?(.*)$`)
 
 // NewMovie parses media info from a file
-func NewMovie(file *os.File) *Movie {
+func NewMovie(file os.FileInfo) *Movie {
 	groups := movieRegexp.FindStringSubmatch(parse.Filename(file))
 
 	if groups == nil {
@@ -39,7 +39,7 @@ func NewMovie(file *os.File) *Movie {
 	}
 
 	return &Movie{
-		name:    name,
+		name:    parse.CleanName(name),
 		tags:    tags,
 		year:    year,
 		quality: parse.Quality(tags),

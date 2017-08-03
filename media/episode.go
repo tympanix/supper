@@ -24,7 +24,7 @@ type Episode struct {
 }
 
 // NewEpisode parses media info from a file
-func NewEpisode(file *os.File) *Episode {
+func NewEpisode(file os.FileInfo) *Episode {
 	groups := episodeRegexp.FindStringSubmatch(parse.Filename(file))
 
 	if groups == nil {
@@ -47,7 +47,7 @@ func NewEpisode(file *os.File) *Episode {
 	tags := groups[4]
 
 	return &Episode{
-		name:    name,
+		name:    parse.CleanName(name),
 		episode: episode,
 		season:  season,
 		tags:    tags,

@@ -49,9 +49,7 @@ var Sources = NewCollection([]string{
 	"BRRip",
 	"Blu-Ray",
 	"BluRay",
-	"BLURAY",
 	"BDMV",
 	"BDR",
 	"Remux",
-	"REMUX",
 })

@@ -7,7 +7,7 @@ import (
 )
 
 // New parses a file into media attributes
-func New(file *os.File) types.Media {
+func New(file os.FileInfo) types.Media {
 	if episodeRegexp.MatchString(file.Name()) {
 		return NewEpisode(file)
 	}
