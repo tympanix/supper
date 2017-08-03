@@ -9,7 +9,7 @@ import (
 	"github.com/Tympanix/supper/types"
 )
 
-var episodeRegexp = regexp.MustCompile(`^(.+?)[\W_][Ss]?(\d{1,2})[Eex](\d{1,2})[\W_](.*)$`)
+var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})[\W_](.*)$`)
 
 // Episode represents an episode from a TV show
 type Episode struct {
@@ -54,6 +54,7 @@ func NewEpisode(file os.FileInfo) *Episode {
 		quality: parse.Quality(tags),
 		codec:   parse.Codec(tags),
 		source:  parse.Source(tags),
+		group:   parse.Group(tags),
 	}
 }
 

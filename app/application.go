@@ -11,7 +11,7 @@ import (
 )
 
 var filetypes = []string{
-	".avi", ".mkv", ".mp4", ".m4a", ".flv",
+	".avi", ".mkv", ".mp4", ".m4a", ".flv", ".mov",
 }
 
 // Application is an configuration instance of the application

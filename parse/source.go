@@ -24,6 +24,7 @@ var Sources = NewCollection([]string{
 	"R5",
 	"R5.LINE",
 	"DVDRip",
+	"DVDR",
 	"DSR",
 	"DSRip",
 	"SATRip",

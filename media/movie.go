@@ -1,6 +1,7 @@
 package media
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -45,7 +46,12 @@ func NewMovie(file os.FileInfo) *Movie {
 		quality: parse.Quality(tags),
 		codec:   parse.Codec(tags),
 		source:  parse.Source(tags),
+		group:   parse.Group(tags),
 	}
+}
+
+func (m *Movie) String() string {
+	return fmt.Sprintf("%-48.44q%-8d%-12s%-12s%-12s%-24s", m.name, m.year, m.source, m.quality, m.codec, m.group)
 }
 
 // Matches a movie against a subtitle

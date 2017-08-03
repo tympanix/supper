@@ -16,7 +16,7 @@ import (
 type Subscene struct{}
 
 // Search searches subscene.com for subtitles
-func (s *Subscene) Search(search string) (subs []types.Subtitle, err error) {
+func (s *Subscene) Search(media types.Media) (subs []types.Subtitle, err error) {
 	doc, err := goquery.NewDocument("https://subscene.com/subtitles/guardians-of-the-galaxy")
 
 	if err != nil {

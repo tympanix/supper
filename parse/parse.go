@@ -39,7 +39,7 @@ func Filename(file os.FileInfo) string {
 }
 
 var abbreviationRegexp = regexp.MustCompile(`[A-Z](\.)`)
-var illegalcharsRegexp = regexp.MustCompile(`[^\w\s&'_\(\)]`)
+var illegalcharsRegexp = regexp.MustCompile(`[^\w\s&'_\(\)-]`)
 
 // CleanName returns the movie name cleaned from punctuation
 func CleanName(name string) string {
@@ -47,8 +47,10 @@ func CleanName(name string) string {
 		return strings.Replace(match, ".", "", -1)
 	})
 
+	name = strings.Replace(name, ". ", " ", -1)
 	name = strings.Replace(name, ".", " ", -1)
-	return illegalcharsRegexp.ReplaceAllString(name, "")
+	name = illegalcharsRegexp.ReplaceAllString(name, "")
+	return strings.TrimSpace(name)
 }
 
 // Source parses the source from a filename
