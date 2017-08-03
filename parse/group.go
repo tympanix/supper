@@ -14,6 +14,8 @@ func Group(name string) string {
 		return ""
 	} else if len(Codec(group)) > 0 {
 		return ""
+	} else if len(group) <= 1 {
+		return ""
 	}
 
 	return group
