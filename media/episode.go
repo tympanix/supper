@@ -58,6 +58,21 @@ func NewEpisode(file os.FileInfo) *Episode {
 	}
 }
 
+// Name is the name of the TV show
+func (e *Episode) Name() string {
+	return e.name
+}
+
+// Episode is the episode number in the season
+func (e *Episode) Episode() int {
+	return e.episode
+}
+
+// Season is the season number of the show
+func (e *Episode) Season() int {
+	return e.season
+}
+
 // Matches an episode against a subtitle
 func (e *Episode) Matches(types.Subtitle) bool {
 	return true

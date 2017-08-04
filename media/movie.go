@@ -54,6 +54,16 @@ func (m *Movie) String() string {
 	return fmt.Sprintf("%-48.44q%-8d%-12s%-12s%-12s%-24s", m.name, m.year, m.source, m.quality, m.codec, m.group)
 }
 
+// Name is the name of the movie
+func (m *Movie) Name() string {
+	return m.name
+}
+
+// Year is the release year of the movie
+func (m *Movie) Year() int {
+	return m.year
+}
+
 // Matches a movie against a subtitle
 func (m *Movie) Matches(types.Subtitle) bool {
 	return true

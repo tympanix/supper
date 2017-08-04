@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Tympanix/supper/media"
+	"github.com/Tympanix/supper/parse"
 	"github.com/Tympanix/supper/types"
 
 	"github.com/PuerkitoBio/goquery"
@@ -14,6 +16,24 @@ import (
 
 // Subscene interfaces with subscene.com for downloading subtitles
 type Subscene struct{}
+
+func (s *Subscene) searchTerm(m types.Media) string {
+	if movie, ok := m.(*media.Movie); ok {
+		return s.searchTermMovie(movie)
+	} else if episode, ok := m.(*media.Episode); ok {
+		return s.searchTermEpisode(episode)
+	}
+	return ""
+}
+
+func (s *Subscene) searchTermMovie(movie *media.Movie) string {
+	return fmt.Sprintf("%s (%d)", movie.Name(), movie.Year())
+}
+
+func (s *Subscene) searchTermEpisode(episode *media.Episode) string {
+	season := parse.PhoneticNumber(episode.Season())
+	return fmt.Sprintf("%s - %s Season", episode.Name(), season)
+}
 
 // Search searches subscene.com for subtitles
 func (s *Subscene) Search(media types.Media) (subs []types.Subtitle, err error) {
