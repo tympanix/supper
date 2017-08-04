@@ -10,22 +10,25 @@ import (
 	"github.com/Tympanix/supper/types"
 )
 
-// Movie represents a movie file
-type Movie struct {
-	name    string
-	tags    string
-	year    int
-	quality string
-	group   string
-	codec   string
-	source  string
+// MovieMeta represents a movie file
+type MovieMeta struct {
+	Metadata
+	name string
+	tags string
+	year int
 }
 
-var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]?\((\d{4})\)[\W_]?(.*)$`)
+// MovieFile is a local movie file on disk
+type MovieFile struct {
+	os.FileInfo
+	types.Movie
+}
+
+var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]+(19\d\d|20\d\d)[\W_]+(.*)$`)
 
 // NewMovie parses media info from a file
-func NewMovie(file os.FileInfo) *Movie {
-	groups := movieRegexp.FindStringSubmatch(parse.Filename(file))
+func NewMovie(filename string) *MovieMeta {
+	groups := movieRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
 		return nil
@@ -39,37 +42,34 @@ func NewMovie(file os.FileInfo) *Movie {
 		return nil
 	}
 
-	return &Movie{
-		name:    parse.CleanName(name),
-		tags:    tags,
-		year:    year,
-		quality: parse.Quality(tags),
-		codec:   parse.Codec(tags),
-		source:  parse.Source(tags),
-		group:   parse.Group(tags),
+	return &MovieMeta{
+		Metadata: ParseMetadata(tags),
+		name:     parse.CleanName(name),
+		tags:     tags,
+		year:     year,
 	}
 }
 
-func (m *Movie) String() string {
+func (m *MovieMeta) String() string {
 	return fmt.Sprintf("%-48.44q%-8d%-12s%-12s%-12s%-24s", m.name, m.year, m.source, m.quality, m.codec, m.group)
 }
 
-// Name is the name of the movie
-func (m *Movie) Name() string {
+// MovieName is the name of the movie
+func (m *MovieMeta) MovieName() string {
 	return m.name
 }
 
 // Year is the release year of the movie
-func (m *Movie) Year() int {
+func (m *MovieMeta) Year() int {
 	return m.year
 }
 
 // Matches a movie against a subtitle
-func (m *Movie) Matches(types.Subtitle) bool {
+func (m *MovieMeta) Matches(types.Subtitle) bool {
 	return true
 }
 
 // Score returns the likelyhood of the subtitle maching the movie
-func (m *Movie) Score(types.Subtitle) float32 {
+func (m *MovieMeta) Score(types.Subtitle) float32 {
 	return 0.0
 }

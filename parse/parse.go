@@ -2,7 +2,6 @@ package parse
 
 import (
 	"fmt"
-	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -33,8 +32,8 @@ func NewCollection(tags []string) Collection {
 }
 
 // Filename returns the filename of the file without extension
-func Filename(file os.FileInfo) string {
-	f := path.Base(file.Name())
+func Filename(filename string) string {
+	f := path.Base(filename)
 	return strings.TrimSuffix(f, path.Ext(f))
 }
 
@@ -66,4 +65,11 @@ func Quality(name string) string {
 // Codec parses the codec from a file name
 func Codec(name string) string {
 	return Codecs.FindTag(name)
+}
+
+var tagsRegexp = regexp.MustCompile(`[\W_]+`)
+
+// Tags returns a string as tags split by non-word characters
+func Tags(name string) []string {
+	return tagsRegexp.Split(name, -1)
 }

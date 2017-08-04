@@ -11,21 +11,23 @@ import (
 
 var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})[\W_](.*)$`)
 
-// Episode represents an episode from a TV show
-type Episode struct {
+// EpisodeMeta represents an episode from a TV show
+type EpisodeMeta struct {
+	Metadata
 	name    string
 	episode int
 	season  int
-	tags    string
-	quality string
-	codec   string
-	source  string
-	group   string
+}
+
+// EpisodeFile is a local episode on disk
+type EpisodeFile struct {
+	os.FileInfo
+	types.Episode
 }
 
 // NewEpisode parses media info from a file
-func NewEpisode(file os.FileInfo) *Episode {
-	groups := episodeRegexp.FindStringSubmatch(parse.Filename(file))
+func NewEpisode(filename string) *EpisodeMeta {
+	groups := episodeRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
 		return nil
@@ -46,39 +48,35 @@ func NewEpisode(file os.FileInfo) *Episode {
 
 	tags := groups[4]
 
-	return &Episode{
-		name:    parse.CleanName(name),
-		episode: episode,
-		season:  season,
-		tags:    tags,
-		quality: parse.Quality(tags),
-		codec:   parse.Codec(tags),
-		source:  parse.Source(tags),
-		group:   parse.Group(tags),
+	return &EpisodeMeta{
+		Metadata: ParseMetadata(tags),
+		name:     parse.CleanName(name),
+		episode:  episode,
+		season:   season,
 	}
 }
 
-// Name is the name of the TV show
-func (e *Episode) Name() string {
+// TVShow is the name of the TV show
+func (e *EpisodeMeta) TVShow() string {
 	return e.name
 }
 
 // Episode is the episode number in the season
-func (e *Episode) Episode() int {
+func (e *EpisodeMeta) Episode() int {
 	return e.episode
 }
 
 // Season is the season number of the show
-func (e *Episode) Season() int {
+func (e *EpisodeMeta) Season() int {
 	return e.season
 }
 
 // Matches an episode against a subtitle
-func (e *Episode) Matches(types.Subtitle) bool {
+func (e *EpisodeMeta) Matches(types.Subtitle) bool {
 	return true
 }
 
 // Score returns the likelyhood of the subtitle maching the episode
-func (e *Episode) Score(types.Subtitle) float32 {
+func (e *EpisodeMeta) Score(types.Subtitle) float32 {
 	return 0.0
 }

@@ -20,10 +20,13 @@ type Application struct {
 }
 
 // FindMedia searches for media files
-func (a *Application) FindMedia(root string) ([]types.Media, error) {
-	medialist := make([]types.Media, 0)
+func (a *Application) FindMedia(root string) ([]types.LocalMedia, error) {
+	medialist := make([]types.LocalMedia, 0)
 
 	err := filepath.Walk(root, func(filepath string, f os.FileInfo, err error) error {
+		if f.IsDir() {
+			return nil
+		}
 		for _, ext := range filetypes {
 			if ext == path.Ext(filepath) {
 				_media := media.New(f)

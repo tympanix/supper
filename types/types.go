@@ -1,21 +1,56 @@
 package types
 
-import "golang.org/x/text/language"
+import (
+	"io"
+	"os"
 
-// Subtitle can be downloaded
-type Subtitle interface {
-	Name() string
-	IsLang(language.Tag) bool
-	IsHI() bool
-}
+	"golang.org/x/text/language"
+)
 
 // Provider interfaces with subtitles websites
 type Provider interface {
-	Search(Media) ([]Subtitle, error)
+	SearchSubtitles(LocalMedia) ([]Subtitle, error)
+}
+
+// Downloadable is an interface for media that can be downloaded from the internet
+type Downloadable interface {
+	Download() io.Reader
 }
 
 // Media is an interface for movies and TV shows
 type Media interface {
-	Matches(Subtitle) bool
-	Score(Subtitle) float32
+	Group() string
+	Codec() string
+	Quality() string
+	Source() string
+	AllTags() []string
+}
+
+// LocalMedia is an interface for media found locally on disk
+type LocalMedia interface {
+	os.FileInfo
+	Media
+}
+
+// Movie interface is for movie type media material
+type Movie interface {
+	Media
+	MovieName() string
+	Year() int
+}
+
+// Episode interface is for TV show type material
+type Episode interface {
+	Media
+	TVShow() string
+	Episode() int
+	Season() int
+}
+
+// Subtitle can be downloaded
+type Subtitle interface {
+	Media
+	Downloadable
+	IsLang(language.Tag) bool
+	IsHI() bool
 }
