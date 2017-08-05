@@ -139,7 +139,7 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 
 		hi := s.Find("td.a41").Length() > 0
 
-		meta, err := media.NewFromFilename(name)
+		meta, err := media.NewMetadata(name)
 
 		if err != nil {
 			return

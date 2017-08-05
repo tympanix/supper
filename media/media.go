@@ -41,7 +41,8 @@ func NewType(m types.Metadata) *Type {
 
 // New parses a file into media attributes
 func New(file os.FileInfo) (types.LocalMedia, error) {
-	media, err := NewFromFilename(file.Name())
+	filename := parse.Filename(file.Name())
+	media, err := NewMetadata(filename)
 
 	if err != nil {
 		return nil, err
@@ -56,12 +57,10 @@ func New(file os.FileInfo) (types.LocalMedia, error) {
 	}
 }
 
-// NewFromFilename parses media attributes from a files name
-func NewFromFilename(filename string) (types.Metadata, error) {
-	filename = parse.Filename(filename)
-	if episodeRegexp.MatchString(filename) {
-		return NewEpisode(filename)
-	} else {
-		return NewMovie(filename)
+// NewMetadata returns a metadata object parsed from the string
+func NewMetadata(str string) (types.Metadata, error) {
+	if episodeRegexp.MatchString(str) {
+		return NewEpisode(str)
 	}
+	return NewMovie(str)
 }

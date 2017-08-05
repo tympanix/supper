@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"sort"
 
+	"golang.org/x/text/language"
+
+	"github.com/Tympanix/supper/score"
 	"github.com/Tympanix/supper/types"
 )
 
@@ -16,7 +19,7 @@ type subtitleEntry struct {
 // NewSubtitles returns a new subtitles collection
 func NewSubtitles(media types.LocalMedia) *Subtitles {
 	return &Subtitles{
-		Evaluator: new(DefaultEvaluator),
+		Evaluator: new(score.DefaultEvaluator),
 		media:     media,
 		subs:      make([]subtitleEntry, 0),
 	}
@@ -36,9 +39,18 @@ func (s *Subtitles) Add(sub types.Subtitle) {
 	}
 	s.subs = append(s.subs, subtitleEntry{
 		Subtitle: sub,
-		score:    0, //s.Evaluate(s.media, sub),
+		score:    s.Evaluate(s.media, sub),
 	})
-	sort.Sort(s)
+	sort.Sort(sort.Reverse(s))
+}
+
+// FilterLanguage only keeps subtitles base on language
+func (s *Subtitles) FilterLanguage(lang language.Tag) {
+	for i, sub := range s.subs {
+		if !sub.IsLang(lang) {
+			s.subs = append(s.subs[:i], s.subs[i+1:]...)
+		}
+	}
 }
 
 // RemoveHI removes all HI subtitle from the collection
