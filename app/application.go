@@ -23,14 +23,18 @@ type Application struct {
 func (a *Application) FindMedia(root string) ([]types.LocalMedia, error) {
 	medialist := make([]types.LocalMedia, 0)
 
+	if _, err := os.Stat(root); os.IsNotExist(err) {
+		return nil, err
+	}
+
 	err := filepath.Walk(root, func(filepath string, f os.FileInfo, err error) error {
 		if f.IsDir() {
 			return nil
 		}
 		for _, ext := range filetypes {
 			if ext == path.Ext(filepath) {
-				_media := media.New(f)
-				if _media == nil {
+				_media, err := media.New(f)
+				if err != nil {
 					return fmt.Errorf("Cound not parse file: %s", filepath)
 				}
 				medialist = append(medialist, _media)

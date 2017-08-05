@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Tympanix/supper/collection"
 	"github.com/Tympanix/supper/media"
 	"github.com/Tympanix/supper/parse"
 	"github.com/Tympanix/supper/types"
@@ -24,9 +25,9 @@ import (
 type Subscene struct{}
 
 func (s *Subscene) searchTerm(m types.Media) string {
-	if movie, ok := m.(types.Movie); ok {
+	if movie, ok := m.TypeMovie(); ok {
 		return s.searchTermMovie(movie)
-	} else if episode, ok := m.(types.Episode); ok {
+	} else if episode, ok := m.TypeEpisode(); ok {
 		return s.searchTermEpisode(episode)
 	}
 	return ""
@@ -106,7 +107,7 @@ func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
 }
 
 // SearchSubtitles searches subscene.com for subtitles
-func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs []types.Subtitle, err error) {
+func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleCollection, err error) {
 	url, err := s.FindMediaURL(local)
 
 	if err != nil {
@@ -119,7 +120,7 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs []types.Subtitl
 		return
 	}
 
-	subs = make([]types.Subtitle, 0)
+	subs = collection.NewSubtitles(local)
 
 	doc.Find("table tbody tr").Each(func(i int, s *goquery.Selection) {
 		a1 := s.Find(".a1")
@@ -138,8 +139,14 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs []types.Subtitl
 
 		hi := s.Find("td.a41").Length() > 0
 
-		subs = append(subs, &subsceneSubtitle{
-			Media:        media.NewFromFilename(name),
+		meta, err := media.NewFromFilename(name)
+
+		if err != nil {
+			return
+		}
+
+		subs.Add(&subsceneSubtitle{
+			Media:        media.NewType(meta),
 			Downloadable: subsceneDownloader(url),
 			lang:         lang,
 			comment:      comm,

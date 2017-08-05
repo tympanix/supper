@@ -1,6 +1,7 @@
 package media
 
 import (
+	"errors"
 	"os"
 	"regexp"
 	"strconv"
@@ -26,24 +27,24 @@ type EpisodeFile struct {
 }
 
 // NewEpisode parses media info from a file
-func NewEpisode(filename string) *EpisodeMeta {
+func NewEpisode(filename string) (*EpisodeMeta, error) {
 	groups := episodeRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
-		return nil
+		return nil, errors.New("Could not parse media")
 	}
 
 	name := groups[1]
 	season, err := strconv.Atoi(groups[2])
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	episode, err := strconv.Atoi(groups[3])
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	tags := groups[4]
@@ -53,7 +54,7 @@ func NewEpisode(filename string) *EpisodeMeta {
 		name:     parse.CleanName(name),
 		episode:  episode,
 		season:   season,
-	}
+	}, nil
 }
 
 // TVShow is the name of the TV show

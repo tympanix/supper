@@ -1,6 +1,7 @@
 package media
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -27,11 +28,11 @@ type MovieFile struct {
 var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]+(19\d\d|20\d\d)[\W_]+(.*)$`)
 
 // NewMovie parses media info from a file
-func NewMovie(filename string) *MovieMeta {
+func NewMovie(filename string) (*MovieMeta, error) {
 	groups := movieRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
-		return nil
+		return nil, errors.New("Could not parse media")
 	}
 
 	name := groups[1]
@@ -39,7 +40,7 @@ func NewMovie(filename string) *MovieMeta {
 	tags := groups[3]
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	return &MovieMeta{
@@ -47,7 +48,7 @@ func NewMovie(filename string) *MovieMeta {
 		name:     parse.CleanName(name),
 		tags:     tags,
 		year:     year,
-	}
+	}, nil
 }
 
 func (m *MovieMeta) String() string {

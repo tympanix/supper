@@ -9,7 +9,7 @@ import (
 
 // Provider interfaces with subtitles websites
 type Provider interface {
-	SearchSubtitles(LocalMedia) ([]Subtitle, error)
+	SearchSubtitles(LocalMedia) (SubtitleCollection, error)
 }
 
 // Downloadable is an interface for media that can be downloaded from the internet
@@ -17,8 +17,20 @@ type Downloadable interface {
 	Download() io.Reader
 }
 
+// Evaluator determines how well the subtitle matches the media
+type Evaluator interface {
+	Evaluate(LocalMedia, Subtitle) float32
+}
+
 // Media is an interface for movies and TV shows
 type Media interface {
+	Meta() Metadata
+	TypeMovie() (Movie, bool)
+	TypeEpisode() (Episode, bool)
+}
+
+// Metadata is an interface metadata information
+type Metadata interface {
 	Group() string
 	Codec() string
 	Quality() string
@@ -34,14 +46,14 @@ type LocalMedia interface {
 
 // Movie interface is for movie type media material
 type Movie interface {
-	Media
+	Metadata
 	MovieName() string
 	Year() int
 }
 
 // Episode interface is for TV show type material
 type Episode interface {
-	Media
+	Metadata
 	TVShow() string
 	Episode() int
 	Season() int

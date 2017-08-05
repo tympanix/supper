@@ -34,6 +34,7 @@ func main() {
 	}
 
 	if len(media) > 0 {
+
 		subs, err := app.SearchSubtitles(media[0])
 
 		if err != nil {
@@ -41,9 +42,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		for _, s := range subs {
-			fmt.Println(s)
-		}
+		fmt.Println(subs)
 	}
 
 }
