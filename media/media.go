@@ -2,6 +2,7 @@ package media
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/Tympanix/supper/parse"
@@ -11,6 +12,18 @@ import (
 type File struct {
 	os.FileInfo
 	types.Media
+}
+
+// SaveSubtitle saves the subtitle for the given media to disk
+func (f *File) SaveSubtitle(s types.Subtitle) error {
+	_, err := s.Download()
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 func NewFile(file os.FileInfo, meta types.Metadata) *File {

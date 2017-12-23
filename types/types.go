@@ -14,7 +14,7 @@ type Provider interface {
 
 // Downloadable is an interface for media that can be downloaded from the internet
 type Downloadable interface {
-	Download() io.Reader
+	Download() (io.ReadCloser, error)
 }
 
 // Evaluator determines how well the subtitle matches the media
@@ -42,6 +42,7 @@ type Metadata interface {
 type LocalMedia interface {
 	os.FileInfo
 	Media
+	SaveSubtitle(Subtitle) error
 }
 
 // Movie interface is for movie type media material

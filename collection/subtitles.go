@@ -32,6 +32,14 @@ type Subtitles struct {
 	subs  []subtitleEntry
 }
 
+// Best returns the best matching subtitle
+func (s *Subtitles) Best() types.Subtitle {
+	if len(s.subs) > 0 {
+		return s.subs[0]
+	}
+	return nil
+}
+
 // Add a subtitle to the collection
 func (s *Subtitles) Add(sub types.Subtitle) {
 	if sub == nil || sub.Meta() == nil {
@@ -46,29 +54,35 @@ func (s *Subtitles) Add(sub types.Subtitle) {
 
 // FilterLanguage only keeps subtitles base on language
 func (s *Subtitles) FilterLanguage(lang language.Tag) {
-	for i, sub := range s.subs {
-		if !sub.IsLang(lang) {
-			s.subs = append(s.subs[:i], s.subs[i+1:]...)
+	_subs := make([]subtitleEntry, 0)
+	for _, sub := range s.subs {
+		if sub.IsLang(lang) {
+			_subs = append(_subs, sub)
 		}
 	}
+	s.subs = _subs
 }
 
 // RemoveHI removes all HI subtitle from the collection
 func (s *Subtitles) RemoveHI() {
-	for i, sub := range s.subs {
-		if sub.IsHI() {
-			s.subs = append(s.subs[:i], s.subs[i+1:]...)
+	_subs := make([]subtitleEntry, 0)
+	for _, sub := range s.subs {
+		if !sub.IsHI() {
+			_subs = append(_subs, sub)
 		}
 	}
+	s.subs = _subs
 }
 
 // RemoveNotHI removes all normal subtitles from the collection
 func (s *Subtitles) RemoveNotHI() {
-	for i, sub := range s.subs {
-		if !sub.IsHI() {
-			s.subs = append(s.subs[:i], s.subs[i+1:]...)
+	_subs := make([]subtitleEntry, 0)
+	for _, sub := range s.subs {
+		if sub.IsHI() {
+			_subs = append(_subs, sub)
 		}
 	}
+	s.subs = _subs
 }
 
 func (s *Subtitles) Len() int {

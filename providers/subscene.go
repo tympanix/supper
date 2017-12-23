@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -20,6 +21,9 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 )
+
+// HOST is the URL for subscene
+const HOST = "https://subscene.com"
 
 // Subscene interfaces with subscene.com for downloading subtitles
 type Subscene struct{}
@@ -147,7 +151,7 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 
 		subs.Add(&subsceneSubtitle{
 			Media:        media.NewType(meta),
-			Downloadable: subsceneDownloader(url),
+			Downloadable: subsceneURL(url),
 			lang:         lang,
 			comment:      comm,
 			hi:           hi,
@@ -157,10 +161,44 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 	return
 }
 
-type subsceneDownloader string
+type subsceneURL string
 
-func (s subsceneDownloader) Download() io.Reader {
-	return nil
+func (url subsceneURL) Download() (io.ReadCloser, error) {
+
+	uri := fmt.Sprintf("%s%s", HOST, string(url))
+	doc, err := goquery.NewDocument(uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	sel := doc.Find("#downloadButton")
+
+	if len(sel.Nodes) == 0 {
+		return nil, errors.New("Could not parse response from subscene")
+	}
+
+	download, exists := sel.First().Attr("href")
+
+	if !exists {
+		return nil, errors.New("Could not find download link from subscene")
+	}
+
+	download = fmt.Sprintf("%s%s", HOST, download)
+
+	resp, err := http.Get(download)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Subscene download subtitle (%v)", resp.StatusCode)
+	}
+
+	fmt.Println(download)
+	return resp.Body, nil
+
 }
 
 type subsceneSubtitle struct {
@@ -176,7 +214,7 @@ func (b *subsceneSubtitle) String() string {
 }
 
 func (b *subsceneSubtitle) IsLang(tag language.Tag) bool {
-	return strings.Contains(b.lang, display.Self.Name(tag))
+	return strings.Contains(b.lang, display.English.Languages().Name(tag))
 }
 
 func (b *subsceneSubtitle) IsHI() bool {
