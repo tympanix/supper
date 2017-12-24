@@ -2,6 +2,7 @@ package provider
 
 import (
 	"errors"
+	"os"
 	"fmt"
 	"io"
 	"log"
@@ -164,6 +165,50 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 	return
 }
 
+
+func newZipReader(file *os.File) (*zipReader, error) {
+	data, err := zip.OpenReader(file.Name())
+
+	if err != nil {
+		return nil, err
+	}
+
+	var srt io.ReadCloser = nil
+	for _, f := range data.File {
+		if filepath.Ext(f.Name) == ".srt" {
+			if srt, err = f.Open(); err != nil {
+				return nil, err
+			}
+			break
+		}
+	}
+
+	if srt == nil {
+		return nil, errors.New("Could not read srt file from subscene")
+	}
+
+  return &zipReader{srt, data, file}, nil
+}
+
+type zipReader struct {
+  io.ReadCloser
+	zip *zip.ReadCloser
+	file *os.File
+}
+
+func (t *zipReader) Close() error {
+  fmt.Println("Calling close of temporary reader!")
+  t.ReadCloser.Close()
+  t.zip.Close()
+	t.file.Close()
+  if err := os.Remove(t.file.Name()); err != nil {
+    fmt.Println(err)
+    return err
+  }
+  return nil
+}
+
+
 type subsceneURL string
 
 func (url subsceneURL) Download() (io.ReadCloser, error) {
@@ -213,28 +258,7 @@ func (url subsceneURL) Download() (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	data, err := zip.OpenReader(file.Name())
-
-	if err != nil {
-		return nil, err
-	}
-
-	var srt io.ReadCloser = nil
-	for _, f := range data.File {
-		if filepath.Ext(f.Name) == ".srt" {
-			if srt, err = f.Open(); err != nil {
-				return nil, err
-			}
-			break
-		}
-	}
-
-	if srt == nil {
-		return nil, errors.New("Could not read srt file from subscene")
-	}
-
-	tempReader := media.TempReader(file, srt)
-	return tempReader, nil
+	return newZipReader(file)
 }
 
 type subsceneSubtitle struct {
