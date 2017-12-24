@@ -19,6 +19,15 @@ type Application struct {
 	types.Provider
 }
 
+func fileIsMedia(f os.FileInfo) bool {
+	for _, ext := range filetypes {
+		if ext == path.Ext(f.Name()) {
+			return true
+		}
+	}
+	return false
+}
+
 // FindMedia searches for media files
 func (a *Application) FindMedia(root string) ([]types.LocalMedia, error) {
 	medialist := make([]types.LocalMedia, 0)
@@ -31,16 +40,14 @@ func (a *Application) FindMedia(root string) ([]types.LocalMedia, error) {
 		if f.IsDir() {
 			return nil
 		}
-		for _, ext := range filetypes {
-			if ext == path.Ext(filepath) {
-				_media, err := media.New(f)
-				if err != nil {
-					return fmt.Errorf("Cound not parse file: %s", filepath)
-				}
-				medialist = append(medialist, _media)
-				return nil
-			}
+		if !fileIsMedia(f) {
+			return nil
 		}
+		_media, err := media.New(filepath)
+		if err != nil {
+			return fmt.Errorf("Cound not parse file: %s", filepath)
+		}
+		medialist = append(medialist, _media)
 		return nil
 	})
 

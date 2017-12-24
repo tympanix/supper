@@ -10,6 +10,9 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"io/ioutil"
+	"archive/zip"
+	"path/filepath"
 
 	"github.com/Tympanix/supper/collection"
 	"github.com/Tympanix/supper/media"
@@ -192,13 +195,46 @@ func (url subsceneURL) Download() (io.ReadCloser, error) {
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("Subscene download subtitle (%v)", resp.StatusCode)
 	}
 
-	fmt.Println(download)
-	return resp.Body, nil
+	file, err := ioutil.TempFile("", "supper")
 
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(file, resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := zip.OpenReader(file.Name())
+
+	if err != nil {
+		return nil, err
+	}
+
+	var srt io.ReadCloser = nil
+	for _, f := range data.File {
+		if filepath.Ext(f.Name) == ".srt" {
+			if srt, err = f.Open(); err != nil {
+				return nil, err
+			}
+			break
+		}
+	}
+
+	if srt == nil {
+		return nil, errors.New("Could not read srt file from subscene")
+	}
+
+	tempReader := media.TempReader(file, srt)
+	return tempReader, nil
 }
 
 type subsceneSubtitle struct {

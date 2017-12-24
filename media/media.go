@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"io"
+	"path/filepath"
 
 	"github.com/Tympanix/supper/parse"
 	"github.com/Tympanix/supper/types"
@@ -12,22 +14,45 @@ import (
 type File struct {
 	os.FileInfo
 	types.Media
+	path string
+}
+
+func (f *File) Path() string {
+	return f.path
 }
 
 // SaveSubtitle saves the subtitle for the given media to disk
 func (f *File) SaveSubtitle(s types.Subtitle) error {
-	_, err := s.Download()
+	srt, err := s.Download()
+	defer srt.Close()
 
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
+	fmt.Printf("Filename: %s\n", f.FileInfo.Name())
+	filename := f.Path()
+	extension := filepath.Ext(filename)
+	name := filename[0:len(filename)-len(extension)] + ".srt"
+
+	file, err := os.Create(name)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(file, srt)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func NewFile(file os.FileInfo, meta types.Metadata) *File {
-	return &File{file, NewType(meta)}
+func NewFile(file os.FileInfo, meta types.Metadata, path string) *File {
+	return &File{file, NewType(meta), path}
 }
 
 type Type struct {
@@ -53,18 +78,27 @@ func NewType(m types.Metadata) *Type {
 }
 
 // New parses a file into media attributes
-func New(file os.FileInfo) (types.LocalMedia, error) {
-	filename := parse.Filename(file.Name())
+func New(path string) (types.LocalMedia, error) {
+	fmt.Println(path)
+	filename := parse.Filename(path)
+	fmt.Println(filename)
 	media, err := NewMetadata(filename)
+	fmt.Println(media)
+
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := os.Stat(path)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if movie, ok := media.(types.Movie); ok {
-		return NewFile(file, movie), nil
+		return NewFile(file, movie, path), nil
 	} else if episode, ok := media.(types.Episode); ok {
-		return NewFile(file, episode), nil
+		return NewFile(file, episode, path), nil
 	} else {
 		return nil, errors.New("Unknown media type")
 	}

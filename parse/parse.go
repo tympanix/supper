@@ -2,7 +2,7 @@ package parse
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -33,8 +33,8 @@ func NewCollection(tags []string) Collection {
 
 // Filename returns the filename of the file without extension
 func Filename(filename string) string {
-	f := path.Base(filename)
-	return strings.TrimSuffix(f, path.Ext(f))
+	f := filepath.Base(filename)
+	return strings.TrimSuffix(f, filepath.Ext(f))
 }
 
 var abbreviationRegexp = regexp.MustCompile(`[A-Z](\.)`)

@@ -42,6 +42,7 @@ type Metadata interface {
 type LocalMedia interface {
 	os.FileInfo
 	Media
+	Path() string
 	SaveSubtitle(Subtitle) error
 }
 
