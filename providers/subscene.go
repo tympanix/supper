@@ -1,19 +1,19 @@
 package provider
 
 import (
+	"archive/zip"
 	"errors"
-	"os"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
-	"io/ioutil"
-	"archive/zip"
-	"path/filepath"
 
 	"github.com/Tympanix/supper/collection"
 	"github.com/Tympanix/supper/media"
@@ -23,7 +23,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/text/language"
-	"golang.org/x/text/language/display"
 )
 
 // HOST is the URL for subscene
@@ -153,10 +152,16 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 			return
 		}
 
+		langTag, err := parse.Language(lang)
+
+		if err != nil {
+			return
+		}
+
 		subs.Add(&subsceneSubtitle{
 			Media:        media.NewType(meta),
 			Downloadable: subsceneURL(url),
-			lang:         lang,
+			lang:         langTag,
 			comment:      comm,
 			hi:           hi,
 		})
@@ -164,7 +169,6 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 
 	return
 }
-
 
 func newZipReader(file *os.File) (*zipReader, error) {
 	data, err := zip.OpenReader(file.Name())
@@ -187,27 +191,25 @@ func newZipReader(file *os.File) (*zipReader, error) {
 		return nil, errors.New("Could not read srt file from subscene")
 	}
 
-  return &zipReader{srt, data, file}, nil
+	return &zipReader{srt, data, file}, nil
 }
 
 type zipReader struct {
-  io.ReadCloser
-	zip *zip.ReadCloser
+	io.ReadCloser
+	zip  *zip.ReadCloser
 	file *os.File
 }
 
 func (t *zipReader) Close() error {
-  fmt.Println("Calling close of temporary reader!")
-  t.ReadCloser.Close()
-  t.zip.Close()
+	t.ReadCloser.Close()
+	t.zip.Close()
 	t.file.Close()
-  if err := os.Remove(t.file.Name()); err != nil {
-    fmt.Println(err)
-    return err
-  }
-  return nil
+	if err := os.Remove(t.file.Name()); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
 }
-
 
 type subsceneURL string
 
@@ -264,7 +266,7 @@ func (url subsceneURL) Download() (io.ReadCloser, error) {
 type subsceneSubtitle struct {
 	types.Media
 	types.Downloadable
-	lang    string
+	lang    language.Tag
 	comment string
 	hi      bool
 }
@@ -273,8 +275,12 @@ func (b *subsceneSubtitle) String() string {
 	return fmt.Sprintf("%-15s %-s", b.lang, b.Media)
 }
 
+func (b *subsceneSubtitle) Language() language.Tag {
+	return b.lang
+}
+
 func (b *subsceneSubtitle) IsLang(tag language.Tag) bool {
-	return strings.Contains(b.lang, display.English.Languages().Name(tag))
+	return b.lang == tag
 }
 
 func (b *subsceneSubtitle) IsHI() bool {

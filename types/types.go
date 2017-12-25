@@ -65,6 +65,7 @@ type Episode interface {
 type Subtitle interface {
 	Media
 	Downloadable
+	Language() language.Tag
 	IsLang(language.Tag) bool
 	IsHI() bool
 }

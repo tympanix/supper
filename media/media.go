@@ -3,8 +3,8 @@ package media
 import (
 	"errors"
 	"fmt"
-	"os"
 	"io"
+	"os"
 	"path/filepath"
 
 	"github.com/Tympanix/supper/parse"
@@ -34,9 +34,10 @@ func (f *File) SaveSubtitle(s types.Subtitle) error {
 	fmt.Printf("Filename: %s\n", f.FileInfo.Name())
 	filename := f.Path()
 	extension := filepath.Ext(filename)
-	name := filename[0:len(filename)-len(extension)] + ".srt"
+	name := filename[0 : len(filename)-len(extension)]
+	srtpath := fmt.Sprintf("%s.%s.%s", name, s.Language(), "srt")
 
-	file, err := os.Create(name)
+	file, err := os.Create(srtpath)
 
 	if err != nil {
 		return err
