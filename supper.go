@@ -1,13 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"log"
 	"os"
 
-	"github.com/Tympanix/supper/app"
-	"github.com/Tympanix/supper/providers"
+	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/providers"
 	"golang.org/x/text/language"
 
 	"github.com/urfave/cli"
@@ -25,14 +24,22 @@ func main() {
 	app.Usage = "An automatic subtitle downloader"
 
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
+		cli.StringSliceFlag{
 			Name:  "lang, l",
-			Value: "en",
 			Usage: "subtitle language",
 		},
 		cli.BoolFlag{
 			Name:  "impaired, i",
 			Usage: "hearing impaired",
+		},
+		cli.IntFlag{
+			Name:  "limit",
+			Value: 12,
+			Usage: "limit maximum number of media to process",
+		},
+		cli.StringFlag{
+			Name:  "modified, m",
+			Usage: "filter media modified within duration",
 		},
 	}
 
@@ -41,44 +48,68 @@ func main() {
 			cli.ShowAppHelpAndExit(c, 1)
 		}
 
-		media, err := sup.FindMedia(c.Args().First())
+		// Parse all language flags into slice of tags
+		lang := make([]language.Tag, 0)
+		for _, tag := range c.StringSlice("lang") {
+			_lang, err := language.Parse(tag)
+			if err != nil {
+				return cli.NewExitError(err, 1)
+			}
+			lang = append(lang, _lang)
+		}
+
+		if len(lang) == 0 {
+			return cli.NewExitError("missing language flags(s)", 1)
+		}
+
+		// Make sure every arg is a valid file path
+		for _, arg := range c.Args() {
+			if _, err := os.Stat(arg); err == os.ErrNotExist {
+				return cli.NewExitError(err, 1)
+			}
+		}
+
+		// Search all argument paths for media
+		media, err := sup.FindMedia(c.Args()...)
 
 		if err != nil {
-			log.Println(err)
-			os.Exit(1)
+			return cli.NewExitError(err, 2)
 		}
 
-		lang, err := language.Parse(c.String("lang"))
+		modified, err := parse.Duration(c.String("modified"))
+
+		if modified > 0 {
+			media = media.FilterModified(modified)
+		}
 
 		if err != nil {
-			log.Printf("Unknown language %s\n", c.String("lang"))
-			os.Exit(1)
+			return cli.NewExitError(err, 3)
 		}
 
-		log.Printf("Finding subtitles for lang %s\n", c.String("lang"))
-
-		if len(media) == 0 {
-			return errors.New("No subtitles found")
+		if media.Len() > c.Int("limit") {
+			err := fmt.Errorf("number of media files exceeded: %v", media.Len())
+			return cli.NewExitError(err, 3)
 		}
 
-		subs, err := sup.SearchSubtitles(media[0])
+		// Iterate all media files found in each path
+		for _, item := range media.List() {
+			subs, err := sup.SearchSubtitles(item)
 
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
+			if err != nil {
+				return cli.NewExitError(err, 2)
+			}
+
+			subs = subs.HearingImpaired(c.Bool("impaired"))
+
+			// Download subtitle for each language
+			for _, l := range lang {
+				langsubs := subs.FilterLanguage(l)
+
+				fmt.Println(langsubs)
+
+				item.SaveSubtitle(langsubs.Best())
+			}
 		}
-
-		if c.Bool("impaired") {
-			subs.RemoveNotHI()
-		} else {
-			subs.RemoveHI()
-		}
-
-		subs.FilterLanguage(lang)
-
-		fmt.Println(subs)
-
-		media[0].SaveSubtitle(subs.Best())
 
 		return nil
 	}

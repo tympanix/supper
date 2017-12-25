@@ -3,7 +3,7 @@ package score
 import (
 	"math"
 
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/types"
 	"github.com/xrash/smetrics"
 )
 

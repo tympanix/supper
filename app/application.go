@@ -3,11 +3,11 @@ package application
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
-	"github.com/Tympanix/supper/media"
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/types"
 )
 
 var filetypes = []string{
@@ -21,7 +21,7 @@ type Application struct {
 
 func fileIsMedia(f os.FileInfo) bool {
 	for _, ext := range filetypes {
-		if ext == path.Ext(f.Name()) {
+		if ext == filepath.Ext(f.Name()) {
 			return true
 		}
 	}
@@ -29,31 +29,33 @@ func fileIsMedia(f os.FileInfo) bool {
 }
 
 // FindMedia searches for media files
-func (a *Application) FindMedia(root string) ([]types.LocalMedia, error) {
+func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 	medialist := make([]types.LocalMedia, 0)
 
-	if _, err := os.Stat(root); os.IsNotExist(err) {
-		return nil, err
-	}
+	for _, root := range roots {
+		if _, err := os.Stat(root); os.IsNotExist(err) {
+			return nil, err
+		}
 
-	err := filepath.Walk(root, func(filepath string, f os.FileInfo, err error) error {
-		if f.IsDir() {
+		err := filepath.Walk(root, func(filepath string, f os.FileInfo, err error) error {
+			if f.IsDir() {
+				return nil
+			}
+			if !fileIsMedia(f) {
+				return nil
+			}
+			_media, err := media.New(filepath)
+			if err != nil {
+				return fmt.Errorf("Cound not parse file: %s", filepath)
+			}
+			medialist = append(medialist, _media)
 			return nil
-		}
-		if !fileIsMedia(f) {
-			return nil
-		}
-		_media, err := media.New(filepath)
+		})
+
 		if err != nil {
-			return fmt.Errorf("Cound not parse file: %s", filepath)
+			return nil, err
 		}
-		medialist = append(medialist, _media)
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
 	}
 
-	return medialist, nil
+	return list.NewLocalMedia(medialist...), nil
 }

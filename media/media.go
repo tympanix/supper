@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Tympanix/supper/parse"
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/types"
 )
 
 type File struct {

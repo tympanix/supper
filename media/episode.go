@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Tympanix/supper/parse"
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/types"
 )
 
 var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})[\W_](.*)$`)

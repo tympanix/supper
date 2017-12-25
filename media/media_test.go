@@ -3,7 +3,7 @@ package media_test
 import (
 	"testing"
 
-	"github.com/Tympanix/supper/media"
+	"github.com/tympanix/supper/media"
 )
 
 func TestTypes(t *testing.T) {

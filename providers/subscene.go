@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
@@ -15,10 +14,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Tympanix/supper/collection"
-	"github.com/Tympanix/supper/media"
-	"github.com/Tympanix/supper/parse"
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/types"
 	"github.com/xrash/smetrics"
 
 	"github.com/PuerkitoBio/goquery"
@@ -109,12 +108,11 @@ func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
 		return "", errors.New("No media found on subscene.com")
 	}
 
-	log.Println(result)
 	return fmt.Sprintf("%s%s", "https://subscene.com", result), nil
 }
 
 // SearchSubtitles searches subscene.com for subtitles
-func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleCollection, err error) {
+func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleList, err error) {
 	url, err := s.FindMediaURL(local)
 
 	if err != nil {
@@ -127,7 +125,7 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleC
 		return
 	}
 
-	subs = collection.NewSubtitles(local)
+	subs = list.NewSubtitles(local)
 
 	doc.Find("table tbody tr").Each(func(i int, s *goquery.Selection) {
 		a1 := s.Find(".a1")

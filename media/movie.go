@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Tympanix/supper/parse"
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/types"
 )
 
 // MovieMeta represents a movie file

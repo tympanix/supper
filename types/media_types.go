@@ -9,7 +9,7 @@ import (
 
 // Provider interfaces with subtitles websites
 type Provider interface {
-	SearchSubtitles(LocalMedia) (SubtitleCollection, error)
+	SearchSubtitles(LocalMedia) (SubtitleList, error)
 }
 
 // Downloadable is an interface for media that can be downloaded from the internet

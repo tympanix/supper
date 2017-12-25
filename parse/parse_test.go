@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Tympanix/supper/parse"
+	"github.com/tympanix/supper/parse"
 )
 
 func TestCleanName(t *testing.T) {

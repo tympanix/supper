@@ -1,6 +1,6 @@
 package media
 
-import "github.com/Tympanix/supper/parse"
+import "github.com/tympanix/supper/parse"
 
 // Metadata provides release information for media
 type Metadata struct {

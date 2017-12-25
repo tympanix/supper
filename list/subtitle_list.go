@@ -1,4 +1,4 @@
-package collection
+package list
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 
 	"golang.org/x/text/language"
 
-	"github.com/Tympanix/supper/score"
-	"github.com/Tympanix/supper/types"
+	"github.com/tympanix/supper/score"
+	"github.com/tympanix/supper/types"
 )
 
 type subtitleEntry struct {
@@ -32,6 +32,23 @@ type Subtitles struct {
 	subs  []subtitleEntry
 }
 
+func (s *Subtitles) clone(list []subtitleEntry) types.SubtitleList {
+	return &Subtitles{
+		Evaluator: s.Evaluator,
+		media:     s.media,
+		subs:      list,
+	}
+}
+
+// List returns the list of subtitles as a slice
+func (s *Subtitles) List() []types.Subtitle {
+	subs := make([]types.Subtitle, len(s.subs))
+	for i, v := range s.subs {
+		subs[i] = v
+	}
+	return subs
+}
+
 // Best returns the best matching subtitle
 func (s *Subtitles) Best() types.Subtitle {
 	if len(s.subs) > 0 {
@@ -52,37 +69,26 @@ func (s *Subtitles) Add(sub types.Subtitle) {
 	sort.Sort(sort.Reverse(s))
 }
 
-// FilterLanguage only keeps subtitles base on language
-func (s *Subtitles) FilterLanguage(lang language.Tag) {
+// FilterLanguage returns a new subtitle collection including only the argument language
+func (s *Subtitles) FilterLanguage(lang language.Tag) types.SubtitleList {
 	_subs := make([]subtitleEntry, 0)
 	for _, sub := range s.subs {
 		if sub.IsLang(lang) {
 			_subs = append(_subs, sub)
 		}
 	}
-	s.subs = _subs
+	return s.clone(_subs)
 }
 
-// RemoveHI removes all HI subtitle from the collection
-func (s *Subtitles) RemoveHI() {
+// HearingImpaired returnes a new subtitle collection where hearing impared subtitles has been filtered
+func (s *Subtitles) HearingImpaired(hi bool) types.SubtitleList {
 	_subs := make([]subtitleEntry, 0)
 	for _, sub := range s.subs {
-		if !sub.IsHI() {
+		if sub.IsHI() == hi {
 			_subs = append(_subs, sub)
 		}
 	}
-	s.subs = _subs
-}
-
-// RemoveNotHI removes all normal subtitles from the collection
-func (s *Subtitles) RemoveNotHI() {
-	_subs := make([]subtitleEntry, 0)
-	for _, sub := range s.subs {
-		if sub.IsHI() {
-			_subs = append(_subs, sub)
-		}
-	}
-	s.subs = _subs
+	return s.clone(_subs)
 }
 
 func (s *Subtitles) Len() int {
