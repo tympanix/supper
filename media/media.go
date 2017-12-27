@@ -20,6 +20,10 @@ type File struct {
 	path string
 }
 
+func (f *File) String() string {
+	return f.Meta().String()
+}
+
 func (f *File) Path() string {
 	return f.path
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/providers"
 	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 
 	"github.com/urfave/cli"
 )
@@ -113,6 +114,8 @@ func main() {
 				continue
 			}
 
+			fmt.Println(item)
+
 			subs, err := sup.SearchSubtitles(item)
 
 			if err != nil {
@@ -131,10 +134,8 @@ func main() {
 
 				langsubs := subs.FilterLanguage(l)
 
-				fmt.Println(langsubs)
-
 				if langsubs.Len() == 0 {
-					fmt.Errorf("no subtitles found")
+					fmt.Println(" - no subtitles found")
 					continue
 				}
 
@@ -142,7 +143,9 @@ func main() {
 
 				if err != nil {
 					fmt.Println(err)
+					continue
 				}
+				fmt.Printf(" - %v\n", display.English.Languages().Name(l))
 			}
 			time.Sleep(1000 * time.Millisecond)
 		}

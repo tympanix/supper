@@ -2,6 +2,7 @@ package media
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -55,6 +56,10 @@ func NewEpisode(filename string) (*EpisodeMeta, error) {
 		episode:  episode,
 		season:   season,
 	}, nil
+}
+
+func (e *EpisodeMeta) String() string {
+	return fmt.Sprintf("%s S%vE%v", e.TVShow(), e.Season(), e.Episode())
 }
 
 // TVShow is the name of the TV show

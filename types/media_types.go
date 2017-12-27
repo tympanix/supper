@@ -31,6 +31,7 @@ type Media interface {
 
 // Metadata is an interface metadata information
 type Metadata interface {
+	String() string
 	Group() string
 	Codec() string
 	Quality() string

@@ -52,7 +52,7 @@ func NewMovie(filename string) (*MovieMeta, error) {
 }
 
 func (m *MovieMeta) String() string {
-	return fmt.Sprintf("%-48.44q%-8d%-12s%-12s%-12s%-24s", m.name, m.year, m.source, m.quality, m.codec, m.group)
+	return fmt.Sprintf("%s (%v)", m.MovieName(), m.Year())
 }
 
 // MovieName is the name of the movie
