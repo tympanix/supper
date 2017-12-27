@@ -7,6 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/providers"
 	"golang.org/x/text/language"
@@ -99,13 +100,7 @@ func main() {
 			return cli.NewExitError(err, 3)
 		}
 
-		if c.Bool("dry") {
-			fmt.Printf("items to process: %v\n", media.Len())
-			fmt.Println("dry run, nothing performed")
-			return nil
-		}
-
-		if media.Len() > c.Int("limit") {
+		if media.Len() > c.Int("limit") && !c.Bool("dry") {
 			err := fmt.Errorf("number of media files exceeded: %v", media.Len())
 			return cli.NewExitError(err, 3)
 		}
@@ -126,10 +121,13 @@ func main() {
 
 			fmt.Printf("(%v/%v) - %s\n", i+1, media.Len(), item)
 
-			subs, err := sup.SearchSubtitles(item)
+			subs := list.Subtitles()
 
-			if err != nil {
-				return cli.NewExitError(err, 2)
+			if !c.Bool("dry") {
+				subs, err = sup.SearchSubtitles(item)
+				if err != nil {
+					return cli.NewExitError(err, 2)
+				}
 			}
 
 			subs = subs.HearingImpaired(c.Bool("impaired"))
@@ -144,19 +142,25 @@ func main() {
 
 				langsubs := subs.FilterLanguage(l)
 
-				if langsubs.Len() == 0 {
+				if langsubs.Len() == 0 && !c.Bool("dry") {
 					color.Red(" - no subtitles found")
 					continue
 				}
 
-				err := item.SaveSubtitle(langsubs.Best())
-
-				if err != nil {
-					color.Red(err.Error())
-					continue
+				if !c.Bool("dry") {
+					err := item.SaveSubtitle(langsubs.Best())
+					if err != nil {
+						color.Red(err.Error())
+						continue
+					}
 				}
+
 				color.Green(" - %v\n", display.English.Languages().Name(l))
 			}
+		}
+
+		if c.Bool("dry") {
+			color.Blue("dry run, nothing performed")
 		}
 
 		return nil
