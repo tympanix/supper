@@ -59,7 +59,7 @@ func NewEpisode(filename string) (*EpisodeMeta, error) {
 }
 
 func (e *EpisodeMeta) String() string {
-	return fmt.Sprintf("%s S%vE%v", e.TVShow(), e.Season(), e.Episode())
+	return fmt.Sprintf("%s S%02dE%02d", e.TVShow(), e.Season(), e.Episode())
 }
 
 // TVShow is the name of the TV show

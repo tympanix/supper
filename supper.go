@@ -139,6 +139,8 @@ func main() {
 					continue
 				}
 
+				fmt.Println(langsubs)
+
 				err := item.SaveSubtitle(langsubs.Best())
 
 				if err != nil {

@@ -62,9 +62,13 @@ func (s *ratedSubtitles) Add(sub types.Subtitle) {
 	if sub == nil || sub.Meta() == nil {
 		return
 	}
+	score := s.Evaluate(s.media, sub)
+	if score <= 0 {
+		return
+	}
 	s.subs = append(s.subs, subtitleEntry{
 		Subtitle: sub,
-		score:    s.Evaluate(s.media, sub),
+		score:    score,
 	})
 	sort.Sort(sort.Reverse(s))
 }
