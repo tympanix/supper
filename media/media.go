@@ -65,10 +65,9 @@ func (f *File) SaveSubtitle(s types.Subtitle) error {
 		return err
 	}
 
-	filename := f.Path()
-	extension := filepath.Ext(filename)
-	name := filename[0 : len(filename)-len(extension)]
-	srtpath := fmt.Sprintf("%s.%s.%s", name, s.Language(), "srt")
+	name := fmt.Sprintf("%s.%s.%s", parse.Filename(f.Path()), s.Language(), "srt")
+	folder := filepath.Dir(f.Path())
+	srtpath := filepath.Join(folder, name)
 
 	file, err := os.Create(srtpath)
 
