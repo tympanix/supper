@@ -3,6 +3,7 @@ package list
 import (
 	"time"
 
+	"github.com/fatih/set"
 	"github.com/tympanix/supper/types"
 )
 
@@ -37,4 +38,19 @@ func (l *LocalMedia) FilterModified(d time.Duration) types.LocalMediaList {
 		}
 	}
 	return NewLocalMedia(media...)
+}
+
+func (l *LocalMedia) FilterMissingSubs(lang set.Interface) (types.LocalMediaList, error) {
+	media := make([]types.LocalMedia, 0)
+	for _, m := range l.List() {
+		extsubs, err := m.ExistingSubtitles()
+		if err != nil {
+			return nil, err
+		}
+		missing := set.Difference(lang, extsubs.LanguageSet())
+		if missing.Size() > 0 {
+			media = append(media, m)
+		}
+	}
+	return NewLocalMedia(media...), nil
 }

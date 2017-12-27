@@ -43,6 +43,7 @@ type LocalMedia interface {
 	os.FileInfo
 	Media
 	Path() string
+	ExistingSubtitles() (SubtitleList, error)
 	SaveSubtitle(Subtitle) error
 }
 

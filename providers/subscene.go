@@ -125,7 +125,7 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleL
 		return
 	}
 
-	subs = list.NewSubtitles(local)
+	subs = list.RatedSubtitles(local)
 
 	doc.Find("table tbody tr").Each(func(i int, s *goquery.Selection) {
 		a1 := s.Find(".a1")

@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 )
@@ -21,8 +24,39 @@ func (f *File) Path() string {
 	return f.path
 }
 
+func (f *File) ExistingSubtitles() (types.SubtitleList, error) {
+	folder := filepath.Dir(f.Path())
+	name := parse.Filename(f.Path())
+
+	files, err := ioutil.ReadDir(folder)
+
+	if err != nil {
+		return nil, err
+	}
+
+	subtitles := make([]types.Subtitle, 0)
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if !strings.HasPrefix(file.Name(), name) {
+			continue
+		}
+		sub, err := NewLocalSubtitle(file)
+		if err != nil {
+			continue
+		}
+		subtitles = append(subtitles, sub)
+	}
+	return list.Subtitles(subtitles...), nil
+}
+
 // SaveSubtitle saves the subtitle for the given media to disk
 func (f *File) SaveSubtitle(s types.Subtitle) error {
+	if s == nil {
+		return errors.New("invalid subtitle nil")
+	}
+
 	srt, err := s.Download()
 	defer srt.Close()
 
@@ -31,7 +65,6 @@ func (f *File) SaveSubtitle(s types.Subtitle) error {
 		return err
 	}
 
-	fmt.Printf("Filename: %s\n", f.FileInfo.Name())
 	filename := f.Path()
 	extension := filepath.Ext(filename)
 	name := filename[0 : len(filename)-len(extension)]
@@ -80,11 +113,8 @@ func NewType(m types.Metadata) *Type {
 
 // New parses a file into media attributes
 func New(path string) (types.LocalMedia, error) {
-	fmt.Println(path)
 	filename := parse.Filename(path)
-	fmt.Println(filename)
 	media, err := NewMetadata(filename)
-	fmt.Println(media)
 
 	if err != nil {
 		return nil, err

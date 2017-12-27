@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"golang.org/x/text/language"
+
+	"github.com/fatih/set"
 )
 
 type List interface {
@@ -16,6 +18,7 @@ type SubtitleList interface {
 	Add(Subtitle)
 	Best() Subtitle
 	List() []Subtitle
+	LanguageSet() set.Interface
 	FilterLanguage(language.Tag) SubtitleList
 	HearingImpaired(bool) SubtitleList
 }
@@ -26,4 +29,5 @@ type LocalMediaList interface {
 	Add(LocalMedia)
 	List() []LocalMedia
 	FilterModified(time.Duration) LocalMediaList
+	FilterMissingSubs(set.Interface) (LocalMediaList, error)
 }

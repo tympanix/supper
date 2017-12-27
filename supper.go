@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/fatih/set"
 	"github.com/tympanix/supper/app"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/providers"
@@ -49,16 +51,16 @@ func main() {
 		}
 
 		// Parse all language flags into slice of tags
-		lang := make([]language.Tag, 0)
+		lang := set.New()
 		for _, tag := range c.StringSlice("lang") {
 			_lang, err := language.Parse(tag)
 			if err != nil {
 				return cli.NewExitError(err, 1)
 			}
-			lang = append(lang, _lang)
+			lang.Add(_lang)
 		}
 
-		if len(lang) == 0 {
+		if lang.Size() == 0 {
 			return cli.NewExitError("missing language flags(s)", 1)
 		}
 
@@ -82,6 +84,12 @@ func main() {
 			media = media.FilterModified(modified)
 		}
 
+		media, err = media.FilterMissingSubs(lang)
+
+		if err != nil {
+			return cli.NewExitError(err, 2)
+		}
+
 		if err != nil {
 			return cli.NewExitError(err, 3)
 		}
@@ -93,6 +101,18 @@ func main() {
 
 		// Iterate all media files found in each path
 		for _, item := range media.List() {
+			cursubs, err := item.ExistingSubtitles()
+
+			if err != nil {
+				return cli.NewExitError(err, 2)
+			}
+
+			missingLangs := set.Difference(lang, cursubs.LanguageSet())
+
+			if missingLangs.Size() == 0 {
+				continue
+			}
+
 			subs, err := sup.SearchSubtitles(item)
 
 			if err != nil {
@@ -102,13 +122,29 @@ func main() {
 			subs = subs.HearingImpaired(c.Bool("impaired"))
 
 			// Download subtitle for each language
-			for _, l := range lang {
+			for _, l := range missingLangs.List() {
+				l, ok := l.(language.Tag)
+
+				if !ok {
+					return cli.NewExitError(err, 3)
+				}
+
 				langsubs := subs.FilterLanguage(l)
 
 				fmt.Println(langsubs)
 
-				item.SaveSubtitle(langsubs.Best())
+				if langsubs.Len() == 0 {
+					fmt.Errorf("no subtitles found")
+					continue
+				}
+
+				err := item.SaveSubtitle(langsubs.Best())
+
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
+			time.Sleep(1000 * time.Millisecond)
 		}
 
 		return nil

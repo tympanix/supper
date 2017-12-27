@@ -1,114 +1,62 @@
 package list
 
 import (
-	"bytes"
-	"fmt"
-	"sort"
-
-	"golang.org/x/text/language"
-
-	"github.com/tympanix/supper/score"
+	"github.com/fatih/set"
 	"github.com/tympanix/supper/types"
+	"golang.org/x/text/language"
 )
 
-type subtitleEntry struct {
-	types.Subtitle
-	score float32
+func Subtitles(subs ...types.Subtitle) types.SubtitleList {
+	list := subtitleList(subs)
+	return &list
 }
 
-// NewSubtitles returns a new subtitles collection
-func NewSubtitles(media types.LocalMedia) *Subtitles {
-	return &Subtitles{
-		Evaluator: new(score.DefaultEvaluator),
-		media:     media,
-		subs:      make([]subtitleEntry, 0),
-	}
+type subtitleList []types.Subtitle
+
+func (s *subtitleList) Len() int {
+	return len(*s)
 }
 
-// Subtitles is a sortable and filterable collection of subtitles
-type Subtitles struct {
-	types.Evaluator
-	media types.LocalMedia
-	subs  []subtitleEntry
+func (s *subtitleList) List() []types.Subtitle {
+	return *s
 }
 
-func (s *Subtitles) clone(list []subtitleEntry) types.SubtitleList {
-	return &Subtitles{
-		Evaluator: s.Evaluator,
-		media:     s.media,
-		subs:      list,
-	}
-}
-
-// List returns the list of subtitles as a slice
-func (s *Subtitles) List() []types.Subtitle {
-	subs := make([]types.Subtitle, len(s.subs))
-	for i, v := range s.subs {
-		subs[i] = v
-	}
-	return subs
-}
-
-// Best returns the best matching subtitle
-func (s *Subtitles) Best() types.Subtitle {
-	if len(s.subs) > 0 {
-		return s.subs[0]
-	}
+func (s *subtitleList) Best() types.Subtitle {
 	return nil
 }
 
-// Add a subtitle to the collection
-func (s *Subtitles) Add(sub types.Subtitle) {
-	if sub == nil || sub.Meta() == nil {
-		return
-	}
-	s.subs = append(s.subs, subtitleEntry{
-		Subtitle: sub,
-		score:    s.Evaluate(s.media, sub),
-	})
-	sort.Sort(sort.Reverse(s))
+func (s *subtitleList) Add(sub types.Subtitle) {
+	*s = append(*s, sub)
 }
 
 // FilterLanguage returns a new subtitle collection including only the argument language
-func (s *Subtitles) FilterLanguage(lang language.Tag) types.SubtitleList {
-	_subs := make([]subtitleEntry, 0)
-	for _, sub := range s.subs {
+func (s *subtitleList) FilterLanguage(lang language.Tag) types.SubtitleList {
+	_subs := make([]types.Subtitle, 0)
+	for _, sub := range *s {
 		if sub.IsLang(lang) {
 			_subs = append(_subs, sub)
 		}
 	}
-	return s.clone(_subs)
+	list := subtitleList(_subs)
+	return &list
 }
 
 // HearingImpaired returnes a new subtitle collection where hearing impared subtitles has been filtered
-func (s *Subtitles) HearingImpaired(hi bool) types.SubtitleList {
-	_subs := make([]subtitleEntry, 0)
-	for _, sub := range s.subs {
+func (s *subtitleList) HearingImpaired(hi bool) types.SubtitleList {
+	_subs := make([]types.Subtitle, 0)
+	for _, sub := range *s {
 		if sub.IsHI() == hi {
 			_subs = append(_subs, sub)
 		}
 	}
-	return s.clone(_subs)
+	list := subtitleList(_subs)
+	return &list
 }
 
-func (s *Subtitles) Len() int {
-	return len(s.subs)
-}
-
-func (s *Subtitles) Swap(i, j int) {
-	s.subs[i], s.subs[j] = s.subs[j], s.subs[i]
-}
-
-func (s *Subtitles) Less(i, j int) bool {
-	return s.subs[i].score < s.subs[j].score
-}
-
-func (s *Subtitles) String() string {
-	var buffer bytes.Buffer
-
-	for _, sub := range s.subs {
-		buffer.WriteString(fmt.Sprintf("%-8.2f%v\n", sub.score, sub.Subtitle))
+func (s *subtitleList) LanguageSet() set.Interface {
+	langs := set.New()
+	for _, sub := range *s {
+		langs.Add(sub.Language())
 	}
-
-	return buffer.String()
+	return langs
 }
