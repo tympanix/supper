@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
+	"github.com/fatih/color"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/app"
 	"github.com/tympanix/supper/parse"
@@ -101,7 +101,7 @@ func main() {
 		}
 
 		// Iterate all media files found in each path
-		for _, item := range media.List() {
+		for i, item := range media.List() {
 			cursubs, err := item.ExistingSubtitles()
 
 			if err != nil {
@@ -114,7 +114,7 @@ func main() {
 				continue
 			}
 
-			fmt.Println(item)
+			fmt.Printf("(%v/%v) - %s\n", i+1, media.Len(), item)
 
 			subs, err := sup.SearchSubtitles(item)
 
@@ -135,19 +135,18 @@ func main() {
 				langsubs := subs.FilterLanguage(l)
 
 				if langsubs.Len() == 0 {
-					fmt.Println(" - no subtitles found")
+					color.Red(" - no subtitles found")
 					continue
 				}
 
 				err := item.SaveSubtitle(langsubs.Best())
 
 				if err != nil {
-					fmt.Println(err)
+					color.Red(err.Error())
 					continue
 				}
-				fmt.Printf(" - %v\n", display.English.Languages().Name(l))
+				color.Green(" - %v\n", display.English.Languages().Name(l))
 			}
-			time.Sleep(1000 * time.Millisecond)
 		}
 
 		return nil

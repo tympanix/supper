@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
@@ -26,6 +28,20 @@ import (
 
 // HOST is the URL for subscene
 const HOST = "https://subscene.com"
+
+// DELAY is the delay between calls to subscene to prevent spamming
+const DELAY = 500 * time.Millisecond
+
+var lock = new(sync.Mutex)
+
+// lockSubscene is used to limit the number of calls to subscene to prevent spamming
+func lockSubscene() {
+	lock.Lock()
+	go func() {
+		time.Sleep(DELAY)
+		lock.Unlock()
+	}()
+}
 
 // Subscene interfaces with subscene.com for downloading subtitles
 type Subscene struct{}
@@ -78,6 +94,7 @@ func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
 	query.Add("q", s.cleanSearchTerm(search))
 	url.RawQuery = query.Encode()
 
+	lockSubscene()
 	doc, err := goquery.NewDocument(url.String())
 
 	if err != nil {
@@ -119,6 +136,7 @@ func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleL
 		return
 	}
 
+	lockSubscene()
 	doc, err := goquery.NewDocument(url)
 
 	if err != nil {
@@ -214,6 +232,8 @@ type subsceneURL string
 func (url subsceneURL) Download() (io.ReadCloser, error) {
 
 	uri := fmt.Sprintf("%s%s", HOST, string(url))
+
+	lockSubscene()
 	doc, err := goquery.NewDocument(uri)
 
 	if err != nil {
