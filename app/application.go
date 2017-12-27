@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -46,7 +45,10 @@ func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 			}
 			_media, err := media.New(filepath)
 			if err != nil {
-				return fmt.Errorf("Cound not parse file: %s", filepath)
+				return nil
+			}
+			if media.IsSample(_media) {
+				return nil
 			}
 			medialist = append(medialist, _media)
 			return nil

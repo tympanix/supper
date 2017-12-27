@@ -32,7 +32,7 @@ func NewMovie(filename string) (*MovieMeta, error) {
 	groups := movieRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
-		return nil, errors.New("Could not parse media")
+		return nil, errors.New("could not parse media")
 	}
 
 	name := groups[1]

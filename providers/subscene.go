@@ -87,7 +87,7 @@ func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
 	search := s.searchTerm(media)
 
 	if len(search) == 0 {
-		return "", fmt.Errorf("Unable to search for media: %s", media)
+		return "", fmt.Errorf("unable to search for media: %s", media)
 	}
 
 	query := url.Query()
@@ -122,7 +122,7 @@ func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
 	}
 
 	if len(result) == 0 {
-		return "", errors.New("No media found on subscene.com")
+		return "", errors.New("no media found on subscene.com")
 	}
 
 	return fmt.Sprintf("%s%s", "https://subscene.com", result), nil
@@ -204,7 +204,7 @@ func newZipReader(file *os.File) (*zipReader, error) {
 	}
 
 	if srt == nil {
-		return nil, errors.New("Could not read srt file from subscene")
+		return nil, errors.New("could not read srt file from subscene")
 	}
 
 	return &zipReader{srt, data, file}, nil
@@ -243,13 +243,13 @@ func (url subsceneURL) Download() (io.ReadCloser, error) {
 	sel := doc.Find("#downloadButton")
 
 	if len(sel.Nodes) == 0 {
-		return nil, errors.New("Could not parse response from subscene")
+		return nil, errors.New("could not parse response from subscene")
 	}
 
 	download, exists := sel.First().Attr("href")
 
 	if !exists {
-		return nil, errors.New("Could not find download link from subscene")
+		return nil, errors.New("could not find download link from subscene")
 	}
 
 	download = fmt.Sprintf("%s%s", HOST, download)
@@ -263,7 +263,7 @@ func (url subsceneURL) Download() (io.ReadCloser, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Subscene download subtitle (%v)", resp.StatusCode)
+		return nil, fmt.Errorf("subscene download subtitle (%v)", resp.StatusCode)
 	}
 
 	file, err := ioutil.TempFile("", "supper")

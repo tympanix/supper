@@ -44,6 +44,10 @@ func main() {
 			Name:  "modified, m",
 			Usage: "filter media modified within duration",
 		},
+		cli.BoolFlag{
+			Name:  "dry",
+			Usage: "scan media but do not download any subtitles",
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -95,6 +99,12 @@ func main() {
 			return cli.NewExitError(err, 3)
 		}
 
+		if c.Bool("dry") {
+			fmt.Printf("items to process: %v\n", media.Len())
+			fmt.Println("dry run, nothing performed")
+			return nil
+		}
+
 		if media.Len() > c.Int("limit") {
 			err := fmt.Errorf("number of media files exceeded: %v", media.Len())
 			return cli.NewExitError(err, 3)
@@ -138,8 +148,6 @@ func main() {
 					color.Red(" - no subtitles found")
 					continue
 				}
-
-				fmt.Println(langsubs)
 
 				err := item.SaveSubtitle(langsubs.Best())
 

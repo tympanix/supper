@@ -11,7 +11,7 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
-var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})[\W_](.*)$`)
+var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})(?:[Ee]\d{1,2})?[\W_]+(.*)$`)
 
 // EpisodeMeta represents an episode from a TV show
 type EpisodeMeta struct {
@@ -32,7 +32,7 @@ func NewEpisode(filename string) (*EpisodeMeta, error) {
 	groups := episodeRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
-		return nil, errors.New("Could not parse media")
+		return nil, errors.New("could not parse media")
 	}
 
 	name := groups[1]

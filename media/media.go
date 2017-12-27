@@ -134,7 +134,7 @@ func New(path string) (types.LocalMedia, error) {
 	} else if episode, ok := media.(types.Episode); ok {
 		return NewFile(file, episode, path), nil
 	} else {
-		return nil, errors.New("Unknown media type")
+		return nil, errors.New("unknown media type")
 	}
 }
 
