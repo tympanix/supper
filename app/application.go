@@ -1,12 +1,16 @@
 package application
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/tympanix/supper/api"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
+	"github.com/urfave/cli"
 )
 
 var filetypes = []string{
@@ -16,6 +20,24 @@ var filetypes = []string{
 // Application is an configuration instance of the application
 type Application struct {
 	types.Provider
+	*http.ServeMux
+	*cli.Context
+}
+
+func New(context *cli.Context) types.App {
+	app := &Application{
+		Provider: provider.Subscene(),
+		ServeMux: http.NewServeMux(),
+		Context:  context,
+	}
+
+	fs := http.FileServer(http.Dir("./web"))
+	app.ServeMux.Handle("/", fs)
+
+	api := api.New(app)
+	app.ServeMux.Handle("/api/", http.StripPrefix("/api", api))
+
+	return app
 }
 
 func fileIsMedia(f os.FileInfo) bool {

@@ -44,9 +44,13 @@ func lockSubscene() {
 }
 
 // Subscene interfaces with subscene.com for downloading subtitles
-type Subscene struct{}
+func Subscene() types.Provider {
+	return &subscene{}
+}
 
-func (s *Subscene) searchTerm(m types.Media) string {
+type subscene struct{}
+
+func (s *subscene) searchTerm(m types.Media) string {
 	if movie, ok := m.TypeMovie(); ok {
 		return s.searchTermMovie(movie)
 	} else if episode, ok := m.TypeEpisode(); ok {
@@ -55,11 +59,11 @@ func (s *Subscene) searchTerm(m types.Media) string {
 	return ""
 }
 
-func (s *Subscene) searchTermMovie(movie types.Movie) string {
+func (s *subscene) searchTermMovie(movie types.Movie) string {
 	return movie.MovieName()
 }
 
-func (s *Subscene) searchTermEpisode(episode types.Episode) string {
+func (s *subscene) searchTermEpisode(episode types.Episode) string {
 	season := parse.PhoneticNumber(episode.Season())
 	return fmt.Sprintf("%s - %s Season", episode.TVShow(), season)
 }
@@ -71,13 +75,13 @@ type searchResult struct {
 
 var cleanRegexp = regexp.MustCompile(`\(\d{4}\)`)
 
-func (s *Subscene) cleanSearchTerm(search string) string {
+func (s *subscene) cleanSearchTerm(search string) string {
 	search = cleanRegexp.ReplaceAllString(search, "")
 	return strings.TrimSpace(search)
 }
 
 // FindMediaURL retrieves the subscene.com URL for the given media item
-func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
+func (s *subscene) FindMediaURL(media types.Media) (string, error) {
 	url, err := url.Parse("https://subscene.com/subtitles/title")
 
 	if err != nil {
@@ -129,7 +133,7 @@ func (s *Subscene) FindMediaURL(media types.Media) (string, error) {
 }
 
 // SearchSubtitles searches subscene.com for subtitles
-func (s *Subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleList, err error) {
+func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleList, err error) {
 	url, err := s.FindMediaURL(local)
 
 	if err != nil {

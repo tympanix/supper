@@ -1,2 +1,4 @@
+node_modules
 debug*
 *.exe
+web/static

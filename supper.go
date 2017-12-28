@@ -1,7 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/fatih/color"
@@ -9,7 +12,6 @@ import (
 	"github.com/tympanix/supper/app"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
-	"github.com/tympanix/supper/providers"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 
@@ -18,14 +20,25 @@ import (
 
 func main() {
 
-	sup := &application.Application{
-		Provider: new(provider.Subscene),
-	}
-
 	app := cli.NewApp()
 	app.Name = "supper"
 	app.Version = "0.1.0"
 	app.Usage = "An automatic subtitle downloader"
+
+	app.Commands = []cli.Command{
+		{
+			Name:   "web",
+			Usage:  "starts the web application",
+			Action: startWebServer,
+			Flags: []cli.Flag{
+				cli.IntFlag{
+					Name:  "port, p",
+					Value: 5670,
+					Usage: "port used to serve the web application",
+				},
+			},
+		},
+	}
 
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{
@@ -52,6 +65,8 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
+		sup := application.New(c)
+
 		if c.NArg() == 0 {
 			cli.ShowAppHelpAndExit(c, 1)
 		}
@@ -175,4 +190,18 @@ func main() {
 
 	app.Run(os.Args)
 
+}
+
+func startWebServer(c *cli.Context) error {
+	app := application.New(c)
+	address := fmt.Sprintf(":%v", c.Int("port"))
+
+	if c.NArg() == 0 {
+		err := errors.New("missing arguments")
+		return cli.NewExitError(err, 1)
+	}
+
+	log.Printf("Listening on %v...", c.Int("port"))
+	log.Println(http.ListenAndServe(address, app))
+	return nil
 }
