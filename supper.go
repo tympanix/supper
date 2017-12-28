@@ -105,6 +105,8 @@ func main() {
 			return cli.NewExitError(err, 3)
 		}
 
+		numsubs := 0
+
 		// Iterate all media files found in each path
 		for i, item := range media.List() {
 			cursubs, err := item.ExistingSubtitles()
@@ -136,6 +138,8 @@ func main() {
 			for _, l := range missingLangs.List() {
 				l, ok := l.(language.Tag)
 
+				numsubs++
+
 				if !ok {
 					return cli.NewExitError(err, 3)
 				}
@@ -160,7 +164,10 @@ func main() {
 		}
 
 		if c.Bool("dry") {
+			fmt.Println()
 			color.Blue("dry run, nothing performed")
+			color.Blue("total media files: %v", media.Len())
+			color.Blue("total missing subtitles: %v", numsubs)
 		}
 
 		return nil
