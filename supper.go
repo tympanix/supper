@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,13 +27,26 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:   "web",
-			Usage:  "starts the web application",
+			Usage:  "listens and serves the web application",
 			Action: startWebServer,
 			Flags: []cli.Flag{
 				cli.IntFlag{
 					Name:  "port, p",
 					Value: 5670,
 					Usage: "port used to serve the web application",
+				},
+				cli.StringFlag{
+					Name:  "movies",
+					Usage: "path to your movie collection",
+				},
+				cli.StringFlag{
+					Name:  "shows",
+					Usage: "path to your tv show collection",
+				},
+				cli.StringFlag{
+					Name:  "static",
+					Value: "./web",
+					Usage: "path to the web files to serve",
 				},
 			},
 		},
@@ -195,11 +207,6 @@ func main() {
 func startWebServer(c *cli.Context) error {
 	app := application.New(c)
 	address := fmt.Sprintf(":%v", c.Int("port"))
-
-	if c.NArg() == 0 {
-		err := errors.New("missing arguments")
-		return cli.NewExitError(err, 1)
-	}
 
 	log.Printf("Listening on %v...", c.Int("port"))
 	log.Println(http.ListenAndServe(address, app))

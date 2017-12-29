@@ -21,14 +21,14 @@ var filetypes = []string{
 type Application struct {
 	types.Provider
 	*http.ServeMux
-	*cli.Context
+	context *cli.Context
 }
 
 func New(context *cli.Context) types.App {
 	app := &Application{
 		Provider: provider.Subscene(),
 		ServeMux: http.NewServeMux(),
-		Context:  context,
+		context:  context,
 	}
 
 	fs := http.FileServer(http.Dir("./web"))
@@ -38,6 +38,10 @@ func New(context *cli.Context) types.App {
 	app.ServeMux.Handle("/api/", http.StripPrefix("/api", api))
 
 	return app
+}
+
+func (a *Application) Context() *cli.Context {
+	return a.context
 }
 
 func fileIsMedia(f os.FileInfo) bool {

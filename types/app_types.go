@@ -9,6 +9,6 @@ import (
 type App interface {
 	Provider
 	http.Handler
-	Args() cli.Args
+	Context() *cli.Context
 	FindMedia(...string) (LocalMediaList, error)
 }

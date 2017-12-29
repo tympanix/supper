@@ -45,7 +45,7 @@ type apiHandler func(http.ResponseWriter, *http.Request) interface{}
 
 func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if e := fn(w, r); e != nil {
-		js, err := json.Marshal(e)
+		js, err := json.MarshalIndent(e, "", "  ")
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

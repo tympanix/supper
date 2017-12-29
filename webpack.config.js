@@ -4,7 +4,8 @@ var webpack = require('webpack');
  module.exports = {
      entry: './web/js/index.js',
      output: {
-         path: path.resolve(__dirname, 'web', 'static'),
+         path: path.join(__dirname, 'web', 'static'),
+         publicPath: "/static/",
          filename: 'bundle.js'
      },
      module: {
@@ -21,5 +22,15 @@ var webpack = require('webpack');
      stats: {
          colors: true
      },
-     devtool: 'source-map'
+     devServer: {
+       contentBase: 'web',
+       inline: true,
+       proxy: {
+         '/api': {
+           target: 'http://localhost:5670',
+           secure: false
+         }
+       }
+    },
+    devtool: 'source-map'
  };

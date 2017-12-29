@@ -1,4 +1,4 @@
 node_modules
 debug*
-*.exe
+*.exe*
 web/static
