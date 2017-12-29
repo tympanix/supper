@@ -21,9 +21,12 @@ class App extends Component {
 
     return (
       // Add your component markup and other subcomponent references here.
-      <ul>
-        {media}
-      </ul>
+      <div>
+      <input type="text" spellcheck="false" placeholder="Search Media"></input>
+        <ul className="media-list">
+          {media}
+        </ul>
+      </div>
     );
   }
 }
