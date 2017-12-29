@@ -1,6 +1,7 @@
 package media
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -33,6 +34,16 @@ func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
 type LocalSubtitle struct {
 	os.FileInfo
 	lang language.Tag
+}
+
+func (l *LocalSubtitle) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(struct {
+		File string       `json:"filename"`
+		Lang language.Tag `json:"language"`
+	}{
+		l.Name(),
+		l.Language(),
+	})
 }
 
 func (l *LocalSubtitle) IsHI() bool {

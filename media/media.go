@@ -1,6 +1,7 @@
 package media
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +19,13 @@ type File struct {
 	os.FileInfo
 	types.Media
 	path string
+}
+
+func (f *File) MarshalJSON() (b []byte, err error) {
+	if js, ok := f.Media.Meta().(json.Marshaler); ok {
+		return js.MarshalJSON()
+	}
+	return nil, errors.New("media could not be json encoded")
 }
 
 func (f *File) String() string {

@@ -1,6 +1,7 @@
 package list
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/fatih/set"
@@ -53,4 +54,8 @@ func (l *LocalMedia) FilterMissingSubs(lang set.Interface) (types.LocalMediaList
 		}
 	}
 	return NewLocalMedia(media...), nil
+}
+
+func (l *LocalMedia) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(l.List())
 }

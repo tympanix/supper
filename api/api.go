@@ -41,6 +41,14 @@ func (e *apiError) Status() int {
 	return e.Code
 }
 
+func (e *apiError) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(struct {
+		Error string `json:"error"`
+	}{
+		Error: e.Error(),
+	})
+}
+
 type apiHandler func(http.ResponseWriter, *http.Request) interface{}
 
 func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

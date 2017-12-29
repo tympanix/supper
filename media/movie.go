@@ -1,9 +1,9 @@
 package media
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 
@@ -19,10 +19,18 @@ type MovieMeta struct {
 	year int
 }
 
-// MovieFile is a local movie file on disk
-type MovieFile struct {
-	os.FileInfo
-	types.Movie
+func (m *MovieMeta) MarshalJSON() (b []byte, err error) {
+	type jsonMovie struct {
+		Meta Metadata `json:"metadata"`
+		Name string   `json:"name"`
+		Year int      `json:"year"`
+	}
+
+	return json.Marshal(jsonMovie{
+		m.Metadata,
+		m.name,
+		m.year,
+	})
 }
 
 var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]+(19\d\d|20\d\d)[\W_]+(.*)$`)

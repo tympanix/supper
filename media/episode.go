@@ -1,9 +1,9 @@
 package media
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 
@@ -21,10 +21,20 @@ type EpisodeMeta struct {
 	season  int
 }
 
-// EpisodeFile is a local episode on disk
-type EpisodeFile struct {
-	os.FileInfo
-	types.Episode
+func (e *EpisodeMeta) MarshalJSON() (b []byte, err error) {
+	type jsonEpisode struct {
+		Meta    Metadata `json:"metadata"`
+		Name    string   `json:"name"`
+		Episode int      `json:"episode"`
+		Seasion int      `json:"season"`
+	}
+
+	return json.Marshal(jsonEpisode{
+		e.Metadata,
+		e.TVShow(),
+		e.Episode(),
+		e.Season(),
+	})
 }
 
 // NewEpisode parses media info from a file

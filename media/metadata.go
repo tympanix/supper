@@ -1,6 +1,11 @@
 package media
 
-import "github.com/tympanix/supper/parse"
+import (
+	"encoding/json"
+	"strings"
+
+	"github.com/tympanix/supper/parse"
+)
 
 // Metadata provides release information for media
 type Metadata struct {
@@ -20,6 +25,30 @@ func ParseMetadata(tags string) Metadata {
 		source:  parse.Source(tags),
 		tags:    parse.Tags(tags),
 	}
+}
+
+func (m Metadata) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(struct {
+		Group   string `json:"group"`
+		Codec   string `json:"codec"`
+		Quality string `json:"quality"`
+		Source  string `json:"source"`
+	}{
+		m.group,
+		m.codec,
+		m.quality,
+		m.source,
+	})
+}
+
+// String return a description of the metadata
+func (m Metadata) String() string {
+	return strings.Join([]string{
+		m.Group(),
+		m.Codec(),
+		m.Quality(),
+		m.Source(),
+	}, ",")
 }
 
 // Group returns the release group
