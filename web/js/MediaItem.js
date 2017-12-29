@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-export default class Media extends Component {
+export default class MediaItem extends Component {
   render() {
 
     return (

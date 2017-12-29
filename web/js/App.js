@@ -1,33 +1,46 @@
-import React, { Component } from 'react';
-import axios from 'axios';
-import Media from './Media'
+import React, { Component } from 'react'
+import axios from 'axios'
+
+import MediaList from './MediaList'
 
 class App extends Component {
   constructor() {
     super()
-    this.media = []
 
-    let self = this
-    axios.get("./api/media").then(res => {
-      self.media = res.data
-      self.setState({media: res.data});
-      console.log(self.media)
-    })
+    this.state = {
+      media: [],
+      search: ""
+    }
+    this.update()
   }
+
   render() {
-    const media = this.media.map((m) =>
-      <Media item={m} key={m.name} />
-    )
+    const media = this.state.media.filter((m) => {
+      let name = m.name.toLowerCase()
+      return name.includes(this.state.search)
+    })
 
     return (
       // Add your component markup and other subcomponent references here.
       <div>
-      <input type="text" spellcheck="false" placeholder="Search Media"></input>
-        <ul className="media-list">
-          {media}
-        </ul>
+        <input type="text" spellCheck="false"
+          value={this.state.search}
+          onChange={this.search.bind(this)}
+          placeholder="Search Media">
+        </input>
+        <MediaList list={media} />
       </div>
     );
+  }
+
+  search(event) {
+    this.setState({search: event.target.value.toLowerCase()})
+  }
+
+  update() {
+    axios.get("./api/media").then(res => {
+      this.setState({media: res.data});
+    })
   }
 }
 
