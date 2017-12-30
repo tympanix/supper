@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 
+import { Redirect } from 'react-router'
+
 import MediaList from './MediaList'
 
 import { folderStore } from '../stores'
@@ -14,6 +16,7 @@ class Search extends Component {
     this.state = {
       media: folderStore.getAll(),
       search: folderStore.getSearch(),
+      redirect: false,
     }
   }
 
@@ -39,11 +42,19 @@ class Search extends Component {
     } else if (event.key === "ArrowUp") {
       this.mediaList.selectPrev()
     } else if (event.key === "Enter") {
-
+      let selected = this.mediaList.getSelected()
+      if (selected) {
+        let redirect = {pathname: "/details", state: {folder: selected}}
+        this.setState({redirect})
+      }
     }
   }
 
   render() {
+    if (this.state.redirect) {
+      return <Redirect push to={this.state.redirect}/>
+    }
+
     let search = this.state.search.toLowerCase()
     const media = this.state.media.filter((m) => {
       let name = m.name.toLowerCase()
@@ -51,7 +62,6 @@ class Search extends Component {
     })
 
     return (
-      // Add your component markup and other subcomponent references here.
       <div>
         <input type="text" spellCheck="false"
           onKeyUp={this.handleKey.bind(this)}

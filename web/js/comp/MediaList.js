@@ -30,11 +30,19 @@ export default class MediaList extends Component {
   }
 
   selectPrev() {
-      this.setState({selected: this.select(-1)})
+    this.setState({selected: this.select(-1)})
   }
 
   clearSelected() {
     this.setState({selected: -1})
+  }
+
+  getSelected() {
+    try {
+      return this.props.list[this.state.selected]
+    } catch (e) {
+      return undefined
+    }
   }
 
   render() {
