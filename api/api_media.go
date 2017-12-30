@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 )
 
@@ -16,8 +17,9 @@ const (
 )
 
 type mediaFolder struct {
-	Type string `json:"type"`
-	Name string `json:"name"`
+	Type   string `json:"type"`
+	Folder string `json:"folder"`
+	Name   string `json:"name"`
 }
 
 func findMediaFolders(t string, paths ...string) ([]*mediaFolder, error) {
@@ -31,8 +33,9 @@ func findMediaFolders(t string, paths ...string) ([]*mediaFolder, error) {
 		for _, file := range files {
 			if file.IsDir() {
 				media = append(media, &mediaFolder{
-					Type: t,
-					Name: file.Name(),
+					Type:   t,
+					Folder: file.Name(),
+					Name:   parse.CleanName(file.Name()),
 				})
 			}
 		}
@@ -79,7 +82,7 @@ func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
 		err := errors.New("Unknown media format")
 		return Error(err, http.StatusBadRequest)
 	}
-	path := filepath.Join(root, media.Name)
+	path := filepath.Join(root, media.Folder)
 	if filepath.Dir(path) != filepath.Clean(root) {
 		err := errors.New("Illegal folder path")
 		return Error(err, http.StatusBadRequest)

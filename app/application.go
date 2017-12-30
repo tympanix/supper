@@ -31,17 +31,30 @@ func New(context *cli.Context) types.App {
 		context:  context,
 	}
 
-	fs := http.FileServer(http.Dir("./web"))
-	app.ServeMux.Handle("/", fs)
+	static := context.String("static")
+
+	fs := http.FileServer(http.Dir(filepath.Join(static, "/static")))
+	app.ServeMux.Handle("/static/", http.StripPrefix("/static", fs))
 
 	api := api.New(app)
 	app.ServeMux.Handle("/api/", http.StripPrefix("/api", api))
 
+	index := IndexHandler(filepath.Join(static, "index.html"))
+	app.ServeMux.Handle("/", index)
+
 	return app
 }
 
+// Context returns the CLI context of the application (e.g. flags, args ect.)
 func (a *Application) Context() *cli.Context {
 	return a.context
+}
+
+// IndexHandler always serves the same file (e.g. index.html)
+func IndexHandler(entrypoint string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, entrypoint)
+	})
 }
 
 func fileIsMedia(f os.FileInfo) bool {
