@@ -1,2 +1,2 @@
-import folderStore from './folderStore'
+import folderStore from './folder_store'
 export { folderStore }

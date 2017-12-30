@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import axios from 'axios'
+import API from '../api'
 
 class FolderStore extends EventEmitter {
   constructor() {
@@ -10,8 +10,8 @@ class FolderStore extends EventEmitter {
   }
 
   update() {
-    axios.get("./api/media").then(res => {
-      this.folders = res.data
+    API.getFolders().then(folders => {
+      this.folders = folders
       this.emit("change")
     })
   }

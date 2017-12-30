@@ -48,6 +48,9 @@ module.exports = {
         target: 'http://localhost:5670',
         secure: false
       }
+    },
+    historyApiFallback: {
+      index: 'index.html'
     }
   },
   devtool: 'source-map'

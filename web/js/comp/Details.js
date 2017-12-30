@@ -2,23 +2,39 @@ import React, { Component } from 'react';
 import axios from 'axios';
 
 import Search from './Search'
+import Spinner from './Spinner'
+
+import API from '../api'
 
 class Details extends Component {
   constructor() {
     super()
 
     this.state = {
-      media: undefined
+      media: undefined,
+      folder: undefined,
+      failed: false,
     }
   }
 
   componentWillMount() {
+    let folder = this.getLocationState()
+    console.log(folder)
+    API.getMediaDetails(folder)
+      .then((media) => this.setState({media: media}))
+      .catch(() => this.setState({failed: true}))
+  }
+
+  getLocationState() {
     try {
-      let media = this.props.location.state.media
-      if (media) {
-        this.setState({media})
+      let folder = this.props.location.state.folder
+      if (folder) {
+        this.setState({folder: folder})
+        return folder
       }
-    } catch (e) {}
+    } catch (e) {
+      this.setState({failed: true})
+    }
   }
 
   renderMediaList() {
@@ -32,13 +48,16 @@ class Details extends Component {
   }
 
   render() {
-    if (this.state.media) {
-      return this.renderMediaList()
+    if (this.state.failed) {
+      return <h1>No media found</h1>
     }
 
-    return (
-      <h1>No media found</h1>
-    );
+    if (this.state.media) {
+      return this.renderMediaList()
+    } else if (this.state.folder) {
+      return <Spinner/>
+    }
+
   }
 
 }
