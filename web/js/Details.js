@@ -14,10 +14,12 @@ class Details extends Component {
   }
 
   componentWillMount() {
-    let media = this.props.location.state.media
-    if (media) {
-      this.setState({media})
-    }
+    try {
+      let media = this.props.location.state.media
+      if (media) {
+        this.setState({media})
+      }
+    } catch (e) {}
   }
 
   renderMediaList() {

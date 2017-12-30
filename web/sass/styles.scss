@@ -6,6 +6,11 @@ $font: 'Work Sans', sans-serif;
   -moz-osx-font-smoothing: grayscale;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 body {
     font-family: $font;
     background-color: #f5f5f5;
@@ -46,20 +51,24 @@ input[type=text] {
   list-style: none;
 
   li {
-    cursor: pointer;
     background-color: white;
-    padding: 0.75em 1em;
     transition: transform .1s ease-in-out;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+    transform-origin: center;
+
+    a {
+      cursor: pointer;
+      padding: 0.75em 1em;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      display: block;
+    }
 
     &:not(:last-child) {
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     &:hover, &.active {
-      transform-origin: center;
       transform: scale(1.025);
       box-shadow: 0px 0em .75em 0px rgba(0,0,0,0.05);
     }

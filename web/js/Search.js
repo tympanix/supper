@@ -3,20 +3,34 @@ import axios from 'axios'
 
 import MediaList from './MediaList'
 
+import { folderStore } from './stores'
+
 class Search extends Component {
   constructor() {
     super()
 
+    this.getFolders = this.getFolders.bind(this)
+
     this.state = {
-      media: [],
-      search: "",
-      selected: -1
+      media: folderStore.getAll(),
+      search: folderStore.getSearch(),
     }
-    this.update()
   }
 
   componentDidMount(){
     this.searchInput.focus();
+  }
+
+  componentWillMount() {
+    folderStore.on("change", this.getFolders)
+  }
+
+  componentWillUnmount() {
+    folderStore.removeListener("change", this.getFolders)
+  }
+
+  getFolders() {
+    this.setState({media: folderStore.getAll()})
   }
 
   handleKey(event) {
@@ -44,6 +58,7 @@ class Search extends Component {
           ref={(i) => {this.searchInput = i}}
           value={this.state.search}
           onChange={this.search.bind(this)}
+          onBlur={this.handleBlur.bind(this)}
           placeholder="Search Media">
         </input>
         <MediaList list={media} ref={(m) => {this.mediaList = m}} />
@@ -51,16 +66,15 @@ class Search extends Component {
     );
   }
 
-  search(event) {
+  handleBlur() {
     this.mediaList.clearSelected()
-    this.setState({
-      search: event.target.value
-    })
   }
 
-  update() {
-    axios.get("./api/media").then(res => {
-      this.setState({media: res.data});
+  search(event) {
+    this.mediaList.clearSelected()
+    folderStore.setSearch(event.target.value)
+    this.setState({
+      search: event.target.value
     })
   }
 }

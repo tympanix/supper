@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Redirect } from 'react-router'
+import { Redirect, Link } from 'react-router-dom'
 
+import Api from './Api'
 import Action from './Action'
 import App from './App'
 
@@ -22,20 +23,20 @@ export default class MediaItem extends Component {
     }
 
     let active = this.props.active ? 'active' : ''
+    let link = {pathname: "/details", state: {folder: this.props.item}}
 
     return (
-      <li onClick={this.gotoMedia.bind(this)} className={active}>
-        {this.props.item.name}
+      <li className={active}>
+        <Link to={link}>
+          {this.props.item.name}
+        </Link>
       </li>
     );
   }
 
   gotoMedia(e) {
-    axios.post('./api/media', this.props.item).then((res) => {
-      this.setState({redirect: {
-        pathname: '/details',
-        state: { media: res.data }
-      }})
+    Api.getMediaDetails(this.props.item).then((red) => {
+      this.setState({redirect: red})
     })
   }
 }
