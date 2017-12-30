@@ -13,7 +13,6 @@ class Api {
   }
 
   handleError(res) {
-    console.log(res)
     if (res.status !== 200) {
       throw new Error(res.data.message || 'Unknown error')
     } else {

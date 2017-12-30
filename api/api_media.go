@@ -105,10 +105,12 @@ func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
 		}
 		medialist = append(medialist, struct {
 			Type  string             `json:"type"`
+			Path  string             `json:"filepath"`
 			Media types.Media        `json:"media"`
 			Subs  types.SubtitleList `json:"subtitles"`
 		}{
 			mtype,
+			m.Name(),
 			m,
 			subs,
 		})

@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import Search from './Search'
 import Spinner from './Spinner'
+import FileList from './FileList'
 
 import API from '../api'
 
@@ -13,16 +14,17 @@ class Details extends Component {
     this.state = {
       media: undefined,
       folder: undefined,
+      loading: true,
       failed: false,
     }
   }
 
   componentWillMount() {
     let folder = this.getLocationState()
-    console.log(folder)
     API.getMediaDetails(folder)
       .then((media) => this.setState({media: media}))
       .catch(() => this.setState({failed: true}))
+      .finally(() => this.setState({loading: false}))
   }
 
   getLocationState() {
@@ -52,10 +54,23 @@ class Details extends Component {
       return <h1>No media found</h1>
     }
 
-    if (this.state.media) {
-      return this.renderMediaList()
-    } else if (this.state.folder) {
+    if (this.state.loading) {
       return <Spinner/>
+    }
+
+    if (this.state.media) {
+      return (
+        <section>
+          <header>
+            <h1>{this.state.folder.name}</h1>
+          </header>
+
+          <h3>Files</h3>
+          <div className="flex">
+            <FileList files={this.state.media}/>
+          </div>
+        </section>
+      )
     }
 
   }

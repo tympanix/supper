@@ -10,6 +10,7 @@ import (
 
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 )
 
 func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
@@ -39,10 +40,12 @@ type LocalSubtitle struct {
 func (l *LocalSubtitle) MarshalJSON() (b []byte, err error) {
 	return json.Marshal(struct {
 		File string       `json:"filename"`
-		Lang language.Tag `json:"language"`
+		Code language.Tag `json:"code"`
+		Lang string       `json:"language"`
 	}{
 		l.Name(),
 		l.Language(),
+		l.String(),
 	})
 }
 
@@ -56,6 +59,10 @@ func (l *LocalSubtitle) Download() (io.ReadCloser, error) {
 
 func (l *LocalSubtitle) Language() language.Tag {
 	return l.lang
+}
+
+func (l *LocalSubtitle) String() string {
+	return display.English.Languages().Name(l.Language())
 }
 
 func (l *LocalSubtitle) IsLang(tag language.Tag) bool {

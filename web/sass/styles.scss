@@ -2,6 +2,8 @@
 @import "variables";
 @import "spinner";
 @import "lists";
+@import "flex";
+@import "tooltip";
 
 * {
   box-sizing: border-box;
@@ -38,6 +40,7 @@ input {
 
 input[type=text] {
   width: 100%;
+  margin-top: 0 !important;
   font-weight: 800;
   margin: 1em 0;
   display: inline-block;
@@ -60,4 +63,35 @@ input[type=text] {
     left: 0;
     right: 0;
     bottom: 0;
+}
+
+span.tags {
+  margin: 0 .5em;
+
+  >:not(:last-child) {
+    margin-right: 0.25em;
+  }
+}
+
+.right {
+  float: right;
+}
+
+span.tag {
+  background-color: $borderColor;
+  padding: .25em .75em;
+  border-radius: 9999px;
+  display: inline-block;
+  font-size: 0.9em;
+  font-weight: 800;
+}
+
+span.flag-icon {
+  box-sizing: border-box;
+  background-repeat:no-repeat;
+  background-size:cover;
+  padding: .25em 0;
+  width: 1.75em;
+  border-radius: 9999px;
+  display: inline-block;
 }

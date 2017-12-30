@@ -15,28 +15,33 @@ module.exports = {
     filename: 'bundle.js'
   },
   module: {
-    rules: [{
-      test: /\.scss$/,
-      use: extractSass.extract({
-        use: [{
-          loader: "css-loader"
-        }, {
-          loader: "sass-loader"
-        }],
-        // use style-loader in development
-        fallback: "style-loader"
-      })
-    }, {
-      test: /\.js$/,
-      loader: 'babel-loader',
-      query: {
-        presets: ['es2015', 'react']
+    rules: [
+      {
+        test: /\.scss$/,
+        use: extractSass.extract({
+          use: [
+            {
+              loader: "css-loader"
+            }, {
+              loader: "sass-loader"
+            }
+          ],
+          // use style-loader in development
+          fallback: "style-loader"
+        })
+      }, {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        query: {
+          presets: ['es2015', 'react']
+        }
+      }, {
+        test: /\.svg$/,
+        loader: 'svg-url-loader'
       }
-    }]
+    ]
   },
-  plugins: [
-    extractSass
-  ],
+  plugins: [extractSass],
   stats: {
     colors: true
   },
