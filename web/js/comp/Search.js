@@ -3,7 +3,7 @@ import axios from 'axios'
 
 import MediaList from './MediaList'
 
-import { folderStore } from './stores'
+import { folderStore } from '../stores'
 
 class Search extends Component {
   constructor() {

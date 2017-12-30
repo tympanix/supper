@@ -2,10 +2,6 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { Redirect, Link } from 'react-router-dom'
 
-import Api from './Api'
-import Action from './Action'
-import App from './App'
-
 export default class MediaItem extends Component {
   constructor() {
     super()
@@ -34,9 +30,4 @@ export default class MediaItem extends Component {
     );
   }
 
-  gotoMedia(e) {
-    Api.getMediaDetails(this.props.item).then((red) => {
-      this.setState({redirect: red})
-    })
-  }
 }

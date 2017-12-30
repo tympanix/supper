@@ -3,7 +3,6 @@ import axios from 'axios';
 
 import Search from './Search'
 
-
 class Details extends Component {
   constructor() {
     super()
