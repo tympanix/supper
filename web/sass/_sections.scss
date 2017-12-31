@@ -17,6 +17,10 @@ section {
 
   &.dark {
     background-color: darken(white, 8%);
+
+    header {
+      border: none;
+    }
   }
 
   > section {

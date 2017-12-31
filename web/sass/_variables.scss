@@ -1,5 +1,22 @@
+// Font settings
 $font: 'Work Sans', sans-serif;
 
 // Colors
 $brand: #3498db;
 $borderColor: rgba(0,0,0,0.05);
+
+// Animations
+$bazier: cubic-bezier(.57,-0.88,.42,1.73);
+
+// Screen sizes
+$mobile: 550px;
+$tablet: 1150px;
+
+// Mixins
+@mixin mobile {
+  @media only screen and (max-device-width: $mobile) { @content; }
+}
+
+@mixin tablet {
+  @media only screen and (max-device-width: $tablet) { @content; }
+}

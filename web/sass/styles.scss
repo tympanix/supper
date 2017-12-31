@@ -35,12 +35,14 @@ body {
     width: 100%;
   }
 
-  @media screen and (max-device-width: 1150px) {
+  @include tablet {
     font-size: 125%;
+    width: 100%;
   }
 
-  @media screen and (max-device-width: 550px) {
+  @include mobile {
     font-size: 200%;
+    width: 100%;
   }
 }
 
@@ -86,7 +88,7 @@ input[type=text] {
 }
 
 span.tags {
-  margin: 0 .5em;
+  margin: 0;
 
   >:not(:last-child) {
     margin-right: 0.25em;

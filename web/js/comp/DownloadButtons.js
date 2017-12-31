@@ -11,7 +11,8 @@ class DownloadButtons extends Component {
     this.getLanguages = this.getLanguages.bind(this)
 
     this.state = {
-      langs: []
+      langs: [],
+      clicked: null,
     }
   }
 
@@ -33,6 +34,7 @@ class DownloadButtons extends Component {
 
   downloadHandler(lang) {
     return (event) => {
+      this.setState({clicked: lang})
       this.props.onDownload(lang)
     }
   }
@@ -40,10 +42,14 @@ class DownloadButtons extends Component {
   render() {
     let off = this.props.disabled
     let buttons = this.state.langs.map((l) => {
+      let loading = l.code === this.state.clicked
       return (
-        <button disabled={off} key={l.code} className="icon" onClick={this.downloadHandler(l.code)} >
+        <button
+          disabled={off}
+          className={loading ? 'loading' : null}
+          key={l.code}
+          onClick={this.downloadHandler(l.code)}>
           {l.language}
-          <Flag lang={l.code}/>
         </button>
       )
     })

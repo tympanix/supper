@@ -68,6 +68,9 @@ class Details extends Component {
           </header>
 
           <section className="dark">
+            <header>
+              <h3 className="center">Download Subtitles</h3>
+            </header>
             <DownloadButtons
               disabled={this.state.busy}
               onDownload={this.downloadSubtitles.bind(this)}/>

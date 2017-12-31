@@ -30,10 +30,12 @@ class FileList extends Component {
       return (
         <li key={f.filepath}>
           <span className="name">{f.media.name}</span>
-          <FileTags media={f}/>
-          <span className="right">
-            <Subtitles list={f.subtitles}/>
-          </span>
+          <div className="content">
+            <FileTags media={f}/>
+            <span className="right">
+              <Subtitles list={f.subtitles}/>
+            </span>
+          </div>
         </li>
       )
     })
