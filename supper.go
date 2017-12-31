@@ -81,6 +81,7 @@ func main() {
 		for _, tag := range c.StringSlice("lang") {
 			_, err := language.Parse(tag)
 			if err != nil {
+				err := fmt.Errorf("unknown language tag: %v", tag)
 				return cli.NewExitError(err, 1)
 			}
 		}
@@ -116,15 +117,15 @@ func main() {
 
 		modified, err := parse.Duration(c.String("modified"))
 
+		if err != nil {
+			return cli.NewExitError(err, 2)
+		}
+
 		if modified > 0 {
 			media = media.FilterModified(modified)
 		}
 
 		media, err = media.FilterMissingSubs(lang)
-
-		if err != nil {
-			return cli.NewExitError(err, 2)
-		}
 
 		if err != nil {
 			return cli.NewExitError(err, 3)

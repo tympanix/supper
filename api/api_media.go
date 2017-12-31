@@ -90,19 +90,27 @@ func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
 	if err := dec.Decode(&media); err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	path, err := media.getPath(a)
+	files, err := a.fileList(media)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
+	return files
+}
+
+func (a *API) fileList(folder jsonFolder) (interface{}, error) {
+	path, err := folder.getPath(a)
+	if err != nil {
+		return nil, Error(err, http.StatusBadRequest)
+	}
 	list, err := a.FindMedia(path)
 	if err != nil {
-		return Error(err, http.StatusInternalServerError)
+		return nil, Error(err, http.StatusInternalServerError)
 	}
 	medialist := make([]interface{}, 0)
 	for _, m := range list.List() {
 		subs, err := m.ExistingSubtitles()
 		if err != nil {
-			return Error(err, http.StatusInternalServerError)
+			return nil, Error(err, http.StatusInternalServerError)
 		}
 		var mtype string
 		if _, ok := m.TypeEpisode(); ok {
@@ -122,5 +130,5 @@ func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
 			subs,
 		})
 	}
-	return medialist
+	return medialist, nil
 }
