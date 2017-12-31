@@ -17,6 +17,16 @@ class Api {
       .then(this.handleError)
   }
 
+  downloadSubtitles(folder, lang) {
+    let config = {
+      params: {
+        lang: lang
+      }
+    }
+    return axios.post("./api/subtitle", folder, config)
+      .then(this.handleError)
+  }
+
   handleError(res) {
     if (res.status !== 200) {
       throw new Error(res.data.message || 'Unknown error')

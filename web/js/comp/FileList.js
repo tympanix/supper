@@ -9,7 +9,7 @@ class FileList extends Component {
     super()
 
     this.state = {
-
+      files: []
     }
   }
 
@@ -19,6 +19,10 @@ class FileList extends Component {
     } catch (e) {
       this.setState({failed: true})
     }
+  }
+
+  componentWillReceiveProps(props) {
+    this.setState({files: props.files})
   }
 
   render() {

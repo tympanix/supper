@@ -15,6 +15,7 @@ class Details extends Component {
     this.state = {
       media: undefined,
       folder: undefined,
+      busy: false,
       loading: true,
       failed: false,
     }
@@ -40,14 +41,14 @@ class Details extends Component {
     }
   }
 
-  renderMediaList() {
-    let media = this.state.media.map((item) => {
-      return <h3>{item.media.name}</h3>
+  downloadSubtitles(lang) {
+    this.setState({busy: true})
+    let folder = this.state.folder
+    API.downloadSubtitles(folder, lang).then((data) => {
+      this.setState({media: data})
+    }).finally(() => {
+      this.setState({busy: false})
     })
-
-    return (
-      <div>{media}</div>
-    )
   }
 
   render() {
@@ -66,14 +67,17 @@ class Details extends Component {
             <h1>{this.state.folder.name}</h1>
           </header>
 
-          <section>
-            <DownloadButtons/>
+          <section className="dark">
+            <DownloadButtons
+              disabled={this.state.busy}
+              onDownload={this.downloadSubtitles.bind(this)}/>
           </section>
 
-          <h3>Files</h3>
-          <div className="flex">
+          <section>
+            <h3>Files</h3>
             <FileList files={this.state.media}/>
-          </div>
+            <Spinner visible={this.state.busy}/>
+          </section>
         </section>
       )
     }

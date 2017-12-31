@@ -26,16 +26,22 @@ class DownloadButtons extends Component {
 
   getLanguages() {
     let config = configStore.getAll()
-    console.log("Got config", config)
     this.setState({
       langs: config.languages || []
     })
   }
 
+  downloadHandler(lang) {
+    return (event) => {
+      this.props.onDownload(lang)
+    }
+  }
+
   render() {
+    let off = this.props.disabled
     let buttons = this.state.langs.map((l) => {
       return (
-        <button key={l.code} className="icon">
+        <button disabled={off} key={l.code} className="icon" onClick={this.downloadHandler(l.code)} >
           {l.language}
           <Flag lang={l.code}/>
         </button>
@@ -44,7 +50,7 @@ class DownloadButtons extends Component {
 
     return (
       <div className="float center">
-        <button>Download All</button>
+        <button disabled={off} onClick={this.downloadHandler()}>Download All</button>
         {buttons}
       </div>
     )

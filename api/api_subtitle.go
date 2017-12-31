@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sync"
-	"time"
 )
 
 var busyFolders = new(sync.Map)
@@ -39,7 +38,6 @@ func (a *API) saveSubtitle(w http.ResponseWriter, r *http.Request) interface{} {
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	time.Sleep(5 * time.Second)
 	err = a.DownloadSubtitles(media, a.Languages(), ioutil.Discard)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)

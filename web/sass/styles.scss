@@ -54,17 +54,27 @@ input[type=text] {
 }
 
 .overlay {
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+  background-color: rgba(255,255,255,0.75);
+  transition: background-color 2s;
+  z-index: 5;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  &.fade-enter {
+    background-color: red;
+    &.fade-enter-active {
+      background-color: yellow;
+    }
+  }
 }
 
 span.tags {
