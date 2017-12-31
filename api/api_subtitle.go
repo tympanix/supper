@@ -6,7 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
+	"time"
 )
+
+var busyFolders = new(sync.Map)
 
 func (a *API) subtitle(w http.ResponseWriter, r *http.Request) interface{} {
 	if r.Method == "POST" {
@@ -27,14 +31,17 @@ func (a *API) saveSubtitle(w http.ResponseWriter, r *http.Request) interface{} {
 		fmt.Println("Oh noes 3")
 		return Error(err, http.StatusBadRequest)
 	}
+	if _, busy := busyFolders.LoadOrStore(path, true); busy {
+		return Error(errors.New("Folder is busy"), http.StatusTooManyRequests)
+	}
+	defer busyFolders.Delete(path)
 	media, err := a.FindMedia(path)
 	if err != nil {
-		fmt.Println("Oh noes 2")
 		return Error(err, http.StatusBadRequest)
 	}
+	time.Sleep(5 * time.Second)
 	err = a.DownloadSubtitles(media, a.Languages(), ioutil.Discard)
 	if err != nil {
-		fmt.Println("Oh noes 1")
 		return Error(err, http.StatusBadRequest)
 	}
 	files, err := a.fileList(folder)

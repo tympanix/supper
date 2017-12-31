@@ -1,4 +1,10 @@
+### macOS ###
+*.DS_Store
+.AppleDouble
+.LSOverride
+
 node_modules
 debug*
-*.exe*
+supper*
+!/supper.go
 web/static
