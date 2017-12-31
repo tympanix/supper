@@ -1,2 +1,7 @@
 import folderStore from './folder_store'
-export { folderStore }
+import configStore from './config_store'
+
+export {
+  folderStore,
+  configStore,
+}

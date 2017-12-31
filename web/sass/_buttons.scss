@@ -1,0 +1,39 @@
+button {
+  cursor: pointer;
+  font-family: $font;
+  margin: 0 .25em;
+  font-size: 1.125em !important;
+  position: relative;
+  border: none;
+  background-color: white;
+  padding: .25em .75em;
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: 800;
+  transition: transform box-shadow .2s ease-in-out;
+
+  &:focus {
+    outline: 0;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 .2em rgba(0,0,0,.1);
+
+  }
+
+  &.icon {
+    overflow: hidden;
+    padding-right: 2em;
+
+    .flag-icon {
+      border-radius: 0;
+      position: absolute;
+      margin: 0;
+      padding: 0;
+      top: 0;
+      bottom: 0;
+      right: 0;
+    }
+  }
+}

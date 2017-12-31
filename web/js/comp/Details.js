@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 
 import Search from './Search'
 import Spinner from './Spinner'
 import FileList from './FileList'
+import Flag from './Flag'
+import DownloadButtons from './DownloadButtons'
 
 import API from '../api'
 
@@ -64,6 +65,10 @@ class Details extends Component {
           <header>
             <h1>{this.state.folder.name}</h1>
           </header>
+
+          <section>
+            <DownloadButtons/>
+          </section>
 
           <h3>Files</h3>
           <div className="flex">

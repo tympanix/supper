@@ -12,6 +12,11 @@ class Api {
       .then(this.handleError)
   }
 
+  getConfig() {
+    return axios.get("./api/config")
+      .then(this.handleError)
+  }
+
   handleError(res) {
     if (res.status !== 200) {
       throw new Error(res.data.message || 'Unknown error')

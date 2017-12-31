@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 
+import EpisodeTag from './EpisodeTag'
+
 class FileTags extends Component {
   render() {
-    let meta = this.props.media.media.metadata
+    let media = this.props.media
+    let meta = media.media.metadata
 
     let keys = ["quality", "source"]
 
@@ -12,6 +15,7 @@ class FileTags extends Component {
 
     return (
       <span className="tags">
+        <EpisodeTag media={media} />
         {tags}
       </span>
     )

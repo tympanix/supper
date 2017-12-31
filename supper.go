@@ -76,6 +76,17 @@ func main() {
 		},
 	}
 
+	app.Before = func(c *cli.Context) error {
+		// Make sure all language flags are defined
+		for _, tag := range c.StringSlice("lang") {
+			_, err := language.Parse(tag)
+			if err != nil {
+				return cli.NewExitError(err, 1)
+			}
+		}
+		return nil
+	}
+
 	app.Action = func(c *cli.Context) error {
 		sup := application.New(c)
 
@@ -83,15 +94,7 @@ func main() {
 			cli.ShowAppHelpAndExit(c, 1)
 		}
 
-		// Parse all language flags into slice of tags
-		lang := set.New()
-		for _, tag := range c.StringSlice("lang") {
-			_lang, err := language.Parse(tag)
-			if err != nil {
-				return cli.NewExitError(err, 1)
-			}
-			lang.Add(_lang)
-		}
+		lang := sup.Languages()
 
 		if lang.Size() == 0 {
 			return cli.NewExitError("missing language flags(s)", 1)

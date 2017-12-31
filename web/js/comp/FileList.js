@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
 import Subtitles from './Subtitles'
 import FileTags from './FileTags'
+import EpisodeTag from './EpisodeTag'
 
 class FileList extends Component {
   constructor() {

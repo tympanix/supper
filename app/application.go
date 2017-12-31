@@ -5,12 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/fatih/set"
 	"github.com/tympanix/supper/api"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
 	"github.com/urfave/cli"
+	"golang.org/x/text/language"
 )
 
 var filetypes = []string{
@@ -48,6 +50,19 @@ func New(context *cli.Context) types.App {
 // Context returns the CLI context of the application (e.g. flags, args ect.)
 func (a *Application) Context() *cli.Context {
 	return a.context
+}
+
+func (a *Application) Languages() set.Interface {
+	// Parse all language flags into slice of tags
+	lang := set.New()
+	for _, tag := range a.Context().GlobalStringSlice("lang") {
+		_lang, err := language.Parse(tag)
+		if err != nil {
+			os.Exit(5)
+		}
+		lang.Add(_lang)
+	}
+	return lang
 }
 
 // IndexHandler always serves the same file (e.g. index.html)

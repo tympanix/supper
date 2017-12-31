@@ -24,6 +24,8 @@ func New(app types.App) http.Handler {
 	}
 
 	api.Handle("/media", apiHandler(api.media))
+	api.Handle("/config", apiHandler(api.config))
+	api.Handle("/subtitle", apiHandler(api.subtitle))
 
 	return api
 }

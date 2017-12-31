@@ -16,14 +16,31 @@ const (
 	typeShow  = "show"
 )
 
-type mediaFolder struct {
+type jsonFolder struct {
 	Type   string `json:"type"`
 	Folder string `json:"folder"`
 	Name   string `json:"name"`
 }
 
-func findMediaFolders(t string, paths ...string) ([]*mediaFolder, error) {
-	media := make([]*mediaFolder, 0)
+func (f jsonFolder) getPath(a types.App) (path string, err error) {
+	var root string
+	if f.Type == typeMovie {
+		root = a.Context().String("movies")
+	} else if f.Type == typeShow {
+		root = a.Context().String("shows")
+	} else {
+		err = errors.New("Unknown media format")
+		return
+	}
+	path = filepath.Join(root, f.Folder)
+	if filepath.Dir(path) != filepath.Clean(root) {
+		return "", errors.New("Illegal folder path")
+	}
+	return
+}
+
+func findMediaFolders(t string, paths ...string) ([]*jsonFolder, error) {
+	media := make([]*jsonFolder, 0)
 
 	for _, path := range paths {
 		files, err := ioutil.ReadDir(path)
@@ -32,7 +49,7 @@ func findMediaFolders(t string, paths ...string) ([]*mediaFolder, error) {
 		}
 		for _, file := range files {
 			if file.IsDir() {
-				media = append(media, &mediaFolder{
+				media = append(media, &jsonFolder{
 					Type:   t,
 					Folder: file.Name(),
 					Name:   parse.CleanName(file.Name()),
@@ -68,23 +85,13 @@ func (a *API) allMedia(w http.ResponseWriter, r *http.Request) interface{} {
 }
 
 func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
-	var media mediaFolder
-	var root string
+	var media jsonFolder
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&media); err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	if media.Type == typeMovie {
-		root = a.Context().String("movies")
-	} else if media.Type == typeShow {
-		root = a.Context().String("shows")
-	} else {
-		err := errors.New("Unknown media format")
-		return Error(err, http.StatusBadRequest)
-	}
-	path := filepath.Join(root, media.Folder)
-	if filepath.Dir(path) != filepath.Clean(root) {
-		err := errors.New("Illegal folder path")
+	path, err := media.getPath(a)
+	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
 	list, err := a.FindMedia(path)
