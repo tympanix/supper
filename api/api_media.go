@@ -16,6 +16,11 @@ const (
 	typeShow  = "show"
 )
 
+var folders = map[string]string{
+	"movies": typeMovie,
+	"shows":  typeShow,
+}
+
 type jsonFolder struct {
 	Type   string `json:"type"`
 	Folder string `json:"folder"`
@@ -73,15 +78,19 @@ func (a *API) media(w http.ResponseWriter, r *http.Request) interface{} {
 }
 
 func (a *API) allMedia(w http.ResponseWriter, r *http.Request) interface{} {
-	movies, err := findMediaFolders(typeMovie, a.Context().String("movies"))
-	if err != nil {
-		return Error(err, 500)
+	media := make([]*jsonFolder, 0)
+
+	for flag, mtype := range folders {
+		if path := a.Context().String(flag); path != "" {
+			list, err := findMediaFolders(mtype, path)
+			if err != nil {
+				return Error(err, 500)
+			}
+			media = append(media, list...)
+		}
 	}
-	tvshows, err := findMediaFolders(typeShow, a.Context().String("shows"))
-	if err != nil {
-		return Error(err, 500)
-	}
-	return append(movies, tvshows...)
+
+	return media
 }
 
 func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {

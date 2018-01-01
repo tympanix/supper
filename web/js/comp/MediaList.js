@@ -46,13 +46,12 @@ export default class MediaList extends Component {
   }
 
   render() {
-    const media = this.props.list.map((m, i) => {
+    const media = this.props.list.slice(0, 50).map((m, i) => {
       let active = this.state.selected === i
       return (<MediaItem item={m} key={m.name} active={active} />)
     })
 
     return (
-      // Add your component markup and other subcomponent references here.
       <ul className="media-list">
         {media}
       </ul>
