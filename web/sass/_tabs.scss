@@ -2,6 +2,7 @@
   margin: -1em;
 
   ul.tablist {
+    @extend .noselect;
     display: flex;
     margin: 0;
     padding: 0;

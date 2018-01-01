@@ -1,4 +1,5 @@
 button {
+  @extend .noselect;
   cursor: pointer;
   font-family: $font;
   margin: .25em .25em;

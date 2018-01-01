@@ -28,7 +28,7 @@ class Details extends Component {
     API.getMediaDetails(folder)
       .then((media) => this.setState({media: media}))
       .catch(() => this.setState({failed: true}))
-      .finally(() => this.setState({loading: false}))
+      .then(() => this.setState({loading: false}))
   }
 
   getLocationState() {
