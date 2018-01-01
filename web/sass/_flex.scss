@@ -1,0 +1,15 @@
+.flex {
+  display: flex;
+  flex-flow: row;
+
+  .col {
+    overflow: hidden;
+    flex: 1 1 100%;
+  }
+
+  @for $i from 1 through 12 {
+    .grow-#{$i} {
+      flex-grow: $i;
+    }
+  }
+}

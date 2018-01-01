@@ -87,6 +87,7 @@ func (f *File) SaveSubtitle(s types.Subtitle) error {
 		return err
 	}
 
+	defer file.Close()
 	_, err = io.Copy(file, srt)
 
 	if err != nil {

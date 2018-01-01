@@ -52,10 +52,16 @@ ul.file-list {
       overflow: hidden;
       width: 100%;
       display: block;
+
+      ~ .tags {
+        white-space: nowrap;
+        display: block;
+        margin-top: .5em;
+      }
     }
 
-    .content {
-      margin-top: .5em;
+    .subtitles {
+      
     }
   }
 }

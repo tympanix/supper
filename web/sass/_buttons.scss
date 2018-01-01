@@ -2,7 +2,7 @@ button {
   cursor: pointer;
   font-family: $font;
   margin: .25em .25em;
-  font-size: 1.125em !important;
+  font-size: 1em !important;
   position: relative;
   border-radius: 9999px;
   border: none;
@@ -11,12 +11,8 @@ button {
   display: inline-block;
   font-size: 0.85em;
   font-weight: 800;
-  transition: transform .25s $bazier;
+  transition: transform .2s $bazier;
   border: .2em solid $brand;
-
-  &:focus {
-    outline: 0;
-  }
 
   &:disabled {
     cursor: default;
@@ -24,7 +20,7 @@ button {
   }
 
   &:enabled:hover {
-    transform: scale(1.075);
+    transform: scale(1.05);
     background-color: $brand;
     color: white;
     box-shadow: 0 0 .2em rgba(0,0,0,.1);

@@ -6,11 +6,13 @@
 @import "sections";
 @import "tooltip";
 @import "buttons";
+@import "flex";
+@import "misc";
+@import "containers";
+@import "tabs";
 
 * {
   box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -24,6 +26,10 @@ body {
     font-size: .2in;
     padding: 0;
     margin: 0;
+}
+
+*:focus {
+  outline: 0;
 }
 
 .main {
@@ -61,75 +67,4 @@ input[type=text] {
   outline: none;
   box-shadow: 0px 0em .75em 0px rgba(0,0,0,0.05);
   padding: 1em 2em;
-}
-
-.overlay {
-  background-color: rgba(255,255,255,0.75);
-  transition: background-color 2s;
-  z-index: 5;
-  height: 100%;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  &.fade-enter {
-    background-color: red;
-    &.fade-enter-active {
-      background-color: yellow;
-    }
-  }
-}
-
-span.tags {
-  margin: 0;
-
-  >:not(:last-child) {
-    margin-right: 0.25em;
-  }
-}
-
-.right {
-  float: right;
-}
-
-span.tag {
-  position: relative;
-  background-color: $borderColor;
-  padding: .25em .75em;
-  border-radius: 9999px;
-  display: inline-block;
-  font-size: 0.85em;
-  font-weight: 800;
-
-  &.icon {
-    overflow: hidden;
-    padding-right: 2em;
-  }
-
-  .flag-icon {
-    border-radius: 0;
-    position: absolute;
-    margin: 0;
-    padding: 0;
-    top: 0;
-    bottom: 0;
-    right: 0;
-  }
-}
-
-span.flag-icon {
-  box-sizing: border-box;
-  background-repeat:no-repeat;
-  background-size:cover;
-  padding: .25em 0;
-  width: 1.75em;
-  border-radius: 9999px;
-  display: inline-block;
 }

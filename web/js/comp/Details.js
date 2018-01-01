@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+
 import Search from './Search'
 import Spinner from './Spinner'
 import FileList from './FileList'
@@ -77,9 +79,25 @@ class Details extends Component {
           </section>
 
           <section>
-            <h3>Files</h3>
-            <FileList files={this.state.media}/>
-            <Spinner visible={this.state.busy}/>
+            <Tabs className="tabs">
+              <TabList className="tablist">
+                <Tab selectedClassName="active">Files</Tab>
+                <Tab selectedClassName="active">Subtitles</Tab>
+              </TabList>
+
+              <TabPanel className="tab-panel">
+                <section>
+                  <h3>Files</h3>
+                  <FileList files={this.state.media}/>
+                  <Spinner visible={this.state.busy}/>
+                </section>
+              </TabPanel>
+              <TabPanel className="tab-panel">
+                <section>
+                  <h2>Any content 2</h2>
+                </section>
+              </TabPanel>
+            </Tabs>
           </section>
         </section>
       )

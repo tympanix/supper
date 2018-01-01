@@ -46,7 +46,6 @@ class DownloadButtons extends Component {
       return (
         <button
           disabled={off}
-          className={loading ? 'loading' : null}
           key={l.code}
           onClick={this.downloadHandler(l.code)}>
           {l.language}
