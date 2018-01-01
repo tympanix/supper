@@ -87,14 +87,14 @@ class Details extends Component {
 
               <TabPanel className="tab-panel">
                 <section>
-                  <h3>Files</h3>
+                  <h2>Files</h2>
                   <FileList files={this.state.media}/>
                   <Spinner visible={this.state.busy}/>
                 </section>
               </TabPanel>
               <TabPanel className="tab-panel">
                 <section>
-                  <h2>Any content 2</h2>
+                  <h2>Subtitles</h2>
                 </section>
               </TabPanel>
             </Tabs>

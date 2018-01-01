@@ -20,3 +20,7 @@ $tablet: 1150px;
 @mixin tablet {
   @media only screen and (max-device-width: $tablet) { @content; }
 }
+
+@mixin desktop {
+  @media only screen and (min-device-width: $tablet) { @content; }
+}
