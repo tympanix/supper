@@ -25,6 +25,11 @@ class FileList extends Component {
     this.setState({files: props.files})
   }
 
+  subtitleClick(event, lang) {
+    this.props.languageClicked &&
+    this.props.languageClicked(event, lang)
+  }
+
   render() {
     let files = this.state.files.map((f) => {
       return (
@@ -34,7 +39,8 @@ class FileList extends Component {
             <FileTags media={f}/>
           </div>
           <div className="flex center subtitles">
-            <Subtitles list={f.subtitles}/>
+            <Subtitles list={f.subtitles}
+              onClick={this.subtitleClick.bind(this)} />
           </div>
         </li>
       )

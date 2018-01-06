@@ -20,10 +20,23 @@ class Api {
   downloadSubtitles(folder, lang) {
     let config = {
       params: {
+        action: "download",
         lang: lang
       }
     }
-    return axios.post("./api/subtitle", folder, config)
+    return axios.post("./api/subtitles", folder, config)
+      .then(this.handleError)
+  }
+
+  getSubtitles(folder, media, lang) {
+    let config = {
+      params: {
+        action: "list",
+        lang: lang
+      }
+    }
+    let data = Object.assign({}, folder, {filepath: media.filepath})
+    return axios.get("./api/subtitles", data, config)
       .then(this.handleError)
   }
 

@@ -15,6 +15,7 @@ class Details extends Component {
     super()
 
     this.state = {
+      tabIndex: 0,
       media: undefined,
       folder: undefined,
       busy: false,
@@ -41,6 +42,11 @@ class Details extends Component {
     } catch (e) {
       this.setState({failed: true})
     }
+  }
+
+  languageClicked(event, lang) {
+    this.setState({tabIndex: 1})
+    console.log("Clicked", lang)
   }
 
   downloadSubtitles(lang) {
@@ -79,7 +85,9 @@ class Details extends Component {
           </section>
 
           <section>
-            <Tabs className="tabs">
+            <Tabs className="tabs"
+              selectedIndex={this.state.tabIndex}
+              onSelect={tabIndex => this.setState({ tabIndex })}>
               <TabList className="tablist">
                 <Tab selectedClassName="active">Files</Tab>
                 <Tab selectedClassName="active">Subtitles</Tab>
@@ -88,7 +96,8 @@ class Details extends Component {
               <TabPanel className="tab-panel">
                 <section>
                   <h2>Files</h2>
-                  <FileList files={this.state.media}/>
+                  <FileList files={this.state.media}
+                    languageClicked={this.languageClicked.bind(this)}/>
                   <Spinner visible={this.state.busy}/>
                 </section>
               </TabPanel>

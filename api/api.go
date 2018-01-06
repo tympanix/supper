@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/tympanix/supper/types"
 )
 
 type API struct {
 	types.App
-	*http.ServeMux
+	*mux.Router
 }
 
 type APIError interface {
@@ -20,18 +21,19 @@ type APIError interface {
 func New(app types.App) http.Handler {
 	api := &API{
 		app,
-		http.NewServeMux(),
+		mux.NewRouter(),
 	}
 
 	api.Handle("/media", apiHandler(api.media))
 	api.Handle("/config", apiHandler(api.config))
-	api.Handle("/subtitle", apiHandler(api.subtitle))
+	apiSubs := api.PathPrefix("/subtitles").Subrouter()
+	api.subtitleRouter(apiSubs)
 
 	return api
 }
 
 func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.ServeMux.ServeHTTP(w, r)
+	a.Router.ServeHTTP(w, r)
 }
 
 type apiError struct {
@@ -55,6 +57,9 @@ type apiHandler func(http.ResponseWriter, *http.Request) interface{}
 
 func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if e := fn(w, r); e != nil {
+		if err, ok := e.(error); ok {
+			e = Error(err, http.StatusBadRequest)
+		}
 		js, err := json.MarshalIndent(e, "", "  ")
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -66,7 +71,7 @@ func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(js)
 	} else {
-		http.Error(w, "No found", http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 	}
 }
 
