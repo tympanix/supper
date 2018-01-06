@@ -44,9 +44,11 @@ class Details extends Component {
     }
   }
 
-  languageClicked(event, lang) {
+  languageClicked(event, media, lang) {
     this.setState({tabIndex: 1})
-    console.log("Clicked", lang)
+    console.log("Clicked", media, lang)
+    API.getSubtitles(this.state.folder, media, lang)
+      .then(data => console.log(data))
   }
 
   downloadSubtitles(lang) {

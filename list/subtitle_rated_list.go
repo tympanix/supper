@@ -2,6 +2,7 @@ package list
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -17,7 +18,21 @@ type subtitleEntry struct {
 	score float32
 }
 
-// NewSubtitles returns a new subtitles collection
+func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(struct {
+		Lang  language.Tag   `json:"language"`
+		Score float32        `json:"score"`
+		HI    bool           `json:"hi"`
+		Media types.Metadata `json:"media"`
+	}{
+		s.Language(),
+		s.score,
+		s.IsHI(),
+		s.Meta(),
+	})
+}
+
+// RatedSubtitles returns a new subtitles collection
 func RatedSubtitles(media types.LocalMedia) *ratedSubtitles {
 	return &ratedSubtitles{
 		Evaluator: new(score.DefaultEvaluator),
@@ -30,6 +45,10 @@ type ratedSubtitles struct {
 	types.Evaluator
 	media types.LocalMedia
 	subs  []subtitleEntry
+}
+
+func (s *ratedSubtitles) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(s.List())
 }
 
 func (s *ratedSubtitles) clone(list []subtitleEntry) types.SubtitleList {

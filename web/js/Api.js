@@ -36,7 +36,7 @@ class Api {
       }
     }
     let data = Object.assign({}, folder, {filepath: media.filepath})
-    return axios.get("./api/subtitles", data, config)
+    return axios.post("./api/subtitles", data, config)
       .then(this.handleError)
   }
 

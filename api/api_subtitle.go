@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/tympanix/supper/types"
+	"golang.org/x/text/language"
 )
 
 var busyFolders = new(sync.Map)
@@ -34,7 +35,7 @@ func (j jsonMedia) getPath(a types.App) (path string, err error) {
 func (a *API) subtitleRouter(mux *mux.Router) {
 	mux.Queries("action", "download").Methods("POST").
 		Handler(apiHandler(a.downloadSubtitles))
-	mux.Queries("action", "list").Methods("POST").
+	mux.Queries("action", "list", "lang", "{language}").Methods("POST").
 		Handler(apiHandler(a.getSubtitles))
 }
 
@@ -47,6 +48,10 @@ func (a *API) subtitles(w http.ResponseWriter, r *http.Request) interface{} {
 }
 
 func (a *API) getSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
+	lang := language.Make(mux.Vars(r)["language"])
+	if lang == language.Und {
+		return errors.New("Missing language param")
+	}
 	var mediaFile jsonMedia
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&mediaFile); err != nil {
@@ -66,7 +71,9 @@ func (a *API) getSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
 	if media.Len() < 1 {
 		return errors.New("No media found")
 	}
-	subs, err := a.SearchSubtitles(media.List()[0])
+	item := media.List()[0]
+	subs, err := a.SearchSubtitles(item)
+	subs = subs.FilterLanguage(lang)
 	if err != nil {
 		return err
 	}
