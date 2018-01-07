@@ -33,7 +33,7 @@ class SubtitleList extends Component {
   render() {
     if (!this.state.subtitles || this.state.subtitles.length === 0) {
       return (
-        <h2 className="center">Select a file to display subtitles</h2>
+        <h3 className="meta center">Select a file to display subtitles</h3>
       )
     }
 

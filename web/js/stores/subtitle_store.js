@@ -13,8 +13,6 @@ class SubtitleStore extends EventEmitter {
       media: null,
       folder: null
     }
-
-    Object.assign(this.state, mock)
   }
 
   update(folder, media, lang) {
