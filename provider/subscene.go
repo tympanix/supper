@@ -50,12 +50,7 @@ func Subscene() types.Provider {
 type subscene struct{}
 
 func (s *subscene) ResolveSubtitle(l types.Linker) (types.Downloadable, error) {
-	uri := fmt.Sprintf("%s%s", HOST, l.Link())
-	url, err := url.ParseRequestURI(uri)
-	if err != nil {
-		return nil, errors.New("Invalid subtitle resource")
-	}
-	return subsceneURL(url.String()), nil
+	return subsceneURL(l.Link()), nil
 }
 
 func (s *subscene) searchTerm(m types.Media) string {
@@ -137,7 +132,7 @@ func (s *subscene) FindMediaURL(media types.Media) (string, error) {
 		return "", errors.New("no media found on subscene.com")
 	}
 
-	return fmt.Sprintf("%s%s", "https://subscene.com", result), nil
+	return fmt.Sprintf("%s%s", HOST, result), nil
 }
 
 // SearchSubtitles searches subscene.com for subtitles
@@ -241,16 +236,21 @@ func (t *zipReader) Close() error {
 
 type subsceneURL string
 
-func (url subsceneURL) Link() string {
-	return string(url)
+func (uri subsceneURL) Link() string {
+	return string(uri)
 }
 
-func (url subsceneURL) Download() (io.ReadCloser, error) {
+func (uri subsceneURL) Download() (io.ReadCloser, error) {
+	fulluri := fmt.Sprintf("%s%s", HOST, string(uri))
 
-	uri := fmt.Sprintf("%s%s", HOST, string(url))
+	suburl, err := url.ParseRequestURI(fulluri)
+
+	if err != nil {
+		return nil, err
+	}
 
 	lockSubscene()
-	doc, err := goquery.NewDocument(uri)
+	doc, err := goquery.NewDocument(suburl.String())
 
 	if err != nil {
 		return nil, err

@@ -11,12 +11,14 @@ class SubtitleStore extends EventEmitter {
       subtitles: [],
       lang: null,
       media: null,
+      folder: null
     }
 
     Object.assign(this.state, mock)
   }
 
   update(folder, media, lang) {
+    this.state.folder = folder
     this.state.lang = lang
     this.state.media = media
     API.getSubtitles(folder, media).then(subs => {
@@ -27,6 +29,12 @@ class SubtitleStore extends EventEmitter {
 
   getState() {
     return Object.assign({}, this.state)
+  }
+
+  download(sub) {
+    let f = this.state.folder
+    let m = this.state.media
+    return API.downloadSingleSubtitle(f, m, sub)
   }
 
   reset() {

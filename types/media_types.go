@@ -46,7 +46,7 @@ type LocalMedia interface {
 	Media
 	Path() string
 	ExistingSubtitles() (SubtitleList, error)
-	SaveSubtitle(OnlineSubtitle) error
+	SaveSubtitle(Downloadable, language.Tag) error
 }
 
 // Movie interface is for movie type media material

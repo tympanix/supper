@@ -76,7 +76,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				if !ok {
 					panic("Subtitle could not be cast to online subtitle")
 				}
-				err := item.SaveSubtitle(sub)
+				err := item.SaveSubtitle(sub, sub.Language())
 				if err != nil {
 					red.Fprintln(out, err.Error())
 					continue

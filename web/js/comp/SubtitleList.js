@@ -25,6 +25,11 @@ class SubtitleList extends Component {
     subtitleStore.removeListener("change", this.updateSubtitles)
   }
 
+  downloadSubtitle(sub) {
+    console.log("download sub", sub)
+    subtitleStore.download(sub)
+  }
+
   render() {
     if (!this.state.subtitles || this.state.subtitles.length === 0) {
       return (
@@ -49,7 +54,10 @@ class SubtitleList extends Component {
             <FileTags media={s}/>
           </div>
           <div className="right">
-            <button className="small">Download</button>
+            <button className="small"
+              onClick={() => this.downloadSubtitle(s)}>
+              Download
+            </button>
           </div>
         </li>
       )

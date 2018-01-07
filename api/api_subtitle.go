@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/types"
+	"golang.org/x/text/language"
 )
 
 var busyFolders = new(sync.Map)
@@ -20,14 +21,39 @@ type jsonMedia struct {
 	Filename string `json:"filename"`
 }
 
+func (m jsonMedia) MediaFile(a types.App) (types.LocalMedia, error) {
+	path, err := m.getPath(a)
+	if err != nil {
+		return nil, err
+	}
+	media, err := a.FindMedia(path)
+	if err != nil {
+		return nil, err
+	}
+	if media.Len() != 1 {
+		return nil, errors.New("No single media file found")
+	}
+	return media.List()[0], nil
+}
+
+type jsonSubtitle struct {
+	jsonMedia
+	URL  string `json:"link"`
+	Lang string `json:"language"`
+}
+
+func (s jsonSubtitle) Link() string {
+	return s.URL
+}
+
 type jsonSubtitleList []types.OnlineSubtitle
 
-func (j jsonMedia) getPath(a types.App) (path string, err error) {
-	folder, err := j.jsonFolder.getPath(a)
+func (m jsonMedia) getPath(a types.App) (path string, err error) {
+	folder, err := m.jsonFolder.getPath(a)
 	if err != nil {
 		return
 	}
-	path = filepath.Join(folder, j.Filename)
+	path = filepath.Join(folder, m.Filename)
 	if !filepath.HasPrefix(path, folder) {
 		return "", errors.New("Illegal media path")
 	}
@@ -39,13 +65,36 @@ func (a *API) subtitleRouter(mux *mux.Router) {
 		Handler(apiHandler(a.downloadSubtitles))
 	mux.Queries("action", "list").Methods("POST").
 		Handler(apiHandler(a.listSubtitles))
+	mux.Queries("action", "single").Methods("POST").
+		Handler(apiHandler(a.singleSubtitle))
 }
 
-func (a *API) subtitles(w http.ResponseWriter, r *http.Request) interface{} {
-	if r.Method == "POST" {
-		return a.downloadSubtitles(w, r)
-	} else {
-		return Error(errors.New("Method not allowed"), http.StatusMethodNotAllowed)
+func (a *API) singleSubtitle(w http.ResponseWriter, r *http.Request) interface{} {
+	var mediaSubtitle jsonSubtitle
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&mediaSubtitle); err != nil {
+		return err
+	}
+	sub, err := a.ResolveSubtitle(mediaSubtitle)
+	if err != nil {
+		return err
+	}
+	media, err := mediaSubtitle.MediaFile(a)
+	if err != nil {
+		return err
+	}
+	tag := language.Make(mediaSubtitle.Lang)
+	if tag == language.Und {
+		return errors.New("unknown subtitle language")
+	}
+	err = media.SaveSubtitle(sub, tag)
+	if err != nil {
+		return err
+	}
+	return struct {
+		Message string `json:"message"`
+	}{
+		"ok",
 	}
 }
 
@@ -55,18 +104,10 @@ func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} 
 	if err := dec.Decode(&mediaFile); err != nil {
 		return err
 	}
-	path, err := mediaFile.getPath(a)
+	item, err := mediaFile.MediaFile(a)
 	if err != nil {
 		return err
 	}
-	media, err := a.FindMedia(path)
-	if err != nil {
-		return err
-	}
-	if media.Len() != 1 {
-		return errors.New("No single media file found")
-	}
-	item := media.List()[0]
 	search, err := a.SearchSubtitles(item)
 	subs := list.RatedSubtitles(item)
 	for _, s := range search {

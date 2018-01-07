@@ -28,6 +28,21 @@ class Api {
       .then(this.handleError)
   }
 
+  downloadSingleSubtitle(folder, media, subtitle) {
+    let config = {
+      params: {
+        action: "single"
+      }
+    }
+    let data = Object.assign({}, folder,
+      {filepath: media.filepath},
+      {link: subtitle.link},
+      {language: subtitle.language},
+    )
+    return axios.post('./api/subtitles', data, config)
+      .then(this.handleError)
+  }
+
   getSubtitles(folder, media) {
     let config = {
       params: {
