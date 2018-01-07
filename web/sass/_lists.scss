@@ -1,9 +1,23 @@
-ul.media-list {
-  margin: 0;
-  padding: 0;
+ul {
   list-style: none;
+  margin: 0;
+  padding: 0.25em 0;
+  width: 100%;
 
   li {
+    padding: .5em 0;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid $borderColor;
+    }
+  }
+}
+
+ul.media-list {
+  padding: 0;
+
+  li {
+    padding: 0;
     background-color: white;
     transition: transform .1s ease-in-out;
     transform-origin: center;
@@ -61,7 +75,17 @@ ul.file-list {
     }
 
     .subtitles {
-      
+
+    }
+  }
+}
+
+ul.subtitle-list {
+  li > * {
+    display: inline-block;
+
+    &:not(:last-child) {
+      margin-right: 0.5em;
     }
   }
 }

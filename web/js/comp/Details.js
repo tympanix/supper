@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import subtitleStore from '../stores/subtitle_store'
+
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import Search from './Search'
@@ -7,6 +9,7 @@ import Spinner from './Spinner'
 import FileList from './FileList'
 import Flag from './Flag'
 import DownloadButtons from './DownloadButtons'
+import SubtitleList from './SubtitleList'
 
 import API from '../api'
 
@@ -15,7 +18,7 @@ class Details extends Component {
     super()
 
     this.state = {
-      tabIndex: 0,
+      tabIndex: 1,
       media: undefined,
       folder: undefined,
       busy: false,
@@ -45,10 +48,10 @@ class Details extends Component {
   }
 
   languageClicked(event, media, lang) {
+    let folder = this.state.folder
     this.setState({tabIndex: 1})
     console.log("Clicked", media, lang)
-    API.getSubtitles(this.state.folder, media, lang)
-      .then(data => console.log(data))
+    subtitleStore.update(folder, media, lang)
   }
 
   downloadSubtitles(lang) {
@@ -106,6 +109,7 @@ class Details extends Component {
               <TabPanel className="tab-panel">
                 <section>
                   <h2>Subtitles</h2>
+                  <SubtitleList/>
                 </section>
               </TabPanel>
             </Tabs>

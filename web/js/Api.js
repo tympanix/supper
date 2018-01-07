@@ -28,11 +28,10 @@ class Api {
       .then(this.handleError)
   }
 
-  getSubtitles(folder, media, lang) {
+  getSubtitles(folder, media) {
     let config = {
       params: {
-        action: "list",
-        lang: lang
+        action: "list"
       }
     }
     let data = Object.assign({}, folder, {filepath: media.filepath})

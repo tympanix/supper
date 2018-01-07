@@ -2,7 +2,7 @@ button {
   @extend .noselect;
   cursor: pointer;
   font-family: $font;
-  margin: .25em .25em;
+  margin: 0 .25em;
   font-size: 1em !important;
   position: relative;
   border-radius: 9999px;
@@ -14,6 +14,10 @@ button {
   font-weight: 800;
   transition: transform .2s $bazier;
   border: .2em solid $brand;
+
+  &.small {
+    font-size: 75% !important;
+  }
 
   &:disabled {
     cursor: default;

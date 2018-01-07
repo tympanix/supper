@@ -2,13 +2,22 @@
   display: flex;
   flex-flow: row;
 
+  &.center {
+    text-align: left;
+  }
+
   .col {
     overflow: hidden;
     flex: 1 1 100%;
   }
 
+  .right {
+    margin-left: auto;
+  }
+
   @for $i from 1 through 12 {
-    .grow-#{$i} {
+    .size-#{$i} {
+      flex-shrink: $i;
       flex-grow: $i;
     }
   }
