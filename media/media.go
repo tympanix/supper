@@ -64,7 +64,7 @@ func (f *File) ExistingSubtitles() (types.SubtitleList, error) {
 }
 
 // SaveSubtitle saves the subtitle for the given media to disk
-func (f *File) SaveSubtitle(s types.Subtitle) error {
+func (f *File) SaveSubtitle(s types.OnlineSubtitle) error {
 	if s == nil {
 		return errors.New("invalid subtitle nil")
 	}

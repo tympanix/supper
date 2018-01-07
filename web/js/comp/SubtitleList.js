@@ -38,7 +38,7 @@ class SubtitleList extends Component {
 
     subs = subs.map((s) => {
       return (
-        <li className="flex center collapse">
+        <li key={s.link} className="flex center collapse">
           <div className="col inline spaced flex center nowrap">
             <div className="col">
               <ScoreTag score={s.score}/>

@@ -25,8 +25,8 @@ func (s *subtitleList) Best() types.Subtitle {
 	return nil
 }
 
-func (s *subtitleList) Add(sub types.Subtitle) {
-	*s = append(*s, sub)
+func (s *subtitleList) Add(sub ...types.Subtitle) {
+	*s = append(*s, sub...)
 }
 
 // FilterLanguage returns a new subtitle collection including only the argument language

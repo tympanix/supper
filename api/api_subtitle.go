@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
+	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/types"
 )
 
@@ -18,6 +19,8 @@ type jsonMedia struct {
 	jsonFolder
 	Filename string `json:"filename"`
 }
+
+type jsonSubtitleList []types.OnlineSubtitle
 
 func (j jsonMedia) getPath(a types.App) (path string, err error) {
 	folder, err := j.jsonFolder.getPath(a)
@@ -35,7 +38,7 @@ func (a *API) subtitleRouter(mux *mux.Router) {
 	mux.Queries("action", "download").Methods("POST").
 		Handler(apiHandler(a.downloadSubtitles))
 	mux.Queries("action", "list").Methods("POST").
-		Handler(apiHandler(a.getSubtitles))
+		Handler(apiHandler(a.listSubtitles))
 }
 
 func (a *API) subtitles(w http.ResponseWriter, r *http.Request) interface{} {
@@ -46,7 +49,7 @@ func (a *API) subtitles(w http.ResponseWriter, r *http.Request) interface{} {
 	}
 }
 
-func (a *API) getSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
+func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
 	var mediaFile jsonMedia
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&mediaFile); err != nil {
@@ -64,7 +67,11 @@ func (a *API) getSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
 		return errors.New("No single media file found")
 	}
 	item := media.List()[0]
-	subs, err := a.SearchSubtitles(item)
+	search, err := a.SearchSubtitles(item)
+	subs := list.RatedSubtitles(item)
+	for _, s := range search {
+		subs.Add(s)
+	}
 	if err != nil {
 		return err
 	}

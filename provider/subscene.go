@@ -16,7 +16,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
@@ -49,6 +48,15 @@ func Subscene() types.Provider {
 }
 
 type subscene struct{}
+
+func (s *subscene) ResolveSubtitle(l types.Linker) (types.Downloadable, error) {
+	uri := fmt.Sprintf("%s%s", HOST, l.Link())
+	url, err := url.ParseRequestURI(uri)
+	if err != nil {
+		return nil, errors.New("Invalid subtitle resource")
+	}
+	return subsceneURL(url.String()), nil
+}
 
 func (s *subscene) searchTerm(m types.Media) string {
 	if movie, ok := m.TypeMovie(); ok {
@@ -133,7 +141,7 @@ func (s *subscene) FindMediaURL(media types.Media) (string, error) {
 }
 
 // SearchSubtitles searches subscene.com for subtitles
-func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleList, err error) {
+func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineSubtitle, err error) {
 	url, err := s.FindMediaURL(local)
 
 	if err != nil {
@@ -147,7 +155,7 @@ func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleL
 		return
 	}
 
-	subs = list.RatedSubtitles(local)
+	subs = make([]types.OnlineSubtitle, 0)
 
 	doc.Find("table tbody tr").Each(func(i int, s *goquery.Selection) {
 		a1 := s.Find(".a1")
@@ -178,12 +186,12 @@ func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs types.SubtitleL
 			return
 		}
 
-		subs.Add(&subsceneSubtitle{
-			Media:        media.NewType(meta),
-			Downloadable: subsceneURL(url),
-			lang:         langTag,
-			comment:      comm,
-			hi:           hi,
+		subs = append(subs, &subsceneSubtitle{
+			Media:       media.NewType(meta),
+			subsceneURL: subsceneURL(url),
+			lang:        langTag,
+			comment:     comm,
+			hi:          hi,
 		})
 	})
 
@@ -232,6 +240,10 @@ func (t *zipReader) Close() error {
 }
 
 type subsceneURL string
+
+func (url subsceneURL) Link() string {
+	return string(url)
+}
 
 func (url subsceneURL) Download() (io.ReadCloser, error) {
 
@@ -287,7 +299,7 @@ func (url subsceneURL) Download() (io.ReadCloser, error) {
 
 type subsceneSubtitle struct {
 	types.Media
-	types.Downloadable
+	subsceneURL
 	lang    language.Tag
 	comment string
 	hi      bool

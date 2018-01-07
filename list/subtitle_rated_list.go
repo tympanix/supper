@@ -14,18 +14,20 @@ import (
 )
 
 type subtitleEntry struct {
-	types.Subtitle
+	types.OnlineSubtitle
 	score float32
 }
 
 func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 	return json.Marshal(struct {
 		Lang  language.Tag   `json:"language"`
+		Link  string         `json:"link"`
 		Score float32        `json:"score"`
 		HI    bool           `json:"hi"`
 		Media types.Metadata `json:"media"`
 	}{
 		s.Language(),
+		s.Link(),
 		s.score,
 		s.IsHI(),
 		s.Meta(),
@@ -33,7 +35,7 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 }
 
 // RatedSubtitles returns a new subtitles collection
-func RatedSubtitles(media types.LocalMedia) *ratedSubtitles {
+func RatedSubtitles(media types.LocalMedia) types.SubtitleList {
 	return &ratedSubtitles{
 		Evaluator: new(score.DefaultEvaluator),
 		media:     media,
@@ -77,18 +79,20 @@ func (s *ratedSubtitles) Best() types.Subtitle {
 }
 
 // Add a subtitle to the collection
-func (s *ratedSubtitles) Add(sub types.Subtitle) {
-	if sub == nil || sub.Meta() == nil {
-		return
+func (s *ratedSubtitles) Add(subs ...types.Subtitle) {
+	for _, sub := range subs {
+		sub, ok := sub.(types.OnlineSubtitle)
+		if !ok {
+			panic("rated subtitle list only supports online subtitles")
+		}
+		score := s.Evaluate(s.media, sub)
+		if score > 0 {
+			s.subs = append(s.subs, subtitleEntry{
+				OnlineSubtitle: sub,
+				score:          score,
+			})
+		}
 	}
-	score := s.Evaluate(s.media, sub)
-	if score <= 0 {
-		return
-	}
-	s.subs = append(s.subs, subtitleEntry{
-		Subtitle: sub,
-		score:    score,
-	})
 	sort.Sort(sort.Reverse(s))
 }
 
@@ -138,7 +142,7 @@ func (s *ratedSubtitles) String() string {
 	var buffer bytes.Buffer
 
 	for _, sub := range s.subs {
-		buffer.WriteString(fmt.Sprintf("%-8.2f%v\n", sub.score, sub.Subtitle))
+		buffer.WriteString(fmt.Sprintf("%-8.2f%v\n", sub.score, sub.OnlineSubtitle))
 	}
 
 	return buffer.String()
