@@ -1,0 +1,49 @@
+$color--green: #7ac142;
+$curve: cubic-bezier(0.650, 0.000, 0.450, 1.000);
+
+.checkmark__circle {
+  fill: $color--green;
+  transform-origin: center;
+  animation: shrink .4s ease-in-out 0s reverse;
+}
+
+.checkmark {
+  width: 6em;
+  height: 6em;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  transform: scale(0);
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  margin: 10% auto;
+  transform-origin: center;
+  animation: shrink .3s ease-in-out 1s both;
+}
+
+.checkmark__check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke .3s $curve .5s forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes shrink {
+  0% {
+    transform: scale(1.0);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.0);
+    opacity: 0;
+  }
+}

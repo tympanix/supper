@@ -10,7 +10,7 @@ class Subtitles extends Component {
   render() {
     let subs = this.props.list.map((s) => {
       return (
-        <span key={s.language} data-tooltip={s.language}>
+        <span key={s.filename} data-tooltip={s.language}>
           <Flag lang={s.code} onClick={this.click.bind(this)} />
         </span>
       )

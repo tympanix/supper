@@ -18,7 +18,7 @@ class Details extends Component {
     super()
 
     this.state = {
-      tabIndex: 1,
+      tabIndex: 0,
       media: undefined,
       folder: undefined,
       busy: false,

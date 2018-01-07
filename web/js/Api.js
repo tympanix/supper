@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
+import Checkmark from './comp/Checkmark'
+
 class Api {
   getMediaDetails(media) {
     return axios.post('./api/media', media)
@@ -26,6 +28,7 @@ class Api {
     }
     return axios.post("./api/subtitles", folder, config)
       .then(this.handleError)
+      .then(this.showSuccess)
   }
 
   downloadSingleSubtitle(folder, media, subtitle) {
@@ -41,6 +44,7 @@ class Api {
     )
     return axios.post('./api/subtitles', data, config)
       .then(this.handleError)
+      .then(this.showSuccess)
   }
 
   getSubtitles(folder, media) {
@@ -52,6 +56,11 @@ class Api {
     let data = Object.assign({}, folder, {filepath: media.filepath})
     return axios.post("./api/subtitles", data, config)
       .then(this.handleError)
+  }
+
+  showSuccess(data) {
+    Checkmark.show()
+    return data
   }
 
   handleError(res) {
