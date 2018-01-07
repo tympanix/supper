@@ -24,3 +24,15 @@ $tablet: 1150px;
 @mixin desktop {
   @media only screen and (min-device-width: $tablet) { @content; }
 }
+
+@mixin small {
+  @media only screen and (max-width: $mobile) { @content; }
+}
+
+@mixin medium {
+  @media only screen and (max-width: $tablet) { @content; }
+}
+
+@mixin large {
+  @media only screen and (max-width: $tablet) { @content; }
+}

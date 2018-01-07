@@ -38,9 +38,13 @@ class SubtitleList extends Component {
 
     subs = subs.map((s) => {
       return (
-        <li className="clearfix flex center">
-          <ScoreTag score={s.score} />
-          <div className="col ellipsis">{s.media.name}</div>
+        <li className="flex center collapse">
+          <div className="col inline spaced flex center nowrap">
+            <div className="col">
+              <ScoreTag score={s.score}/>
+            </div>
+            <div className="col name ellipsis">{s.media.name}</div>
+          </div>
           <div className="">
             <FileTags media={s}/>
           </div>

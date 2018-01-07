@@ -2,13 +2,27 @@
   display: flex;
   flex-flow: row;
 
+  @include small {
+    &.collapse {
+      flex-flow: column;
+
+      .right {
+        margin-left: 0;
+      }
+
+      > * {
+        margin-bottom: 0.25em;
+      }
+    }
+  }
+
   &.center {
     text-align: left;
   }
 
   .col {
     overflow: hidden;
-    flex: 1 1 100%;
+    flex: 1 1 auto;
   }
 
   .right {

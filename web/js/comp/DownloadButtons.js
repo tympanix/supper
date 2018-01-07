@@ -54,7 +54,7 @@ class DownloadButtons extends Component {
     })
 
     return (
-      <div className="float center">
+      <div className="float center vspace">
         <button disabled={off} onClick={this.downloadHandler()}>Download All</button>
         {buttons}
       </div>

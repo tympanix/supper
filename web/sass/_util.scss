@@ -22,3 +22,28 @@
   display: table;
   clear: both;
 }
+
+.inline > * {
+  display: inline-block;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
+}
+
+.spaced > * {
+  &:not(:last-child) {
+    margin-right: 0.5em;
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.vspace > * {
+  margin-bottom: 0.5em;
+}

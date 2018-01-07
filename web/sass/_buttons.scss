@@ -3,6 +3,7 @@ button {
   cursor: pointer;
   font-family: $font;
   margin: 0 .25em;
+  white-space: nowrap;
   font-size: 1em !important;
   position: relative;
   border-radius: 9999px;

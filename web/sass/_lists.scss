@@ -1,5 +1,6 @@
 ul {
   list-style: none;
+  overflow-x: hidden;
   margin: 0;
   padding: 0.25em 0;
   width: 100%;
@@ -73,14 +74,16 @@ ul.file-list {
         margin-top: .5em;
       }
     }
-
-    .subtitles {
-
-    }
   }
 }
 
 ul.subtitle-list {
+  li {
+    .name {
+      width: auto;
+      line-height: 1.5em;
+    }
+  }
   li > * {
     display: inline-block;
 
