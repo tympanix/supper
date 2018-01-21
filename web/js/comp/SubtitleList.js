@@ -9,7 +9,11 @@ import Spinner from './Spinner'
 class SubtitleList extends Component {
   constructor() {
     super()
-    this.state = subtitleStore.getState()
+    this.state = {
+      downloading: null
+    }
+
+    Object.assign(this.state, subtitleStore.getState())
     this.updateSubtitles = this.updateSubtitles.bind(this)
   }
 
@@ -37,7 +41,7 @@ class SubtitleList extends Component {
         <Spinner />
       )
     }
-    
+
     if (!this.state.subtitles || this.state.subtitles.length === 0) {
       return (
         <h3 className="meta center">Select a file to display subtitles</h3>
@@ -49,6 +53,9 @@ class SubtitleList extends Component {
     subs = subs.filter((s) => s.language === this.state.lang)
 
     subs = subs.map((s) => {
+      let classes = ["small"]
+      s===this.state.downloading && classes.push('loading')
+
       return (
         <li key={s.link} className="flex center collapse">
           <div className="col inline spaced flex center nowrap">
@@ -61,7 +68,7 @@ class SubtitleList extends Component {
             <FileTags media={s}/>
           </div>
           <div className="right">
-            <button className="small"
+            <button className={classes.join(" ")} disabled={this.state.downloading}
               onClick={() => this.downloadSubtitle(s)}>
               Download
             </button>

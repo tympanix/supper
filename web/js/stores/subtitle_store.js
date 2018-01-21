@@ -11,6 +11,7 @@ class SubtitleStore extends EventEmitter {
       media: null,
       folder: null,
       loading: false,
+      downloading: null,
     }
   }
 
@@ -32,9 +33,16 @@ class SubtitleStore extends EventEmitter {
   }
 
   download(sub) {
+    this.state.downloading = sub
+    this.emit("change")
     let f = this.state.folder
     let m = this.state.media
     return API.downloadSingleSubtitle(f, m, sub)
+      .then((res) => {
+        this.state.downloading = null
+        this.emit("change")
+        return res
+      })
   }
 
   reset() {
