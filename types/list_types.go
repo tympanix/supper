@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/set"
 )
 
+// List interface describes all common properties of lists
 type List interface {
 	Len() int
 }
@@ -15,7 +16,7 @@ type List interface {
 // SubtitleList is a collection of subtitles
 type SubtitleList interface {
 	List
-	Add(Subtitle)
+	Add(...Subtitle)
 	Best() Subtitle
 	List() []Subtitle
 	LanguageSet() set.Interface
@@ -23,7 +24,7 @@ type SubtitleList interface {
 	HearingImpaired(bool) SubtitleList
 }
 
-// MediaList is a list of media which can be manipulated
+// LocalMediaList is a list of media which can be manipulated
 type LocalMediaList interface {
 	List
 	Add(LocalMedia)

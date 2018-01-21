@@ -1,0 +1,32 @@
+.tabs {
+  margin: -1em;
+
+  ul.tablist {
+    @extend .noselect;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      cursor: pointer;
+      background-color: $borderColor;
+      text-align: center;
+      padding: 1em;
+      flex: 1 1 100%;
+      border-bottom: 1px solid $borderColor;
+      border-top: 1px solid $borderColor;
+
+      &.active {
+        background-color: white;
+        border: none;
+        border-top: .2em solid $brand;
+      }
+    }
+  }
+
+  section {
+    margin: 0;
+  }
+
+}

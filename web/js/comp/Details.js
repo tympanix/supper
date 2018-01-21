@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
 
+import subtitleStore from '../stores/subtitle_store'
+
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+
 import Search from './Search'
 import Spinner from './Spinner'
 import FileList from './FileList'
 import Flag from './Flag'
 import DownloadButtons from './DownloadButtons'
+import SubtitleList from './SubtitleList'
 
 import API from '../api'
 
@@ -12,7 +17,10 @@ class Details extends Component {
   constructor() {
     super()
 
+    this.subHotkey = this.subHotkey.bind(this)
+
     this.state = {
+      tabIndex: 0,
       media: undefined,
       folder: undefined,
       busy: false,
@@ -21,12 +29,27 @@ class Details extends Component {
     }
   }
 
+  componentDidMount() {
+    subtitleStore.reset()
+    window.addEventListener("keyup", this.subHotkey)
+  }
+
+  subHotkey(e) {
+    if (e.key === "s") {
+      this.downloadSubtitles()
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keyup", this.subHotkey)
+  }
+
   componentWillMount() {
     let folder = this.getLocationState()
     API.getMediaDetails(folder)
       .then((media) => this.setState({media: media}))
       .catch(() => this.setState({failed: true}))
-      .finally(() => this.setState({loading: false}))
+      .then(() => this.setState({loading: false}))
   }
 
   getLocationState() {
@@ -39,6 +62,13 @@ class Details extends Component {
     } catch (e) {
       this.setState({failed: true})
     }
+  }
+
+  languageClicked(event, media, lang) {
+    let folder = this.state.folder
+    this.setState({tabIndex: 1})
+    console.log("Clicked", media, lang)
+    subtitleStore.update(folder, media, lang)
   }
 
   downloadSubtitles(lang) {
@@ -77,9 +107,29 @@ class Details extends Component {
           </section>
 
           <section>
-            <h3>Files</h3>
-            <FileList files={this.state.media}/>
-            <Spinner visible={this.state.busy}/>
+            <Tabs className="tabs"
+              selectedIndex={this.state.tabIndex}
+              onSelect={tabIndex => this.setState({ tabIndex })}>
+              <TabList className="tablist">
+                <Tab selectedClassName="active">Files</Tab>
+                <Tab selectedClassName="active">Subtitles</Tab>
+              </TabList>
+
+              <TabPanel className="tab-panel">
+                <section>
+                  <h2>Files</h2>
+                  <FileList files={this.state.media}
+                    languageClicked={this.languageClicked.bind(this)}/>
+                  <Spinner visible={this.state.busy}/>
+                </section>
+              </TabPanel>
+              <TabPanel className="tab-panel">
+                <section>
+                  <h2>Subtitles</h2>
+                  <SubtitleList/>
+                </section>
+              </TabPanel>
+            </Tabs>
           </section>
         </section>
       )

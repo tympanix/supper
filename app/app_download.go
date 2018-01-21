@@ -16,6 +16,8 @@ import (
 var green = color.New(color.FgGreen)
 var red = color.New(color.FgRed)
 
+// DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
+// langauge in the language set. Any output is written to the ourpur writer
 func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface, out io.Writer) error {
 	numsubs := 0
 
@@ -38,12 +40,15 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 		fmt.Fprintf(out, "(%v/%v) - %s\n", i+1, media.Len(), item)
 
-		subs := list.Subtitles()
+		subs := list.RatedSubtitles(item)
 
 		if !dry {
-			subs, err = a.SearchSubtitles(item)
+			search, err := a.SearchSubtitles(item)
 			if err != nil {
 				return cli.NewExitError(err, 2)
+			}
+			for _, s := range search {
+				subs.Add(s)
 			}
 		}
 
@@ -67,7 +72,11 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			}
 
 			if !dry {
-				err := item.SaveSubtitle(langsubs.Best())
+				sub, ok := langsubs.Best().(types.OnlineSubtitle)
+				if !ok {
+					panic("Subtitle could not be cast to online subtitle")
+				}
+				err := item.SaveSubtitle(sub, sub.Language())
 				if err != nil {
 					red.Fprintln(out, err.Error())
 					continue

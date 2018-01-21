@@ -13,6 +13,7 @@ import (
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
+	"golang.org/x/text/language"
 )
 
 type File struct {
@@ -64,20 +65,21 @@ func (f *File) ExistingSubtitles() (types.SubtitleList, error) {
 }
 
 // SaveSubtitle saves the subtitle for the given media to disk
-func (f *File) SaveSubtitle(s types.Subtitle) error {
+func (f *File) SaveSubtitle(s types.Downloadable, lang language.Tag) error {
 	if s == nil {
 		return errors.New("invalid subtitle nil")
 	}
 
 	srt, err := s.Download()
-	defer srt.Close()
 
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
-	name := fmt.Sprintf("%s.%s.%s", parse.Filename(f.Path()), s.Language(), "srt")
+	defer srt.Close()
+
+	name := fmt.Sprintf("%s.%s.%s", parse.Filename(f.Path()), lang, "srt")
 	folder := filepath.Dir(f.Path())
 	srtpath := filepath.Join(folder, name)
 
@@ -87,6 +89,7 @@ func (f *File) SaveSubtitle(s types.Subtitle) error {
 		return err
 	}
 
+	defer file.Close()
 	_, err = io.Copy(file, srt)
 
 	if err != nil {

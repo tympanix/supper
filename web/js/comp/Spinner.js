@@ -7,13 +7,9 @@ class Spinner extends Component {
       return null
     }
     return (
-      <CSSTransition
-        classNames="fade"
-        timeout={1000}>
         <div className="overlay">
           <div className="spinner"></div>
         </div>
-      </CSSTransition>
     )
   }
 }

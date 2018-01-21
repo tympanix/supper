@@ -46,7 +46,6 @@ class DownloadButtons extends Component {
       return (
         <button
           disabled={off}
-          className={loading ? 'loading' : null}
           key={l.code}
           onClick={this.downloadHandler(l.code)}>
           {l.language}
@@ -55,7 +54,7 @@ class DownloadButtons extends Component {
     })
 
     return (
-      <div className="float center">
+      <div className="float center vspace">
         <button disabled={off} onClick={this.downloadHandler()}>Download All</button>
         {buttons}
       </div>

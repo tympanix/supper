@@ -7,12 +7,9 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/fatih/set"
 	"github.com/tympanix/supper/app"
-	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
 	"golang.org/x/text/language"
-	"golang.org/x/text/language/display"
 
 	"github.com/urfave/cli"
 )
@@ -136,69 +133,15 @@ func main() {
 			return cli.NewExitError(err, 3)
 		}
 
-		numsubs := 0
-
-		// Iterate all media files found in each path
-		for i, item := range media.List() {
-			cursubs, err := item.ExistingSubtitles()
-
-			if err != nil {
-				return cli.NewExitError(err, 2)
-			}
-
-			missingLangs := set.Difference(lang, cursubs.LanguageSet())
-
-			if missingLangs.Size() == 0 {
-				continue
-			}
-
-			fmt.Printf("(%v/%v) - %s\n", i+1, media.Len(), item)
-
-			subs := list.Subtitles()
-
-			if !c.Bool("dry") {
-				subs, err = sup.SearchSubtitles(item)
-				if err != nil {
-					return cli.NewExitError(err, 2)
-				}
-			}
-
-			subs = subs.HearingImpaired(c.Bool("impaired"))
-
-			// Download subtitle for each language
-			for _, l := range missingLangs.List() {
-				l, ok := l.(language.Tag)
-
-				numsubs++
-
-				if !ok {
-					return cli.NewExitError(err, 3)
-				}
-
-				langsubs := subs.FilterLanguage(l)
-
-				if langsubs.Len() == 0 && !c.Bool("dry") {
-					color.Red(" - no subtitles found")
-					continue
-				}
-
-				if !c.Bool("dry") {
-					err := item.SaveSubtitle(langsubs.Best())
-					if err != nil {
-						color.Red(err.Error())
-						continue
-					}
-				}
-
-				color.Green(" - %v\n", display.English.Languages().Name(l))
-			}
+		if err := sup.DownloadSubtitles(media, lang, os.Stdout); err != nil {
+			return cli.NewExitError(err, 5)
 		}
 
 		if c.Bool("dry") {
 			fmt.Println()
 			color.Blue("dry run, nothing performed")
 			color.Blue("total media files: %v", media.Len())
-			color.Blue("total missing subtitles: %v", numsubs)
+			//color.Blue("total missing subtitles: %v", numsubs)
 		}
 
 		return nil

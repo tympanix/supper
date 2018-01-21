@@ -25,16 +25,24 @@ class FileList extends Component {
     this.setState({files: props.files})
   }
 
+  subtitleClick(file) {
+    return (event, lang) => {
+      this.props.languageClicked &&
+      this.props.languageClicked(event, file, lang)
+    }
+  }
+
   render() {
     let files = this.state.files.map((f) => {
       return (
-        <li key={f.filepath}>
-          <span className="name">{f.media.name}</span>
-          <div className="content">
+        <li className="flex" key={f.filepath}>
+          <div className="col">
+            <div className="name">{f.media.name}</div>
             <FileTags media={f}/>
-            <span className="right">
-              <Subtitles list={f.subtitles}/>
-            </span>
+          </div>
+          <div className="flex center subtitles">
+            <Subtitles list={f.subtitles}
+              onClick={this.subtitleClick(f)} />
           </div>
         </li>
       )

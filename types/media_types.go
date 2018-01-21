@@ -7,9 +7,10 @@ import (
 	"golang.org/x/text/language"
 )
 
-// Provider interfaces with subtitles websites
+// Provider interfaces with subtitles websites to provide subtitles
 type Provider interface {
-	SearchSubtitles(LocalMedia) (SubtitleList, error)
+	SearchSubtitles(LocalMedia) ([]OnlineSubtitle, error)
+	ResolveSubtitle(Linker) (Downloadable, error)
 }
 
 // Downloadable is an interface for media that can be downloaded from the internet
@@ -45,7 +46,7 @@ type LocalMedia interface {
 	Media
 	Path() string
 	ExistingSubtitles() (SubtitleList, error)
-	SaveSubtitle(Subtitle) error
+	SaveSubtitle(Downloadable, language.Tag) error
 }
 
 // Movie interface is for movie type media material
@@ -63,11 +64,23 @@ type Episode interface {
 	Season() int
 }
 
+// Linker is an object which can be fetched from the internet
+type Linker interface {
+	Link() string
+}
+
 // Subtitle can be downloaded
 type Subtitle interface {
 	Media
-	Downloadable
 	Language() language.Tag
 	IsLang(language.Tag) bool
 	IsHI() bool
+}
+
+// OnlineSubtitle is a subtitle obtained from the internet
+// and can be downloaded and stored on disk
+type OnlineSubtitle interface {
+	Linker
+	Downloadable
+	Subtitle
 }

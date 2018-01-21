@@ -6,11 +6,18 @@ $brand: #3498db;
 $borderColor: rgba(0,0,0,0.05);
 
 // Animations
-$bazier: cubic-bezier(.57,-0.88,.42,1.73);
+$bazier: cubic-bezier(0, 2.07, 0.42, 1.73);
 
 // Screen sizes
 $mobile: 550px;
 $tablet: 1150px;
+
+// Colors
+$green: rgb(152, 195, 121);
+$red: rgb(225, 108, 117);
+$yellow: rgb(229, 192, 123);
+$purple: rgb(198, 120, 221);
+$cyan: rgb(86, 182, 194);
 
 // Mixins
 @mixin mobile {
@@ -19,4 +26,20 @@ $tablet: 1150px;
 
 @mixin tablet {
   @media only screen and (max-device-width: $tablet) { @content; }
+}
+
+@mixin desktop {
+  @media only screen and (min-device-width: $tablet) { @content; }
+}
+
+@mixin small {
+  @media only screen and (max-width: $mobile) { @content; }
+}
+
+@mixin medium {
+  @media only screen and (max-width: $tablet) { @content; }
+}
+
+@mixin large {
+  @media only screen and (min-width: $tablet) { @content; }
 }

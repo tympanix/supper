@@ -8,6 +8,9 @@ import (
 	"github.com/urfave/cli"
 )
 
+// App is the interface for the top level capabilities of the application.
+// It is an HTTP handler, and provider (for subtitles) and a CLI application.
+// It means App can both be used as a HTTP server and a CLI application.
 type App interface {
 	Provider
 	http.Handler

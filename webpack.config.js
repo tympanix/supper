@@ -37,7 +37,11 @@ module.exports = {
         }
       }, {
         test: /\.svg$/,
-        loader: 'svg-url-loader'
+        loader: 'file-loader',
+        options: {
+          publicPath: './',
+          outputPath: 'img/',
+        }
       }
     ]
   },

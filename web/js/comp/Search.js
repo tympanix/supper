@@ -58,7 +58,7 @@ class Search extends Component {
     let search = this.state.search.toLowerCase()
     const media = this.state.media.filter((m) => {
       let name = m.name.toLowerCase()
-      return name.includes(search)
+      return name.indexOf(search) !== -1
     })
 
     return (

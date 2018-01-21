@@ -7,7 +7,7 @@ class FileTags extends Component {
     let media = this.props.media
     let meta = media.media.metadata
 
-    let keys = ["quality", "source"]
+    let keys = ["quality", "source", "group"]
 
     let tags = keys.map((k) => {
       return meta[k] && <span key={k} className="tag">{meta[k]}</span>
