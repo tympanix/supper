@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Switch, Link } from 'react-router-dom'
 import Search from './Search'
 import Details from './Details'
 import Checkmark from './Checkmark'
+import Snackbar from './Snackbar'
 
 class App extends Component {
   constructor() {
@@ -23,6 +24,7 @@ class App extends Component {
             <Route component={Search} />
           </Switch>
         </BrowserRouter>
+        <Snackbar/>
         <Checkmark/>
       </div>
     )

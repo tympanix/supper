@@ -12,6 +12,13 @@ $bazier: cubic-bezier(0, 2.07, 0.42, 1.73);
 $mobile: 550px;
 $tablet: 1150px;
 
+// Colors
+$green: rgb(152, 195, 121);
+$red: rgb(225, 108, 117);
+$yellow: rgb(229, 192, 123);
+$purple: rgb(198, 120, 221);
+$cyan: rgb(86, 182, 194);
+
 // Mixins
 @mixin mobile {
   @media only screen and (max-device-width: $mobile) { @content; }
@@ -34,5 +41,5 @@ $tablet: 1150px;
 }
 
 @mixin large {
-  @media only screen and (max-width: $tablet) { @content; }
+  @media only screen and (min-width: $tablet) { @content; }
 }

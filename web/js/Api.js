@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 
 import Checkmark from './comp/Checkmark'
+import Snackbar from './comp/Snackbar'
 
 class Api {
   getMediaDetails(media) {
@@ -65,6 +66,11 @@ class Api {
 
   handleError(res) {
     if (res.status !== 200) {
+      if (res.message && typeof res.message === 'string') {
+        Snackbar.error("Error", res.message)
+      } else {
+        Snackbar.error("Error", "An unexprected error occurred")
+      }
       throw new Error(res.data.message || 'Unknown error')
     } else {
       return res.data

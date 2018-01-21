@@ -11,6 +11,7 @@
 @import "misc";
 @import "containers";
 @import "tabs";
+@import "snackbar";
 
 * {
   box-sizing: border-box;
@@ -49,8 +50,8 @@ body {
 
 .main {
   width: 65vw;
-  margin: 1em auto;
-  padding: 1em 1em;
+  margin: 0 auto;
+  padding: 4em 1em;
 
   @media screen and (max-width: 1150px) {
     width: 100%;
