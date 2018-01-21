@@ -17,6 +17,8 @@ class Details extends Component {
   constructor() {
     super()
 
+    this.subHotkey = this.subHotkey.bind(this)
+
     this.state = {
       tabIndex: 0,
       media: undefined,
@@ -29,6 +31,17 @@ class Details extends Component {
 
   componentDidMount() {
     subtitleStore.reset()
+    window.addEventListener("keyup", this.subHotkey)
+  }
+
+  subHotkey(e) {
+    if (e.key === "s") {
+      this.downloadSubtitles()
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keyup", this.subHotkey)
   }
 
   componentWillMount() {
