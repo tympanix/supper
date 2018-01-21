@@ -9,7 +9,7 @@ function push(type, title, message, delay) {
     type,
     title,
     message,
-    delay: delay || 5000,
+    delay: delay || 8000,
   })
 }
 
