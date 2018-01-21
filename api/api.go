@@ -2,10 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
+	"github.com/fatih/set"
 	"github.com/gorilla/mux"
 	"github.com/tympanix/supper/types"
+	"golang.org/x/text/language"
 )
 
 type API struct {
@@ -51,6 +54,21 @@ func (e *apiError) MarshalJSON() (b []byte, err error) {
 	}{
 		Error: e.Error(),
 	})
+}
+
+func (a *API) queryLang(r *http.Request) (set.Interface, error) {
+	v := r.URL.Query()
+	lang := v.Get("lang")
+	if lang == "" {
+		return a.Languages(), nil
+	} else {
+		l := language.Make(lang)
+		if l == language.Und {
+			return set.New(), errors.New("unknown language")
+		} else {
+			return set.New(l), nil
+		}
+	}
 }
 
 type apiHandler func(http.ResponseWriter, *http.Request) interface{}

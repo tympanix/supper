@@ -120,6 +120,12 @@ func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} 
 }
 
 func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
+	langs, err := a.queryLang(r)
+
+	if err != nil {
+		return errors.New("unknown language for subtitle")
+	}
+
 	var folder jsonFolder
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&folder); err != nil {
@@ -137,7 +143,7 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	err = a.DownloadSubtitles(media, a.Languages(), ioutil.Discard)
+	err = a.DownloadSubtitles(media, langs, ioutil.Discard)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}

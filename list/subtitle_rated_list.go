@@ -2,9 +2,12 @@ package list
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"golang.org/x/text/language"
 
@@ -19,13 +22,30 @@ type subtitleEntry struct {
 }
 
 func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
+	hash := sha1.New()
+
+	info := []string{
+		s.Link(),
+		s.Meta().Codec(),
+		s.Meta().Group(),
+		s.Meta().Quality(),
+		s.Meta().Source(),
+	}
+
+	hash.Write([]byte(strings.Join(info, "")))
+	hashval := hash.Sum(nil)
+	infohash := make([]byte, hex.EncodedLen(len(hashval)))
+	hex.Encode(infohash, hashval)
+
 	return json.Marshal(struct {
+		Hash  string         `json:"hash"`
 		Lang  language.Tag   `json:"language"`
 		Link  string         `json:"link"`
 		Score float32        `json:"score"`
 		HI    bool           `json:"hi"`
 		Media types.Metadata `json:"media"`
 	}{
+		string(infohash),
 		s.Language(),
 		s.Link(),
 		s.score,

@@ -57,7 +57,7 @@ class SubtitleList extends Component {
       s===this.state.downloading && classes.push('loading')
 
       return (
-        <li key={s.link} className="flex center collapse">
+        <li key={s.hash} className="flex center collapse">
           <div className="col inline spaced flex center nowrap">
             <div className="col">
               <ScoreTag score={s.score}/>
