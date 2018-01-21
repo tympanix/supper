@@ -4,6 +4,7 @@ import subtitleStore from '../stores/subtitle_store'
 
 import FileTags from './FileTags'
 import ScoreTag from './ScoreTag'
+import Spinner from './Spinner'
 
 class SubtitleList extends Component {
   constructor() {
@@ -31,6 +32,12 @@ class SubtitleList extends Component {
   }
 
   render() {
+    if (this.state.loading) {
+      return (
+        <Spinner />
+      )
+    }
+    
     if (!this.state.subtitles || this.state.subtitles.length === 0) {
       return (
         <h3 className="meta center">Select a file to display subtitles</h3>

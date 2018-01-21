@@ -1,8 +1,6 @@
 import { EventEmitter } from 'events'
 import API from '../api'
 
-import mock from '../mock/mock_subtitles'
-
 class SubtitleStore extends EventEmitter {
   constructor() {
     super()
@@ -11,15 +9,19 @@ class SubtitleStore extends EventEmitter {
       subtitles: [],
       lang: null,
       media: null,
-      folder: null
+      folder: null,
+      loading: false,
     }
   }
 
   update(folder, media, lang) {
+    this.state.loading = true
+    this.emit("change")
     this.state.folder = folder
     this.state.lang = lang
     this.state.media = media
     API.getSubtitles(folder, media).then(subs => {
+      this.state.loading = false
       this.state.subtitles = subs.sort((a,b) => b.score - a.score)
       this.emit("change")
     })

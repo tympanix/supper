@@ -23,7 +23,6 @@ class App extends Component {
             <Route component={Search} />
           </Switch>
         </BrowserRouter>
-        <button onClick={() => {Checkmark.show()}}>Click Me!</button>
         <Checkmark/>
       </div>
     )
