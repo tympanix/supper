@@ -12,6 +12,11 @@ class App extends Component {
     super()
   }
 
+  componentDidCatch(error, info) {
+    console.error(error, info)
+    Snackbar.error("Exception", error)
+  }
+
   render() {
     return (
       <div>
