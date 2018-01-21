@@ -1,0 +1,12 @@
+builds:
+  - binary: supper
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+archive:
+  files:
+    - web/*
+    - web/static/**/*

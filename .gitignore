@@ -4,6 +4,7 @@
 .LSOverride
 
 node_modules
+dist
 debug*
 supper*
 !/supper.go
