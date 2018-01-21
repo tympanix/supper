@@ -27,6 +27,10 @@ class Details extends Component {
     }
   }
 
+  componentDidMount() {
+    subtitleStore.reset()
+  }
+
   componentWillMount() {
     let folder = this.getLocationState()
     API.getMediaDetails(folder)

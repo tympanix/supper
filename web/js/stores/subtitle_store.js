@@ -17,10 +17,10 @@ class SubtitleStore extends EventEmitter {
 
   update(folder, media, lang) {
     this.state.loading = true
-    this.emit("change")
     this.state.folder = folder
     this.state.lang = lang
     this.state.media = media
+    this.emit("change")
     API.getSubtitles(folder, media).then(subs => {
       this.state.loading = false
       this.state.subtitles = subs.sort((a,b) => b.score - a.score)
@@ -45,10 +45,15 @@ class SubtitleStore extends EventEmitter {
       })
   }
 
+  enabled() {
+    return !!(this.state.folder && this.state.media)
+  }
+
   reset() {
     this.state.subtitles = []
     this.state.lang = null
     this.state.media = null
+    this.state.folder = null
   }
 
   getLang() {
