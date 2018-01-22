@@ -6,11 +6,15 @@ let snackEvent = new EventEmitter()
 
 function push(type, title, message, delay) {
   snackEvent.emit("change", {
-    type,
-    title,
-    message,
+    type: type,
+    title: capitalizeFirstLetter(title),
+    message: capitalizeFirstLetter(message),
     delay: delay || 8000,
   })
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 let id = 0

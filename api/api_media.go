@@ -34,12 +34,12 @@ func (f jsonFolder) getPath(a types.App) (path string, err error) {
 	} else if f.Type == typeShow {
 		root = a.Context().String("shows")
 	} else {
-		err = errors.New("Unknown media format")
+		err = errors.New("unknown media format")
 		return
 	}
 	path = filepath.Join(root, f.Folder)
 	if filepath.Dir(path) != filepath.Clean(root) {
-		return "", errors.New("Illegal folder path")
+		return "", errors.New("illegal folder path")
 	}
 	return
 }
@@ -72,7 +72,7 @@ func (a *API) media(w http.ResponseWriter, r *http.Request) interface{} {
 	} else if r.Method == "POST" {
 		return a.detailsMedia(w, r)
 	} else {
-		err := errors.New("Method not allowed")
+		err := errors.New("method not allowed")
 		return Error(err, http.StatusMethodNotAllowed)
 	}
 }
@@ -127,14 +127,20 @@ func (a *API) fileList(folder jsonFolder) (interface{}, error) {
 		} else if _, ok := m.TypeMovie(); ok {
 			mtype = typeMovie
 		}
+		relpath, err := filepath.Rel(path, m.Path())
+		if err != nil {
+			return nil, errors.New("interval path error for media file")
+		}
 		medialist = append(medialist, struct {
 			Type  string             `json:"type"`
+			Name  string             `json:"filename"`
 			Path  string             `json:"filepath"`
 			Media types.Media        `json:"media"`
 			Subs  types.SubtitleList `json:"subtitles"`
 		}{
 			mtype,
 			m.Name(),
+			relpath,
 			m,
 			subs,
 		})

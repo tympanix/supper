@@ -18,7 +18,7 @@ var busyFolders = new(sync.Map)
 
 type jsonMedia struct {
 	jsonFolder
-	Filename string `json:"filename"`
+	Filepath string `json:"filepath"`
 }
 
 func (m jsonMedia) MediaFile(a types.App) (types.LocalMedia, error) {
@@ -53,7 +53,7 @@ func (m jsonMedia) getPath(a types.App) (path string, err error) {
 	if err != nil {
 		return
 	}
-	path = filepath.Join(folder, m.Filename)
+	path = filepath.Join(folder, m.Filepath)
 	if !filepath.HasPrefix(path, folder) {
 		return "", errors.New("Illegal media path")
 	}
@@ -136,7 +136,7 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 		return Error(err, http.StatusBadRequest)
 	}
 	if _, busy := busyFolders.LoadOrStore(path, true); busy {
-		return Error(errors.New("Folder is busy"), http.StatusTooManyRequests)
+		return Error(errors.New("folder is busy"), http.StatusTooManyRequests)
 	}
 	defer busyFolders.Delete(path)
 	media, err := a.FindMedia(path)
