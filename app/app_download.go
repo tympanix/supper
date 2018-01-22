@@ -18,7 +18,7 @@ var red = color.New(color.FgRed)
 
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
 // langauge in the language set. Any output is written to the ourpur writer
-func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface, out io.Writer) error {
+func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface, out io.Writer) (int, error) {
 	numsubs := 0
 
 	dry := a.Context().GlobalBool("dry")
@@ -29,7 +29,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		cursubs, err := item.ExistingSubtitles()
 
 		if err != nil {
-			return cli.NewExitError(err, 2)
+			return -1, cli.NewExitError(err, 2)
 		}
 
 		missingLangs := set.Difference(lang, cursubs.LanguageSet())
@@ -45,7 +45,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		if !dry {
 			search, err := a.SearchSubtitles(item)
 			if err != nil {
-				return cli.NewExitError(err, 2)
+				return -1, cli.NewExitError(err, 2)
 			}
 			for _, s := range search {
 				subs.Add(s)
@@ -61,7 +61,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			numsubs++
 
 			if !ok {
-				return cli.NewExitError(err, 3)
+				return -1, cli.NewExitError(err, 3)
 			}
 
 			langsubs := subs.FilterLanguage(l)
@@ -86,5 +86,5 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			green.Fprintf(out, " - %v\n", display.English.Languages().Name(l))
 		}
 	}
-	return nil
+	return numsubs, nil
 }

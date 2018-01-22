@@ -17,5 +17,5 @@ type App interface {
 	Context() *cli.Context
 	FindMedia(...string) (LocalMediaList, error)
 	Languages() set.Interface
-	DownloadSubtitles(LocalMediaList, set.Interface, io.Writer) error
+	DownloadSubtitles(LocalMediaList, set.Interface, io.Writer) (int, error)
 }

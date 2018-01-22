@@ -18,7 +18,7 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "supper"
-	app.Version = "0.1.2"
+	app.Version = "0.1.3"
 	app.Usage = "An automatic subtitle downloader"
 
 	app.Commands = []cli.Command{
@@ -133,7 +133,9 @@ func main() {
 			return cli.NewExitError(err, 3)
 		}
 
-		if err := sup.DownloadSubtitles(media, lang, os.Stdout); err != nil {
+		numsubs, err := sup.DownloadSubtitles(media, lang, os.Stdout)
+
+		if err != nil {
 			return cli.NewExitError(err, 5)
 		}
 
@@ -141,7 +143,7 @@ func main() {
 			fmt.Println()
 			color.Blue("dry run, nothing performed")
 			color.Blue("total media files: %v", media.Len())
-			//color.Blue("total missing subtitles: %v", numsubs)
+			color.Blue("total missing subtitles: %v", numsubs)
 		}
 
 		return nil

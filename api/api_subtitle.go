@@ -143,7 +143,7 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	err = a.DownloadSubtitles(media, langs, ioutil.Discard)
+	_, err = a.DownloadSubtitles(media, langs, ioutil.Discard)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
