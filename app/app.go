@@ -35,14 +35,11 @@ func New(context *cli.Context) types.App {
 
 	static := context.String("static")
 
-	fs := http.FileServer(http.Dir(filepath.Join(static, "/static")))
-	app.ServeMux.Handle("/static/", http.StripPrefix("/static", fs))
-
 	api := api.New(app)
 	app.ServeMux.Handle("/api/", http.StripPrefix("/api", api))
 
-	index := IndexHandler(filepath.Join(static, "index.html"))
-	app.ServeMux.Handle("/", index)
+	fs := WebAppHandler(static)
+	app.ServeMux.Handle("/", fs)
 
 	return app
 }
@@ -65,10 +62,17 @@ func (a *Application) Languages() set.Interface {
 	return lang
 }
 
-// IndexHandler always serves the same file (e.g. index.html)
-func IndexHandler(entrypoint string) http.Handler {
+// WebAppHandler serves a single-page web application
+func WebAppHandler(path string) http.Handler {
+	files := http.FileServer(http.Dir(path))
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, entrypoint)
+		uri := filepath.Join(path, r.URL.Path)
+		if _, err := os.Stat(uri); os.IsNotExist(err) {
+			http.ServeFile(w, r, filepath.Join(path, "index.html"))
+		} else {
+			files.ServeHTTP(w, r)
+		}
 	})
 }
 
