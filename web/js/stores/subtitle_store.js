@@ -25,6 +25,9 @@ class SubtitleStore extends EventEmitter {
       this.state.loading = false
       this.state.subtitles = subs.sort((a,b) => b.score - a.score)
       this.emit("change")
+    }).catch(() => {
+      this.state.loading = false
+      this.emit("change")
     })
   }
 

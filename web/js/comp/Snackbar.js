@@ -74,7 +74,7 @@ class Snackbar extends Component {
       return (
         <li className={s.type} key={s.id}>
           <span className="title">{s.title}</span>
-          <span className="message">{s.message}{s.id}</span>
+          <span className="message">{s.message}</span>
         </li>
       )
     })

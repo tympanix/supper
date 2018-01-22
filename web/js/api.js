@@ -5,18 +5,26 @@ import Checkmark from './comp/Checkmark'
 import Snackbar from './comp/Snackbar'
 
 class Api {
+  constructor() {
+    this.handleError = this.handleError.bind(this)
+    this.handleException = this.handleException.bind(this)
+  }
+
   getMediaDetails(media) {
     return axios.post('./api/media', media)
+      .catch(this.handleException)
       .then(this.handleError)
   }
 
   getFolders() {
     return axios.get("./api/media")
+      .catch(this.handleException)
       .then(this.handleError)
   }
 
   getConfig() {
     return axios.get("./api/config")
+      .catch(this.handleException)
       .then(this.handleError)
   }
 
@@ -28,6 +36,7 @@ class Api {
       }
     }
     return axios.post("./api/subtitles", folder, config)
+      .catch(this.handleException)
       .then(this.handleError)
       .then(this.showSuccess)
   }
@@ -44,6 +53,7 @@ class Api {
       {language: subtitle.language},
     )
     return axios.post('./api/subtitles', data, config)
+      .catch(this.handleException)
       .then(this.handleError)
       .then(this.showSuccess)
   }
@@ -56,6 +66,7 @@ class Api {
     }
     let data = Object.assign({}, folder, {filepath: media.filepath})
     return axios.post("./api/subtitles", data, config)
+      .catch(this.handleException)
       .then(this.handleError)
   }
 
@@ -64,13 +75,22 @@ class Api {
     return data
   }
 
+  handleException(error) {
+    this.showError(error.response)
+    throw error
+  }
+
+  showError(res) {
+    if (res.data.error && typeof res.data.error === 'string') {
+      Snackbar.error("Error", res.data.error)
+    } else {
+      Snackbar.error("Error", "An unexprected error occurred")
+    }
+  }
+
   handleError(res) {
     if (res.status !== 200) {
-      if (res.message && typeof res.message === 'string') {
-        Snackbar.error("Error", res.message)
-      } else {
-        Snackbar.error("Error", "An unexprected error occurred")
-      }
+      this.showError(res)
       throw new Error(res.data.message || 'Unknown error')
     } else {
       return res.data
