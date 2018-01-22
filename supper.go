@@ -18,7 +18,7 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "supper"
-	app.Version = "0.1.0"
+	app.Version = "0.1.2"
 	app.Usage = "An automatic subtitle downloader"
 
 	app.Commands = []cli.Command{
