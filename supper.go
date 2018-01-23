@@ -18,7 +18,7 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "supper"
-	app.Version = "0.1.3"
+	app.Version = "0.1.4"
 	app.Usage = "An automatic subtitle downloader"
 
 	app.Commands = []cli.Command{
@@ -121,8 +121,6 @@ func main() {
 		if modified > 0 {
 			media = media.FilterModified(modified)
 		}
-
-		media, err = media.FilterMissingSubs(lang)
 
 		if err != nil {
 			return cli.NewExitError(err, 3)
