@@ -19,7 +19,7 @@ export default class MediaItem extends Component {
     }
 
     let active = this.props.active ? 'active' : ''
-    let link = {pathname: "/details", state: {folder: this.props.item}}
+    let link = {pathname: "./details", state: {folder: this.props.item}}
 
     return (
       <li className={active}>

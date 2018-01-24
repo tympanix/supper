@@ -44,7 +44,7 @@ class Search extends Component {
     } else if (event.key === "Enter") {
       let selected = this.mediaList.getSelected()
       if (selected) {
-        let redirect = {pathname: "/details", state: {folder: selected}}
+        let redirect = {pathname: "./details", state: {folder: selected}}
         this.setState({redirect})
       }
     }
