@@ -23,7 +23,7 @@ class App extends Component {
         <BrowserRouter>
           <Switch>
             <Route exact path="/" component={Search} />
-            <Route path="/details" component={Details} />
+            <Route path="*/details" component={Details} />
 
             // Default route
             <Route component={Search} />
