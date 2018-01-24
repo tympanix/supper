@@ -14,11 +14,14 @@ import (
 	"github.com/urfave/cli"
 )
 
+// set application version with -ldflags -X
+var version string
+
 func main() {
 
 	app := cli.NewApp()
 	app.Name = "supper"
-	app.Version = "0.1.4"
+	app.Version = version
 	app.Usage = "An automatic subtitle downloader"
 
 	app.Commands = []cli.Command{
