@@ -25,6 +25,7 @@ a {
 html {
   overflow-y: scroll;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 html, body {
