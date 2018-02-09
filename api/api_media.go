@@ -5,7 +5,9 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
@@ -22,9 +24,24 @@ var folders = map[string]string{
 }
 
 type jsonFolder struct {
-	Type   string `json:"type"`
-	Folder string `json:"folder"`
-	Name   string `json:"name"`
+	os.FileInfo `json:"-"`
+	Type        string `json:"type"`
+	Folder      string `json:"folder"`
+	Name        string `json:"name"`
+}
+
+type folderList []*jsonFolder
+
+func (l folderList) Len() int {
+	return len(l)
+}
+
+func (l folderList) Swap(i, j int) {
+	l[i], l[j] = l[j], l[i]
+}
+
+func (l folderList) Less(i, j int) bool {
+	return l[i].ModTime().After(l[j].ModTime())
 }
 
 func (f jsonFolder) getPath(a types.App) (path string, err error) {
@@ -55,9 +72,10 @@ func findMediaFolders(t string, paths ...string) ([]*jsonFolder, error) {
 		for _, file := range files {
 			if file.IsDir() {
 				media = append(media, &jsonFolder{
-					Type:   t,
-					Folder: file.Name(),
-					Name:   parse.CleanName(file.Name()),
+					FileInfo: file,
+					Type:     t,
+					Folder:   file.Name(),
+					Name:     parse.CleanName(file.Name()),
 				})
 			}
 		}
@@ -90,6 +108,7 @@ func (a *API) allMedia(w http.ResponseWriter, r *http.Request) interface{} {
 		}
 	}
 
+	sort.Sort(folderList(media))
 	return media
 }
 
