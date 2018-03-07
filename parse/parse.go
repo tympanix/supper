@@ -5,6 +5,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/meta/source"
 )
 
 type regexMatcher map[*regexp.Regexp]interface{}
@@ -51,21 +55,30 @@ func CleanName(name string) string {
 }
 
 // Source parses the source from a filename
-func Source(name string) string {
-	//return Sources.FindTag(name)
-	return ""
+func Source(name string) source.Tag {
+	s := Sources.FindTag(name)
+	if s != nil {
+		return s.(source.Tag)
+	}
+	return source.None
 }
 
 // Quality finds the quality of the media
-func Quality(name string) string {
-	//return Qualities.FindTag(name)
-	return ""
+func Quality(name string) quality.Tag {
+	q := Qualities.FindTag(name)
+	if q != nil {
+		return q.(quality.Tag)
+	}
+	return quality.None
 }
 
 // Codec parses the codec from a file name
-func Codec(name string) string {
-	//return Codecs.FindTag(name)
-	return ""
+func Codec(name string) codec.Tag {
+	c := Codecs.FindTag(name)
+	if c != nil {
+		return c.(codec.Tag)
+	}
+	return codec.None
 }
 
 var tagsRegexp = regexp.MustCompile(`[\W_]+`)

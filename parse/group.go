@@ -1,6 +1,12 @@
 package parse
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/meta/source"
+)
 
 var groupRegexp = regexp.MustCompile(`[a-zA-Z0-9]+$`)
 
@@ -8,11 +14,11 @@ var groupRegexp = regexp.MustCompile(`[a-zA-Z0-9]+$`)
 func Group(name string) string {
 	group := groupRegexp.FindString(name)
 
-	if len(Quality(group)) > 0 {
+	if Quality(group) != quality.None {
 		return ""
-	} else if len(Source(group)) > 0 {
+	} else if Source(group) != source.None {
 		return ""
-	} else if len(Codec(group)) > 0 {
+	} else if Codec(group) != codec.None {
 		return ""
 	} else if len(group) <= 1 {
 		return ""

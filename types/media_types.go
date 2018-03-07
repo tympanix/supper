@@ -4,6 +4,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/meta/source"
 	"golang.org/x/text/language"
 )
 
@@ -34,9 +37,9 @@ type Media interface {
 type Metadata interface {
 	String() string
 	Group() string
-	Codec() string
-	Quality() string
-	Source() string
+	Codec() codec.Tag
+	Quality() quality.Tag
+	Source() source.Tag
 	AllTags() []string
 }
 

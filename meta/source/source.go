@@ -1,9 +1,19 @@
 package source
 
+// Tag is an enum type for media sources
 type Tag int
 
+func (t Tag) String() string {
+	s, ok := stringer[t]
+	if ok {
+		return s
+	}
+	panic("unknown source tags")
+}
+
 const (
-	Remux Tag = iota
+	None Tag = iota
+	Remux
 	BluRay
 	WEBDL
 	WEBRip
@@ -18,3 +28,21 @@ const (
 	Telesync
 	Cam
 )
+
+var stringer = map[Tag]string{
+	None:      "Unknown",
+	Remux:     "Remux",
+	BluRay:    "BluRay",
+	WEBDL:     "WEB-DL",
+	WEBRip:    "WEB-Rip",
+	VODRip:    "VOD-Rip",
+	HDTV:      "HDTV",
+	DVDR:      "DVDR",
+	DVDRip:    "DVD-Rip",
+	R5:        "R5",
+	Screener:  "Screener",
+	Telecine:  "Telecine",
+	Workprint: "Workprint",
+	Telesync:  "Telesync",
+	Cam:       "Cam",
+}
