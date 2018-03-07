@@ -1,14 +1,15 @@
 package source
 
-type Source int
+type Tag int
 
 const (
-	Remux Source = iota
+	Remux Tag = iota
 	BluRay
 	WEBDL
 	WEBRip
 	VODRip
 	HDTV
+	DVDR
 	DVDRip
 	R5
 	Screener

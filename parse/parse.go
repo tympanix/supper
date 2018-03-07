@@ -7,28 +7,25 @@ import (
 	"strings"
 )
 
-// Collection is a collection of tags
-type Collection map[string]*regexp.Regexp
+type regexMatcher map[*regexp.Regexp]interface{}
 
-// FindTag find a tag from the collection in the string
-func (t Collection) FindTag(str string) string {
+func makeMatcher(tags map[string]interface{}) regexMatcher {
+	regs := make(map[*regexp.Regexp]interface{})
+	for reg, tag := range tags {
+		regexpstr := fmt.Sprintf("(?i)\\b(%s)\\b", reg)
+		regs[regexp.MustCompile(regexpstr)] = tag
+	}
+	return regs
+}
+
+func (r regexMatcher) FindTag(str string) interface{} {
 	lower := strings.ToLower(str)
-	for tag, reg := range t {
+	for reg, tag := range r {
 		if reg.MatchString(lower) {
 			return tag
 		}
 	}
-	return ""
-}
-
-// NewCollection creates a new collection of tags
-func NewCollection(tags []string) Collection {
-	regs := make(map[string]*regexp.Regexp)
-	for _, tag := range tags {
-		regexpstr := fmt.Sprintf("\\b%s\\b", strings.ToLower(tag))
-		regs[tag] = regexp.MustCompile(regexpstr)
-	}
-	return regs
+	return nil
 }
 
 // Filename returns the filename of the file without extension
@@ -55,17 +52,20 @@ func CleanName(name string) string {
 
 // Source parses the source from a filename
 func Source(name string) string {
-	return Sources.FindTag(name)
+	//return Sources.FindTag(name)
+	return ""
 }
 
 // Quality finds the quality of the media
 func Quality(name string) string {
-	return Qualities.FindTag(name)
+	//return Qualities.FindTag(name)
+	return ""
 }
 
 // Codec parses the codec from a file name
 func Codec(name string) string {
-	return Codecs.FindTag(name)
+	//return Codecs.FindTag(name)
+	return ""
 }
 
 var tagsRegexp = regexp.MustCompile(`[\W_]+`)

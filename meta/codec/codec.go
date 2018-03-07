@@ -1,12 +1,12 @@
 package codec
 
-type Codec int
+type Tag int
 
 const (
-	HEVC Codec = iota
+	HEVC Tag = iota
 	AVC
-	x265
-	x264
+	X265
+	X264
 	XviD
 	DivX
 	WMV
