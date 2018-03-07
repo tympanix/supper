@@ -76,7 +76,9 @@ class Details extends Component {
     let folder = this.state.folder
     API.downloadSubtitles(folder, lang).then((data) => {
       this.setState({media: data})
-    }).finally(() => {
+    }).catch((err) => {
+      console.log(err)
+    }).then(() => {
       this.setState({busy: false})
     })
   }
