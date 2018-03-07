@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/meta/source"
 	"github.com/tympanix/supper/parse"
 )
 
 // Metadata provides release information for media
 type Metadata struct {
 	group   string
-	codec   string
-	quality string
-	source  string
+	codec   codec.Tag
+	quality quality.Tag
+	source  source.Tag
 	tags    []string
 }
 
@@ -35,9 +38,9 @@ func (m Metadata) MarshalJSON() (b []byte, err error) {
 		Source  string `json:"source"`
 	}{
 		m.group,
-		m.codec,
-		m.quality,
-		m.source,
+		m.codec.String(),
+		m.quality.String(),
+		m.source.String(),
 	})
 }
 
@@ -45,9 +48,9 @@ func (m Metadata) MarshalJSON() (b []byte, err error) {
 func (m Metadata) String() string {
 	return strings.Join([]string{
 		m.Group(),
-		m.Codec(),
-		m.Quality(),
-		m.Source(),
+		m.Codec().String(),
+		m.Quality().String(),
+		m.Source().String(),
 	}, ",")
 }
 
@@ -57,17 +60,17 @@ func (m Metadata) Group() string {
 }
 
 // Codec returns the codec
-func (m Metadata) Codec() string {
+func (m Metadata) Codec() codec.Tag {
 	return m.codec
 }
 
 // Quality returns the quality of the media
-func (m Metadata) Quality() string {
+func (m Metadata) Quality() quality.Tag {
 	return m.quality
 }
 
 // Source returns the source of the media
-func (m Metadata) Source() string {
+func (m Metadata) Source() source.Tag {
 	return m.source
 }
 
