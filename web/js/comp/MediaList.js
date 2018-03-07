@@ -53,7 +53,7 @@ export default class MediaList extends Component {
 
     return (
       <ul className="media-list">
-        {media}
+        {media.length ? media : <h2 className="center meta">No media found :(</h2>}
       </ul>
     );
   }
