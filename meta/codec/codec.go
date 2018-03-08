@@ -23,7 +23,7 @@ const (
 )
 
 var stringer = map[Tag]string{
-	None: "Unknown",
+	None: "",
 	HEVC: "HEVC",
 	AVC:  "AVC",
 	X265: "x265",

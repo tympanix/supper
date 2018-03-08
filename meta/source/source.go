@@ -30,7 +30,7 @@ const (
 )
 
 var stringer = map[Tag]string{
-	None:      "Unknown",
+	None:      "",
 	Remux:     "Remux",
 	BluRay:    "BluRay",
 	WEBDL:     "WEB-DL",

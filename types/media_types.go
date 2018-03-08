@@ -21,9 +21,9 @@ type Downloadable interface {
 	Download() (io.ReadCloser, error)
 }
 
-// Evaluator determines how well the subtitle matches the media
+// Evaluator determines how well two media types are alike
 type Evaluator interface {
-	Evaluate(LocalMedia, Subtitle) float32
+	Evaluate(Media, Media) float32
 }
 
 // Media is an interface for movies and TV shows

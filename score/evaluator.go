@@ -13,14 +13,20 @@ import (
 const (
 	qualityWeight = 0.50
 	sourceWeight  = 0.75
-	codecWeight   = 0.25
+	codecWeight   = 0.15
+	groupWeight   = 0.33
+)
+
+const (
+	missingMultiplier      = 1.75
+	missingCodecMultiplier = 1.25
 )
 
 // DefaultEvaluator uses string similarity to rate subtitles against media files
 type DefaultEvaluator struct{}
 
 // Evaluate determines how well the subtitle matches
-func (e *DefaultEvaluator) Evaluate(f types.LocalMedia, s types.Subtitle) float32 {
+func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 	if s == nil || s.Meta() == nil {
 		return 0.0
 	}
@@ -47,13 +53,13 @@ func (e *DefaultEvaluator) EvaluateMovie(media types.Movie, sub types.Movie) flo
 
 	prob := NewWeighted()
 	score := smetrics.JaroWinkler(media.MovieName(), sub.MovieName(), 0.7, 4)
-	tags := math.Min(float64(len(sub.AllTags())/len(media.AllTags())), 1)
+	//tags := math.Min(float64(len(sub.AllTags())/len(media.AllTags())), 1)
 
-	prob.AddScore(score, 3)
-	prob.AddScore(tags, 2)
+	prob.AddScore(score, 0.5)
+	//prob.AddScore(tags, 0.25)
 
 	e.evaluateMetadata(prob, media, sub)
-	prob.AddEquals(media.Year(), sub.Year(), 1)
+	prob.AddEquals(media.Year(), sub.Year(), groupWeight)
 
 	return float32(prob.Score())
 }
@@ -65,7 +71,7 @@ func (e *DefaultEvaluator) EvaluateEpisode(media types.Episode, sub types.Episod
 	prob := NewWeighted()
 	show := smetrics.JaroWinkler(media.TVShow(), sub.TVShow(), 0.0, 1)
 
-	prob.AddScore(show, 1)
+	prob.AddScore(show, 0.5)
 	e.evaluateMetadata(prob, media, sub)
 
 	return float32(prob.Score())
@@ -74,8 +80,10 @@ func (e *DefaultEvaluator) EvaluateEpisode(media types.Episode, sub types.Episod
 func (e *DefaultEvaluator) evaluateMetadata(p *Weighted, media types.Metadata, sub types.Metadata) {
 	p.AddEquals(media.Group(), sub.Group(), 1)
 
-	if media.Quality() != quality.None && sub.Quality() != quality.None {
-		if media.Quality() == sub.Quality() {
+	if media.Quality() != quality.None {
+		if sub.Quality() == quality.None {
+			p.AddScore(0.0, missingMultiplier*qualityWeight)
+		} else if media.Quality() == sub.Quality() {
 			p.AddScore(1.0, qualityWeight)
 		} else {
 			diff := math.Abs(float64(media.Quality() - sub.Quality()))
@@ -83,8 +91,10 @@ func (e *DefaultEvaluator) evaluateMetadata(p *Weighted, media types.Metadata, s
 		}
 	}
 
-	if media.Source() != source.None && sub.Source() != source.None {
-		if media.Source() == sub.Source() {
+	if media.Source() != source.None {
+		if sub.Source() == source.None {
+			p.AddScore(0.0, missingMultiplier*sourceWeight)
+		} else if media.Source() == sub.Source() {
 			p.AddScore(1.0, sourceWeight)
 		} else {
 			diff := math.Abs(float64(media.Source() - sub.Source()))
@@ -92,12 +102,14 @@ func (e *DefaultEvaluator) evaluateMetadata(p *Weighted, media types.Metadata, s
 		}
 	}
 
-	if media.Codec() != codec.None && sub.Codec() != codec.None {
-		if media.Codec() == sub.Codec() {
+	if media.Codec() != codec.None {
+		if sub.Codec() == codec.None {
+			p.AddScore(0.0, missingCodecMultiplier*codecWeight)
+		} else if media.Codec() == sub.Codec() {
 			p.AddScore(1.0, codecWeight)
 		} else {
 			diff := math.Abs(float64(media.Codec() - sub.Codec()))
-			p.AddScore(1.0, diff*codecWeight)
+			p.AddScore(0.0, diff*codecWeight)
 		}
 	}
 }

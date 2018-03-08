@@ -22,7 +22,7 @@ const (
 )
 
 var stringer = map[Tag]string{
-	None:     "Unknown",
+	None:     "",
 	UHD2160p: "UHD",
 	QHD1440p: "QHD",
 	HD1080p:  "1080p",
