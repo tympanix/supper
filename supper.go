@@ -84,6 +84,11 @@ func main() {
 			Usage:  "only download subtitles ranking higher than `SCORE` percent",
 			EnvVar: "SUPPER_SCORE",
 		},
+		cli.StringFlag{
+			Name:   "delay",
+			Usage:  "wait `TIME` duration before downloading next subtitle",
+			EnvVar: "SUPPER_DELAY",
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
