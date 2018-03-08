@@ -78,7 +78,9 @@ class SubtitleList extends Component {
     })
 
     return (
-      <ul className="subtitle-list">{subs}</ul>
+      <ul className="subtitle-list">
+        {subs.length ? subs : <h3 className="center meta">No subtitles found :(</h3>}
+      </ul>
     )
   }
 }
