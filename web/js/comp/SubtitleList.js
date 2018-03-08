@@ -52,7 +52,7 @@ class SubtitleList extends Component {
 
     subs = subs.filter((s) => s.language === this.state.lang)
 
-    subs = subs.slice(0,50).map((s) => {
+    subs = subs.map((s) => {
       let classes = ["small"]
       s===this.state.downloading && classes.push('loading')
 

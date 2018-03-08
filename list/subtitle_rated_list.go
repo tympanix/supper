@@ -26,10 +26,10 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 
 	info := []string{
 		s.Link(),
-		s.Meta().Codec(),
+		s.Meta().Codec().String(),
 		s.Meta().Group(),
-		s.Meta().Quality(),
-		s.Meta().Source(),
+		s.Meta().Quality().String(),
+		s.Meta().Source().String(),
 	}
 
 	hash.Write([]byte(strings.Join(info, "")))

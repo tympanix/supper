@@ -4,6 +4,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/meta/source"
 	"golang.org/x/text/language"
 )
 
@@ -18,9 +21,9 @@ type Downloadable interface {
 	Download() (io.ReadCloser, error)
 }
 
-// Evaluator determines how well the subtitle matches the media
+// Evaluator determines how well two media types are alike
 type Evaluator interface {
-	Evaluate(LocalMedia, Subtitle) float32
+	Evaluate(Media, Media) float32
 }
 
 // Media is an interface for movies and TV shows
@@ -34,9 +37,9 @@ type Media interface {
 type Metadata interface {
 	String() string
 	Group() string
-	Codec() string
-	Quality() string
-	Source() string
+	Codec() codec.Tag
+	Quality() quality.Tag
+	Source() source.Tag
 	AllTags() []string
 }
 
