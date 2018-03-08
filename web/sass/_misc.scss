@@ -23,6 +23,7 @@ span.tag {
 }
 
 span.flag-icon {
+  position: relative;
   box-sizing: border-box;
   background-repeat: no-repeat;
   background-size: cover;
@@ -30,4 +31,21 @@ span.flag-icon {
   width: 2.25em;
   border-radius: 9999em;
   display: inline-block;
+}
+
+span.flag-icon-unknown {
+  background-color: $gray;
+
+  &::after {
+    line-height: 2em;
+    font-weight: 800;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    content: '?'
+  }
 }

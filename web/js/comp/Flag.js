@@ -11,7 +11,7 @@ class Flag extends Component {
 
   render() {
     let code = this.props.lang
-    let flag = flags[code] || ''
+    let flag = flags[code] || 'unknown'
 
     return (
       <span
