@@ -1,12 +1,15 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 	"github.com/urfave/cli"
 	"golang.org/x/text/language"
@@ -25,6 +28,11 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 	dry := a.Context().GlobalBool("dry")
 	hi := a.Context().GlobalBool("impaired")
 	score := a.Context().GlobalInt("score")
+	delay, err := parse.Duration(a.Context().GlobalString("delay"))
+
+	if err != nil {
+		return 0, errors.New("could not parse delay time format")
+	}
 
 	// Iterate all media files found in each path
 	for i, item := range media.List() {
@@ -58,6 +66,10 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 		// Download subtitle for each language
 		for _, l := range missingLangs.List() {
+			if delay > 0 {
+				time.Sleep(delay)
+			}
+
 			l, ok := l.(language.Tag)
 
 			if !ok {
