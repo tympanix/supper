@@ -6,6 +6,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+// Subtitles creates a new list of subtitles from variadic argument
 func Subtitles(subs ...types.Subtitle) types.SubtitleList {
 	list := subtitleList(subs)
 	return &list
@@ -21,8 +22,8 @@ func (s *subtitleList) List() []types.Subtitle {
 	return *s
 }
 
-func (s *subtitleList) Best() types.Subtitle {
-	return nil
+func (s *subtitleList) Best() (types.Subtitle, float32) {
+	return nil, -1
 }
 
 func (s *subtitleList) Add(sub ...types.Subtitle) {
@@ -39,6 +40,10 @@ func (s *subtitleList) FilterLanguage(lang language.Tag) types.SubtitleList {
 	}
 	list := subtitleList(_subs)
 	return &list
+}
+
+func (s *subtitleList) FilterScore(score float32) types.SubtitleList {
+	panic("unrated subtitle list does not support filtering by score")
 }
 
 // HearingImpaired returnes a new subtitle collection where hearing impared subtitles has been filtered

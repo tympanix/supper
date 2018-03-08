@@ -17,10 +17,11 @@ type List interface {
 type SubtitleList interface {
 	List
 	Add(...Subtitle)
-	Best() Subtitle
+	Best() (Subtitle, float32)
 	List() []Subtitle
 	LanguageSet() set.Interface
 	FilterLanguage(language.Tag) SubtitleList
+	FilterScore(float32) SubtitleList
 	HearingImpaired(bool) SubtitleList
 }
 
