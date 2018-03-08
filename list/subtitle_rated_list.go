@@ -91,11 +91,11 @@ func (s *ratedSubtitles) List() []types.Subtitle {
 }
 
 // Best returns the best matching subtitle
-func (s *ratedSubtitles) Best() types.Subtitle {
+func (s *ratedSubtitles) Best() (types.Subtitle, float32) {
 	if len(s.subs) > 0 {
-		return s.subs[0]
+		return s.subs[0], s.subs[0].score
 	}
-	return nil
+	return nil, -1
 }
 
 // Add a subtitle to the collection
@@ -121,6 +121,17 @@ func (s *ratedSubtitles) FilterLanguage(lang language.Tag) types.SubtitleList {
 	_subs := make([]subtitleEntry, 0)
 	for _, sub := range s.subs {
 		if sub.IsLang(lang) {
+			_subs = append(_subs, sub)
+		}
+	}
+	return s.clone(_subs)
+}
+
+// FilterScore return all subtitles with score greater than or equal to some value
+func (s *ratedSubtitles) FilterScore(score float32) types.SubtitleList {
+	_subs := make([]subtitleEntry, 0)
+	for _, sub := range s.subs {
+		if sub.score >= score {
 			_subs = append(_subs, sub)
 		}
 	}

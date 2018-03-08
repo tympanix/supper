@@ -54,25 +54,35 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{
-			Name:  "lang, l",
-			Usage: "subtitle language",
+			Name:   "lang, l",
+			Usage:  "only download subtitles in language `LANG`",
+			EnvVar: "SUPPER_LANGS",
 		},
 		cli.BoolFlag{
-			Name:  "impaired, i",
-			Usage: "hearing impaired",
+			Name:   "impaired, i",
+			Usage:  "hearing impaired",
+			EnvVar: "SUPPER_IMPAIRED",
 		},
 		cli.IntFlag{
-			Name:  "limit",
-			Value: 12,
-			Usage: "limit maximum number of media to process",
+			Name:   "limit",
+			Value:  12,
+			Usage:  "limit maximum number of media to process to `NUM`",
+			EnvVar: "SUPPER_LIMIT",
 		},
 		cli.StringFlag{
-			Name:  "modified, m",
-			Usage: "filter media modified within duration",
+			Name:   "modified, m",
+			Usage:  "only process media modified within `TIME` duration",
+			EnvVar: "SUPPER_MODIFIED",
 		},
 		cli.BoolFlag{
-			Name:  "dry",
+			Name:  "dry, dry-run",
 			Usage: "scan media but do not download any subtitles",
+		},
+		cli.IntFlag{
+			Name:   "score, s",
+			Value:  0,
+			Usage:  "only download subtitles ranking higher than `SCORE` percent",
+			EnvVar: "SUPPER_SCORE",
 		},
 	}
 
@@ -84,6 +94,11 @@ func main() {
 				err := fmt.Errorf("unknown language tag: %v", tag)
 				return cli.NewExitError(err, 1)
 			}
+		}
+
+		// Make sure score is between 0 and 100
+		if c.Int("score") < 0 || c.Int("score") > 100 {
+			return cli.NewExitError("score must be between 0 and 100", 1)
 		}
 		return nil
 	}

@@ -15,6 +15,7 @@ import (
 
 var green = color.New(color.FgGreen)
 var red = color.New(color.FgRed)
+var yellow = color.New(color.FgYellow)
 
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
 // langauge in the language set. Any output is written to the ourpur writer
@@ -23,6 +24,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 	dry := a.Context().GlobalBool("dry")
 	hi := a.Context().GlobalBool("impaired")
+	score := a.Context().GlobalInt("score")
 
 	// Iterate all media files found in each path
 	for i, item := range media.List() {
@@ -58,8 +60,6 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		for _, l := range missingLangs.List() {
 			l, ok := l.(language.Tag)
 
-			numsubs++
-
 			if !ok {
 				return -1, cli.NewExitError(err, 3)
 			}
@@ -72,15 +72,21 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			}
 
 			if !dry {
-				sub, ok := langsubs.Best().(types.OnlineSubtitle)
-				if !ok {
-					panic("Subtitle could not be cast to online subtitle")
+				sub, best := langsubs.Best()
+				if best < (float32(score) / 100.0) {
+					yellow.Fprintf(out, " - score too low %.0f%%\n", best*100.0)
+					continue
 				}
-				err := item.SaveSubtitle(sub, sub.Language())
+				onl, ok := sub.(types.OnlineSubtitle)
+				if !ok {
+					panic("subtitle could not be cast to online subtitle")
+				}
+				err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
 					red.Fprintln(out, err.Error())
 					continue
 				}
+				numsubs++
 			}
 
 			green.Fprintf(out, " - %v\n", display.English.Languages().Name(l))
