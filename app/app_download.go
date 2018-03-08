@@ -28,6 +28,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 	dry := a.Context().GlobalBool("dry")
 	hi := a.Context().GlobalBool("impaired")
 	score := a.Context().GlobalInt("score")
+	force := a.Context().GlobalBool("force")
 	delay, err := parse.Duration(a.Context().GlobalString("delay"))
 
 	if err != nil {
@@ -42,10 +43,15 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			return -1, cli.NewExitError(err, 2)
 		}
 
-		missingLangs := set.Difference(lang, cursubs.LanguageSet())
+		var missingLangs set.Interface
+		if !force {
+			missingLangs = set.Difference(lang, cursubs.LanguageSet())
 
-		if missingLangs.Size() == 0 {
-			continue
+			if missingLangs.Size() == 0 {
+				continue
+			}
+		} else {
+			missingLangs = lang
 		}
 
 		fmt.Fprintf(out, "(%v/%v) - %s\n", i+1, media.Len(), item)

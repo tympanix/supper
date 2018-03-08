@@ -60,7 +60,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:   "impaired, i",
-			Usage:  "hearing impaired",
+			Usage:  "hearing impaired subtitles only",
 			EnvVar: "SUPPER_IMPAIRED",
 		},
 		cli.IntFlag{
@@ -88,6 +88,10 @@ func main() {
 			Name:   "delay",
 			Usage:  "wait `TIME` duration before downloading next subtitle",
 			EnvVar: "SUPPER_DELAY",
+		},
+		cli.BoolFlag{
+			Name:  "force",
+			Usage: "overwrite existing subtitles",
 		},
 	}
 
