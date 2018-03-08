@@ -10,3 +10,13 @@ archive:
   files:
     - web/*
     - web/static/**/*
+nfpm:
+  vendor: github.com/tympanix
+  maintainer: tympanix <tympanix@gmail.com>
+  description: An automatic subtitle downloader
+  license: GNU-v3.0
+  formats:
+    - deb
+  files:
+    "./web": "/var/lib/supper/web"
+
