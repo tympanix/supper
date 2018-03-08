@@ -32,12 +32,12 @@ func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 	}
 	if _m, ok := f.TypeMovie(); ok {
 		if _s, ok := s.TypeMovie(); ok {
-			return e.EvaluateMovie(_m, _s)
+			return e.evaluateMovie(_m, _s)
 		}
 		return 0.0
 	} else if _e, ok := f.TypeEpisode(); ok {
 		if _s, ok := s.TypeEpisode(); ok {
-			return e.EvaluateEpisode(_e, _s)
+			return e.evaluateEpisode(_e, _s)
 		}
 		return 0.0
 	} else {
@@ -46,17 +46,15 @@ func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 }
 
 // EvaluateMovie returns the matching score for a movie
-func (e *DefaultEvaluator) EvaluateMovie(media types.Movie, sub types.Movie) float32 {
+func (e *DefaultEvaluator) evaluateMovie(media types.Movie, sub types.Movie) float32 {
 	if media.Year() > 0 && sub.Year() > 0 && media.Year() != sub.Year() {
 		return 0.0
 	}
 
 	prob := NewWeighted()
 	score := smetrics.JaroWinkler(media.MovieName(), sub.MovieName(), 0.7, 4)
-	//tags := math.Min(float64(len(sub.AllTags())/len(media.AllTags())), 1)
 
 	prob.AddScore(score, 0.5)
-	//prob.AddScore(tags, 0.25)
 
 	e.evaluateMetadata(prob, media, sub)
 	prob.AddEquals(media.Year(), sub.Year(), groupWeight)
@@ -64,12 +62,12 @@ func (e *DefaultEvaluator) EvaluateMovie(media types.Movie, sub types.Movie) flo
 	return float32(prob.Score())
 }
 
-func (e *DefaultEvaluator) EvaluateEpisode(media types.Episode, sub types.Episode) float32 {
+func (e *DefaultEvaluator) evaluateEpisode(media types.Episode, sub types.Episode) float32 {
 	if media.Season() != sub.Season() || media.Episode() != sub.Episode() {
 		return 0
 	}
 	prob := NewWeighted()
-	show := smetrics.JaroWinkler(media.TVShow(), sub.TVShow(), 0.0, 1)
+	show := smetrics.JaroWinkler(media.TVShow(), sub.TVShow(), 0.7, 4)
 
 	prob.AddScore(show, 0.5)
 	e.evaluateMetadata(prob, media, sub)
