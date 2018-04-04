@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/kballard/go-shellquote"
 	"github.com/tympanix/supper/types"
 	"gopkg.in/yaml.v2"
 )
@@ -19,7 +18,7 @@ type Plugin struct {
 // Run executes the plugin
 func (p *Plugin) Run(s types.LocalSubtitle) error {
 	fmt.Println(s.Path())
-	cmd := exec.Command(shell[0], shell[1], shellquote.Join(p.ExecYaml, s.Path()))
+	cmd := exec.Command(shell[0], shell[1], escape(p.ExecYaml, s.Path()))
 	return cmd.Run()
 }
 
