@@ -11,5 +11,5 @@ func escape(cmd string, args ...string) string {
 	if err != nil {
 		panic(err)
 	}
-	return shellquote.Join(append(cmds, args...))
+	return shellquote.Join(append(cmds, args...)...)
 }
