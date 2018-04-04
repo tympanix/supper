@@ -9,6 +9,7 @@ import (
 	"github.com/tympanix/supper/api"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/plugins"
 	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
 	"github.com/urfave/cli"
@@ -22,13 +23,21 @@ var filetypes = []string{
 // Application is an configuration instance of the application
 type Application struct {
 	types.Provider
+	*plugins.Config
 	*http.ServeMux
 	context *cli.Context
 }
 
+// New returns a new application from the cli context
 func New(context *cli.Context) types.App {
+	config, err := plugins.Load(context.String("config"))
+	if err != nil {
+		panic(err)
+	}
+
 	app := &Application{
 		Provider: provider.Subscene(),
+		Config:   config,
 		ServeMux: http.NewServeMux(),
 		context:  context,
 	}

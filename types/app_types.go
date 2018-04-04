@@ -14,8 +14,15 @@ import (
 type App interface {
 	Provider
 	http.Handler
+	Plugins() []Plugin
 	Context() *cli.Context
 	FindMedia(...string) (LocalMediaList, error)
 	Languages() set.Interface
 	DownloadSubtitles(LocalMediaList, set.Interface, io.Writer) (int, error)
+}
+
+// Plugin is an interface for external functionality
+type Plugin interface {
+	Name() string
+	Run(LocalSubtitle) error
 }

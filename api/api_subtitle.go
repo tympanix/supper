@@ -87,7 +87,7 @@ func (a *API) singleSubtitle(w http.ResponseWriter, r *http.Request) interface{}
 	if tag == language.Und {
 		return errors.New("unknown subtitle language")
 	}
-	err = media.SaveSubtitle(sub, tag)
+	_, err = media.SaveSubtitle(sub, tag)
 	if err != nil {
 		return err
 	}

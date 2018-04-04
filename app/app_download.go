@@ -99,10 +99,18 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				if !ok {
 					panic("subtitle could not be cast to online subtitle")
 				}
-				err := item.SaveSubtitle(onl, onl.Language())
+				saved, err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
 					red.Fprintln(out, err.Error())
 					continue
+				}
+				for _, plugin := range a.Plugins() {
+					err := plugin.Run(saved)
+					if err != nil {
+						red.Fprintf(out, " - Plugin failed: %s\n", plugin.Name())
+					} else {
+						green.Fprintf(out, " - Plugin finished: %s\n", plugin.Name())
+					}
 				}
 				numsubs++
 			}

@@ -65,16 +65,16 @@ func (f *File) ExistingSubtitles() (types.SubtitleList, error) {
 }
 
 // SaveSubtitle saves the subtitle for the given media to disk
-func (f *File) SaveSubtitle(s types.Downloadable, lang language.Tag) error {
+func (f *File) SaveSubtitle(s types.Downloadable, lang language.Tag) (types.LocalSubtitle, error) {
 	if s == nil {
-		return errors.New("invalid subtitle nil")
+		return nil, errors.New("invalid subtitle nil")
 	}
 
 	srt, err := s.Download()
 
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 
 	defer srt.Close()
@@ -86,17 +86,32 @@ func (f *File) SaveSubtitle(s types.Downloadable, lang language.Tag) error {
 	file, err := os.Create(srtpath)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer file.Close()
 	_, err = io.Copy(file, srt)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	sub := struct {
+		FilePath
+		os.FileInfo
+		types.Subtitle
+	}{
+		FilePath(srtpath),
+		info,
+		s.(types.Subtitle),
+	}
+
+	return sub, nil
 }
 
 func NewFile(file os.FileInfo, meta types.Metadata, path string) *File {
@@ -155,4 +170,11 @@ func NewMetadata(str string) (types.Metadata, error) {
 		return NewEpisode(str)
 	}
 	return NewMovie(str)
+}
+
+// FilePath is a string describing a path to a file
+type FilePath string
+
+func (p FilePath) Path() string {
+	return string(p)
 }

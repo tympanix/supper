@@ -93,6 +93,11 @@ func main() {
 			Name:  "force",
 			Usage: "overwrite existing subtitles",
 		},
+		cli.StringFlag{
+			Name:   "config",
+			Usage:  "load config file at `PATH` with additional configuration",
+			EnvVar: "SUPPER_CONFIG",
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
