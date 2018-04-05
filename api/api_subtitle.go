@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -143,7 +142,7 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	num, err := a.DownloadSubtitles(media, langs, ioutil.Discard)
+	num, err := a.DownloadSubtitles(media, langs)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}

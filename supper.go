@@ -114,6 +114,11 @@ func main() {
 			Usage:  "enable verbose logging",
 			EnvVar: "SUPPER_VERBOSE",
 		},
+		cli.BoolFlag{
+			Name:   "strict",
+			Usage:  "exit the application on any error instead of proceeding to next media item",
+			EnvVar: "SUPPER_STRICT",
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -180,7 +185,7 @@ func main() {
 			}).Fatal("Media limit exceeded")
 		}
 
-		numsubs, err := sup.DownloadSubtitles(media, lang, os.Stdout)
+		numsubs, err := sup.DownloadSubtitles(media, lang)
 
 		if err != nil {
 			log.WithError(err).Fatal("Download incomplete")

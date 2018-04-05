@@ -3,7 +3,7 @@ package application
 import (
 	"errors"
 	"fmt"
-	"io"
+	"os"
 	"time"
 
 	"github.com/apex/log"
@@ -17,8 +17,8 @@ import (
 )
 
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
-// langauge in the language set. Any output is written to the ourpur writer
-func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface, out io.Writer) (int, error) {
+// langauge in the language set
+func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) (int, error) {
 	numsubs := 0
 
 	dry := a.Context().GlobalBool("dry")
@@ -26,6 +26,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 	score := a.Context().GlobalInt("score")
 	force := a.Context().GlobalBool("force")
 	delay, err := parse.Duration(a.Context().GlobalString("delay"))
+	strict := a.Context().GlobalBool("strict")
 
 	if err != nil {
 		return 0, errors.New("could not parse delay time format")
@@ -106,14 +107,20 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				saved, err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
 					ctx.WithError(err).Error("Subtitle error")
+					if strict {
+						os.Exit(1)
+					}
 					continue
 				}
 				for _, plugin := range a.Plugins() {
 					err := plugin.Run(saved)
 					if err != nil {
 						ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
+						if strict {
+							os.Exit(1)
+						}
 					} else {
-						ctx.Infof("Plugin finished: %s", plugin.Name())
+						ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
 					}
 				}
 				numsubs++

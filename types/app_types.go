@@ -1,7 +1,6 @@
 package types
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/fatih/set"
@@ -18,7 +17,7 @@ type App interface {
 	Context() *cli.Context
 	FindMedia(...string) (LocalMediaList, error)
 	Languages() set.Interface
-	DownloadSubtitles(LocalMediaList, set.Interface, io.Writer) (int, error)
+	DownloadSubtitles(LocalMediaList, set.Interface) (int, error)
 }
 
 // Plugin is an interface for external functionality
