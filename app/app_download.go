@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
@@ -15,10 +15,6 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 )
-
-var green = color.New(color.FgGreen)
-var red = color.New(color.FgRed)
-var yellow = color.New(color.FgYellow)
 
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
 // langauge in the language set. Any output is written to the ourpur writer
@@ -37,6 +33,11 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 	// Iterate all media files found in each path
 	for i, item := range media.List() {
+		ctx := log.WithFields(log.Fields{
+			"media": item,
+			"item":  fmt.Sprintf("%v/%v", i+1, media.Len()),
+		})
+
 		cursubs, err := item.ExistingSubtitles()
 
 		if err != nil {
@@ -54,8 +55,6 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			missingLangs = lang
 		}
 
-		fmt.Fprintf(out, "(%v/%v) - %s\n", i+1, media.Len(), item)
-
 		subs := list.RatedSubtitles(item)
 
 		if !dry {
@@ -72,6 +71,8 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 		// Download subtitle for each language
 		for _, l := range missingLangs.List() {
+			ctx = ctx.WithField("lang", display.English.Languages().Name(l))
+
 			if delay > 0 {
 				time.Sleep(delay)
 			}
@@ -85,37 +86,37 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			langsubs := subs.FilterLanguage(l)
 
 			if langsubs.Len() == 0 && !dry {
-				red.Fprintln(out, " - no subtitles found")
+				ctx.Warn("Subtitle not found")
 				continue
 			}
 
 			if !dry {
 				sub, best := langsubs.Best()
 				if best < (float32(score) / 100.0) {
-					yellow.Fprintf(out, " - score too low %.0f%%\n", best*100.0)
+					ctx.Warnf("Score too low %.0f%%\n", best*100.0)
 					continue
 				}
 				onl, ok := sub.(types.OnlineSubtitle)
 				if !ok {
-					panic("subtitle could not be cast to online subtitle")
+					ctx.Fatal("Subtitle could not be cast to online subtitle")
 				}
 				saved, err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
-					red.Fprintln(out, err.Error())
+					ctx.Error(err.Error())
 					continue
 				}
 				for _, plugin := range a.Plugins() {
 					err := plugin.Run(saved)
 					if err != nil {
-						red.Fprintf(out, " - Plugin failed: %s\n", plugin.Name())
+						ctx.Errorf("Plugin failed: %s\n", plugin.Name())
 					} else {
-						green.Fprintf(out, " - Plugin finished: %s\n", plugin.Name())
+						ctx.Infof("Plugin finished: %s\n", plugin.Name())
 					}
 				}
 				numsubs++
 			}
 
-			green.Fprintf(out, " - %v\n", display.English.Languages().Name(l))
+			ctx.Info("Subtitle downloaded")
 		}
 	}
 	return numsubs, nil

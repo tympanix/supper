@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
-	"github.com/fatih/color"
+	"github.com/apex/log"
 	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/logutil"
 	"github.com/tympanix/supper/parse"
 	"golang.org/x/text/language"
 
@@ -98,9 +98,17 @@ func main() {
 			Usage:  "load config file at `PATH` with additional configuration",
 			EnvVar: "SUPPER_CONFIG",
 		},
+		cli.StringFlag{
+			Name:   "logfile",
+			Usage:  "file at `PATH` in which to store applications logs",
+			EnvVar: "SUPPER_LOGFILE",
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
+		// Initialise logging
+		logutil.Context(c)
+
 		// Make sure all language flags are defined
 		for _, tag := range c.StringSlice("lang") {
 			_, err := language.Parse(tag)
@@ -159,7 +167,7 @@ func main() {
 		}
 
 		if media.Len() > c.Int("limit") && !c.Bool("dry") {
-			err := fmt.Errorf("number of media files exceeded: %v", media.Len())
+			err = fmt.Errorf("number of media files exceeded: %v", media.Len())
 			return cli.NewExitError(err, 3)
 		}
 
@@ -170,10 +178,10 @@ func main() {
 		}
 
 		if c.Bool("dry") {
-			fmt.Println()
-			color.Blue("dry run, nothing performed")
-			color.Blue("total media files: %v", media.Len())
-			color.Blue("total missing subtitles: %v", numsubs)
+			ctx := log.WithField("reason", "dry-run")
+			ctx.Warn("Dry run, nothing performed")
+			ctx.Warnf("Total media files: %v", media.Len())
+			ctx.Warnf("Total missing subtitles: %v", numsubs)
 		}
 
 		return nil
@@ -187,7 +195,7 @@ func startWebServer(c *cli.Context) error {
 	app := application.New(c)
 	address := fmt.Sprintf(":%v", c.Int("port"))
 
-	log.Printf("Listening on %v...", c.Int("port"))
-	log.Println(http.ListenAndServe(address, app))
+	log.Infof("Listening on %v...\n", c.Int("port"))
+	log.Error(http.ListenAndServe(address, app).Error())
 	return nil
 }
