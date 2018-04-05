@@ -90,10 +90,13 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				continue
 			}
 
+			var best float32
+
 			if !dry {
-				sub, best := langsubs.Best()
+				var sub types.Subtitle
+				sub, best = langsubs.Best()
 				if best < (float32(score) / 100.0) {
-					ctx.Warnf("Score too low %.0f%%\n", best*100.0)
+					ctx.Warnf("Score too low %.0f%%", best*100.0)
 					continue
 				}
 				onl, ok := sub.(types.OnlineSubtitle)
@@ -102,7 +105,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				}
 				saved, err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
-					ctx.Error(err.Error())
+					ctx.WithError(err).Error("Subtitle error")
 					continue
 				}
 				for _, plugin := range a.Plugins() {
@@ -116,7 +119,14 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				numsubs++
 			}
 
-			ctx.Info("Subtitle downloaded")
+			var strscore string
+			if best == 0.0 {
+				strscore = "N/A"
+			} else {
+				strscore = fmt.Sprintf("%.0f%%", best*100.0)
+			}
+
+			ctx.WithField("score", strscore).Info("Subtitle downloaded")
 		}
 	}
 	return numsubs, nil

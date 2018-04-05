@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/apex/log"
 	"github.com/tympanix/supper/app"
@@ -113,14 +114,13 @@ func main() {
 		for _, tag := range c.StringSlice("lang") {
 			_, err := language.Parse(tag)
 			if err != nil {
-				err := fmt.Errorf("unknown language tag: %v", tag)
-				return cli.NewExitError(err, 1)
+				log.Fatalf("Unknown language tag: %v", tag)
 			}
 		}
 
 		// Make sure score is between 0 and 100
 		if c.Int("score") < 0 || c.Int("score") > 100 {
-			return cli.NewExitError("score must be between 0 and 100", 1)
+			log.Fatalf("Score must be between 0 and 100")
 		}
 		return nil
 	}
@@ -135,13 +135,13 @@ func main() {
 		lang := sup.Languages()
 
 		if lang.Size() == 0 {
-			return cli.NewExitError("missing language flags(s)", 1)
+			log.Fatal("Missing language flag(s)")
 		}
 
 		// Make sure every arg is a valid file path
 		for _, arg := range c.Args() {
-			if _, err := os.Stat(arg); err == os.ErrNotExist {
-				return cli.NewExitError(err, 1)
+			if _, err := os.Stat(arg); os.IsNotExist(err) {
+				log.WithField("path", arg).Fatal("Invalid file path")
 			}
 		}
 
@@ -149,39 +149,38 @@ func main() {
 		media, err := sup.FindMedia(c.Args()...)
 
 		if err != nil {
-			return cli.NewExitError(err, 2)
+			log.WithError(err).Fatal("Online search failed")
 		}
 
 		modified, err := parse.Duration(c.String("modified"))
 
 		if err != nil {
-			return cli.NewExitError(err, 2)
+			log.WithError(err).WithField("modified", c.String("modified")).
+				Fatal("Invalid duration")
 		}
 
 		if modified > 0 {
 			media = media.FilterModified(modified)
 		}
 
-		if err != nil {
-			return cli.NewExitError(err, 3)
-		}
-
-		if media.Len() > c.Int("limit") && !c.Bool("dry") {
-			err = fmt.Errorf("number of media files exceeded: %v", media.Len())
-			return cli.NewExitError(err, 3)
+		if media.Len() > c.Int("limit") && !c.Bool("dry") && c.Int("limit") != -1 {
+			log.WithFields(log.Fields{
+				"media": strconv.Itoa(media.Len()),
+				"limit": strconv.Itoa(c.Int("limit")),
+			}).Fatal("Media limit exceeded")
 		}
 
 		numsubs, err := sup.DownloadSubtitles(media, lang, os.Stdout)
 
 		if err != nil {
-			return cli.NewExitError(err, 5)
+			log.WithError(err).Fatal("Download incomplete")
 		}
 
 		if c.Bool("dry") {
 			ctx := log.WithField("reason", "dry-run")
-			ctx.Warn("Dry run, nothing performed")
-			ctx.Warnf("Total media files: %v", media.Len())
-			ctx.Warnf("Total missing subtitles: %v", numsubs)
+			ctx.Warn("Nothing performed")
+			ctx.Warnf("Media files: %v", media.Len())
+			ctx.Warnf("Missing subtitles: %v", numsubs)
 		}
 
 		return nil
