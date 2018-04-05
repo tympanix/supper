@@ -1,10 +1,10 @@
 package plugins
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 
+	"github.com/apex/log"
 	"github.com/tympanix/supper/types"
 	"gopkg.in/yaml.v2"
 )
@@ -17,9 +17,13 @@ type Plugin struct {
 
 // Run executes the plugin
 func (p *Plugin) Run(s types.LocalSubtitle) error {
-	fmt.Println(s.Path())
 	cmd := exec.Command(shell[0], shell[1], escape(p.ExecYaml, s.Path()))
-	return cmd.Run()
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.WithError(err).WithField("plugin", p.Name()).
+			Debugf("Plugin debug\n%s", string(out))
+	}
+	return err
 }
 
 // Name returns the name of the plugin

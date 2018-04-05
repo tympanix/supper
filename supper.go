@@ -25,6 +25,11 @@ func main() {
 	app.Version = version
 	app.Usage = "An automatic subtitle downloader"
 
+	cli.VersionFlag = cli.BoolFlag{
+		Name:  "version, V",
+		Usage: "print the application version and exit",
+	}
+
 	app.Commands = []cli.Command{
 		{
 			Name:   "web",
@@ -103,6 +108,11 @@ func main() {
 			Name:   "logfile",
 			Usage:  "file at `PATH` in which to store applications logs",
 			EnvVar: "SUPPER_LOGFILE",
+		},
+		cli.BoolFlag{
+			Name:   "verbose, v",
+			Usage:  "enable verbose logging",
+			EnvVar: "SUPPER_VERBOSE",
 		},
 	}
 

@@ -111,9 +111,9 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				for _, plugin := range a.Plugins() {
 					err := plugin.Run(saved)
 					if err != nil {
-						ctx.Errorf("Plugin failed: %s\n", plugin.Name())
+						ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
 					} else {
-						ctx.Infof("Plugin finished: %s\n", plugin.Name())
+						ctx.Infof("Plugin finished: %s", plugin.Name())
 					}
 				}
 				numsubs++
