@@ -86,7 +86,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			langsubs := subs.FilterLanguage(l)
 
 			if langsubs.Len() == 0 && !dry {
-				ctx.Warn("Subtitle not found")
+				ctx.Warn("Subtitle not available")
 				continue
 			}
 
