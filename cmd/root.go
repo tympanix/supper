@@ -18,7 +18,7 @@ const (
 	// AppName is the name of the application
 	AppName = "Supper"
 	// AppDesc describes the application in one sentence
-	AppDesc = "downloads subtitles in a breeze"
+	AppDesc = "Download subtitles in a breeze"
 	// AppVersion is the application version
 	AppVersion = "master"
 )
@@ -26,7 +26,7 @@ const (
 var rootCmd = &cobra.Command{
 	Use:              strings.ToLower(AppName),
 	Version:          AppVersion,
-	Short:            fmt.Sprintf("%v %v", AppName, AppDesc),
+	Short:            AppDesc,
 	PersistentPreRun: validateFlags,
 	Args:             validateArgs,
 	Run:              downloadSubtitles,
@@ -114,6 +114,11 @@ func readConfigFiles() {
 func validateFlags(cmd *cobra.Command, args []string) {
 	if cfg.Default.Languages().Size() == 0 {
 		log.Fatal("Missing language flag(s)")
+	}
+
+	// Make sure score is between 0 and 100
+	if cfg.Default.Score() < 0 || cfg.Default.Score() > 100 {
+		log.WithField("score", cfg.Default.Score()).Fatalf("Score must be between 0 and 100")
 	}
 }
 

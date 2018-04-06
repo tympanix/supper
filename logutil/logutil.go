@@ -6,7 +6,7 @@ import (
 	"github.com/tympanix/supper/types"
 
 	"github.com/apex/log"
-	clilog "github.com/apex/log/handlers/cli"
+	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/logfmt"
 	"github.com/apex/log/handlers/multi"
 	"github.com/apex/log/handlers/text"
@@ -36,7 +36,7 @@ func Initialize(config types.Config) {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	handlers = append(handlers, clilog.Default)
+	handlers = append(handlers, cli.Default)
 
 	multilog := multi.New(handlers...)
 	log.SetHandler(multilog)
