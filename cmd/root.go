@@ -89,17 +89,17 @@ func readConfigFiles() {
 	} else {
 		// Use default configuration
 		viper.SetConfigName(strings.ToLower(AppName))
-		viper.AddConfigPath(configDefaultsPath)
+		viper.AddConfigPath(cfg.DefaultPath(AppName))
 		viper.ReadInConfig()
 
 		// Merge in local configuration
 		viper.SetConfigName(fmt.Sprintf(".%v", strings.ToLower(AppName)))
-		viper.AddConfigPath(configHomePath)
+		viper.AddConfigPath(cfg.HomePath(AppName))
 		viper.AddConfigPath(".")
 
 		if err := viper.MergeInConfig(); err != nil {
 			// If no local configuration, use global configuration
-			viper.AddConfigPath(configGlobalPath)
+			viper.AddConfigPath(cfg.GlobalPath(AppName))
 			viper.MergeInConfig()
 		}
 	}

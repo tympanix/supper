@@ -27,6 +27,7 @@ func init() {
 var webCmd = &cobra.Command{
 	Use:   "web",
 	Short: "Listen and server the web application",
+	Args:  cobra.NoArgs,
 	Run:   startWebServer,
 }
 

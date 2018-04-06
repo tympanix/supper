@@ -1,8 +1,10 @@
 package cfg
 
 import (
+	"fmt"
 	"time"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 
@@ -14,6 +16,18 @@ import (
 
 // Default holds the global application configuration instance
 var Default types.Config
+
+var homePath string
+
+func init() {
+	home, err := homedir.Dir()
+
+	if err != nil {
+		log.WithError(err).Fatal("Could not find user home directory")
+	}
+
+	homePath = home
+}
 
 type viperConfig struct {
 	languages set.Interface
@@ -35,6 +49,8 @@ func Initialize() {
 		}
 		lang.Add(_lang)
 	}
+
+	fmt.Println(viper.Get("plugins"))
 
 	// Parse modified flag
 	modified, err := parse.Duration(viper.GetString("modified"))
