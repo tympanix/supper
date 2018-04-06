@@ -3,26 +3,33 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/cfg"
+	"github.com/tympanix/supper/logutil"
 )
 
-type config struct {
-	lang   []string
-	config string
-}
-
-var cfg = config{}
+const (
+	// AppName is the name of the application
+	AppName = "Supper"
+	// AppDesc describes the application in one sentence
+	AppDesc = "downloads subtitles in a breeze"
+	// AppVersion is the application version
+	AppVersion = "master"
+)
 
 var rootCmd = &cobra.Command{
-	Use:   "supper",
-	Short: "Supper downloads subtitles in a breeze",
-	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(viper.GetStringSlice("lang"))
-	},
+	Use:              strings.ToLower(AppName),
+	Version:          AppVersion,
+	Short:            fmt.Sprintf("%v %v", AppName, AppDesc),
+	PersistentPreRun: validateFlags,
+	Args:             validateArgs,
+	Run:              downloadSubtitles,
 }
 
 // Execute executes the CLI application
@@ -34,7 +41,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(readConfigFiles)
 	flags := rootCmd.PersistentFlags()
 
 	// Set up cobra command line flags
@@ -62,7 +69,6 @@ func init() {
 	viper.BindPFlag("force", flags.Lookup("force"))
 	viper.BindPFlag("config", flags.Lookup("config"))
 	viper.BindPFlag("logfile", flags.Lookup("logfile"))
-	viper.BindPFlag("logfile", flags.Lookup("logfile"))
 	viper.BindPFlag("verbose", flags.Lookup("verbose"))
 	viper.BindPFlag("strict", flags.Lookup("strict"))
 
@@ -70,27 +76,96 @@ func init() {
 	viper.SetDefault("license", "GNUv3.0")
 }
 
-func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
-	if cfg.config != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfg.config)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
+func readConfigFiles() {
+	config := viper.GetString("config")
+	if config != "" {
+		// Use config file from the flag
+		viper.SetConfigFile(config)
+
+		if err := viper.ReadInConfig(); err != nil {
+			log.WithError(err).Fatal("Could not read config file")
 			os.Exit(1)
 		}
+	} else {
+		// Use default configuration
+		viper.SetConfigName(strings.ToLower(AppName))
+		viper.AddConfigPath(configDefaultsPath)
+		viper.ReadInConfig()
 
-		// Search config in home directory with name ".cobra" (without extension).
-		viper.AddConfigPath(home)
+		// Merge in local configuration
+		viper.SetConfigName(fmt.Sprintf(".%v", strings.ToLower(AppName)))
+		viper.AddConfigPath(configHomePath)
 		viper.AddConfigPath(".")
-		viper.SetConfigName("supper")
+
+		if err := viper.MergeInConfig(); err != nil {
+			// If no local configuration, use global configuration
+			viper.AddConfigPath(configGlobalPath)
+			viper.MergeInConfig()
+		}
 	}
 
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Can't read config:", err)
-		os.Exit(1)
+	// Parse and set global configuration reference
+	cfg.Initialize()
+
+	// Set up logging capabilities from configuration
+	logutil.Initialize(cfg.Default)
+}
+
+func validateFlags(cmd *cobra.Command, args []string) {
+	if cfg.Default.Languages().Size() == 0 {
+		log.Fatal("Missing language flag(s)")
 	}
+}
+
+func validateArgs(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		log.Fatal("Missing media arguments")
+	}
+
+	// Make sure every arg is a valid file path
+	for _, arg := range args {
+		if _, err := os.Stat(arg); os.IsNotExist(err) {
+			log.WithField("path", arg).Fatal("Invalid file path")
+		}
+	}
+
+	return nil
+}
+
+func downloadSubtitles(cmd *cobra.Command, args []string) {
+	// Create new application
+	app := app.NewFromDefault()
+	config := app.Config()
+
+	// Search all argument paths for media
+	media, err := app.FindMedia(args...)
+
+	if err != nil {
+		log.WithError(err).Fatal("Online search failed")
+	}
+
+	if config.Modified() > 0 {
+		media = media.FilterModified(config.Modified())
+	}
+
+	if media.Len() > config.Limit() && !config.Dry() && config.Limit() != -1 {
+		log.WithFields(log.Fields{
+			"media": strconv.Itoa(media.Len()),
+			"limit": strconv.Itoa(config.Limit()),
+		}).Fatal("Media limit exceeded")
+	}
+
+	numsubs, err := app.DownloadSubtitles(media, config.Languages())
+
+	if err != nil {
+		log.WithError(err).Fatal("Download incomplete")
+	}
+
+	if viper.GetBool("dry") {
+		ctx := log.WithField("reason", "dry-run")
+		ctx.Warn("Nothing performed")
+		ctx.Warnf("Media files: %v", media.Len())
+		ctx.Warnf("Missing subtitles: %v", numsubs)
+	}
+
 }

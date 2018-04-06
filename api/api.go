@@ -60,7 +60,7 @@ func (a *API) queryLang(r *http.Request) (set.Interface, error) {
 	v := r.URL.Query()
 	lang := v.Get("lang")
 	if lang == "" {
-		return a.Languages(), nil
+		return a.Config().Languages(), nil
 	} else {
 		l := language.Make(lang)
 		if l == language.Und {

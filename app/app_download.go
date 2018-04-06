@@ -1,7 +1,6 @@
-package application
+package app
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -9,9 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
-	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
-	"github.com/urfave/cli"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 )
@@ -20,17 +17,6 @@ import (
 // langauge in the language set
 func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) (int, error) {
 	numsubs := 0
-
-	dry := a.Context().GlobalBool("dry")
-	hi := a.Context().GlobalBool("impaired")
-	score := a.Context().GlobalInt("score")
-	force := a.Context().GlobalBool("force")
-	delay, err := parse.Duration(a.Context().GlobalString("delay"))
-	strict := a.Context().GlobalBool("strict")
-
-	if err != nil {
-		return 0, errors.New("could not parse delay time format")
-	}
 
 	// Iterate all media files found in each path
 	for i, item := range media.List() {
@@ -42,11 +28,11 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		cursubs, err := item.ExistingSubtitles()
 
 		if err != nil {
-			return -1, cli.NewExitError(err, 2)
+			return -1, err
 		}
 
 		var missingLangs set.Interface
-		if !force {
+		if !a.Config().Dry() {
 			missingLangs = set.Difference(lang, cursubs.LanguageSet())
 
 			if missingLangs.Size() == 0 {
@@ -58,45 +44,45 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 		subs := list.RatedSubtitles(item)
 
-		if !dry {
+		if !a.Config().Dry() {
 			search, err := a.SearchSubtitles(item)
 			if err != nil {
-				return -1, cli.NewExitError(err, 2)
+				return -1, err
 			}
 			for _, s := range search {
 				subs.Add(s)
 			}
 		}
 
-		subs = subs.HearingImpaired(hi)
+		subs = subs.HearingImpaired(a.Config().Dry())
 
 		// Download subtitle for each language
 		for _, l := range missingLangs.List() {
 			ctx = ctx.WithField("lang", display.English.Languages().Name(l))
 
-			if delay > 0 {
-				time.Sleep(delay)
+			if a.Config().Delay() > 0 {
+				time.Sleep(a.Config().Delay())
 			}
 
 			l, ok := l.(language.Tag)
 
 			if !ok {
-				return -1, cli.NewExitError(err, 3)
+				return -1, err
 			}
 
 			langsubs := subs.FilterLanguage(l)
 
-			if langsubs.Len() == 0 && !dry {
+			if langsubs.Len() == 0 && !a.Config().Dry() {
 				ctx.Warn("Subtitle not available")
 				continue
 			}
 
 			var best float32
 
-			if !dry {
+			if !a.Config().Dry() {
 				var sub types.Subtitle
 				sub, best = langsubs.Best()
-				if best < (float32(score) / 100.0) {
+				if best < (float32(a.Config().Score()) / 100.0) {
 					ctx.Warnf("Score too low %.0f%%", best*100.0)
 					continue
 				}
@@ -107,16 +93,16 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				saved, err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
 					ctx.WithError(err).Error("Subtitle error")
-					if strict {
+					if a.Config().Strict() {
 						os.Exit(1)
 					}
 					continue
 				}
-				for _, plugin := range a.Plugins() {
+				for _, plugin := range a.Config().Plugins() {
 					err := plugin.Run(saved)
 					if err != nil {
 						ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
-						if strict {
+						if a.Config().Strict() {
 							os.Exit(1)
 						}
 					} else {

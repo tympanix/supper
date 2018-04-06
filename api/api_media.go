@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/spf13/viper"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 )
@@ -47,9 +48,9 @@ func (l folderList) Less(i, j int) bool {
 func (f jsonFolder) getPath(a types.App) (path string, err error) {
 	var root string
 	if f.Type == typeMovie {
-		root = a.Context().String("movies")
+		root = viper.GetString("movies")
 	} else if f.Type == typeShow {
-		root = a.Context().String("shows")
+		root = viper.GetString("shows")
 	} else {
 		err = errors.New("unknown media format")
 		return
@@ -99,7 +100,7 @@ func (a *API) allMedia(w http.ResponseWriter, r *http.Request) interface{} {
 	media := make([]*jsonFolder, 0)
 
 	for flag, mtype := range folders {
-		if path := a.Context().String(flag); path != "" {
+		if path := viper.GetString(flag); path != "" {
 			list, err := findMediaFolders(mtype, path)
 			if err != nil {
 				return Error(err, 500)
