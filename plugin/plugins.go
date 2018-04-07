@@ -4,24 +4,18 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/apex/log"
 	"github.com/tympanix/supper/types"
+
+	"github.com/apex/log"
+	"github.com/mitchellh/mapstructure"
 )
 
 // NewFromMap construct a plugin from an map of attributes
-func NewFromMap(i map[interface{}]interface{}) (*Plugin, error) {
+func NewFromMap(i interface{}) (*Plugin, error) {
 	plugin := &Plugin{}
 
-	if name, ok := i["name"].(string); ok {
-		plugin.PluginName = name
-	} else {
-		return nil, fmt.Errorf("Invalid plugin name %v", i["name"])
-	}
-
-	if exec, ok := i["exec"].(string); ok {
-		plugin.Exec = exec
-	} else {
-		return nil, fmt.Errorf("Invalid plugin exec: %v", i["exec"])
+	if err := mapstructure.Decode(i, plugin); err != nil {
+		return nil, err
 	}
 
 	if err := plugin.valid(); err != nil {
@@ -33,8 +27,8 @@ func NewFromMap(i map[interface{}]interface{}) (*Plugin, error) {
 
 // Plugin is a struct enabling external functionality
 type Plugin struct {
-	PluginName string `yaml:"name"`
-	Exec       string `yaml:"exec"`
+	PluginName string `mapstructure:"name"`
+	Exec       string `mapstructure:"exec"`
 }
 
 // Run executes the plugin

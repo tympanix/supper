@@ -65,22 +65,14 @@ func Initialize() {
 	}
 
 	// Parse plugins
+	var _plugins []plugin.Plugin
+	if err := viper.UnmarshalKey("plugins", &_plugins); err != nil {
+		log.WithError(err).Fatal("Invalid plugin definition")
+	}
+
 	plugins := make([]types.Plugin, 0)
-	_plugins := viper.Get("plugins")
-	if list, ok := _plugins.([]interface{}); ok {
-		for _, v := range list {
-			if m, ok := v.(map[interface{}]interface{}); ok {
-				p, err := plugin.NewFromMap(m)
-				if err != nil {
-					log.WithError(err).Fatal("Could not instantiate plugin")
-				}
-				plugins = append(plugins, p)
-			} else {
-				log.Fatal("Internal plugin error")
-			}
-		}
-	} else {
-		log.Fatal("Invalid plugins")
+	for _, p := range _plugins {
+		plugins = append(plugins, &p)
 	}
 
 	Default = viperConfig{
