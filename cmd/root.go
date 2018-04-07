@@ -169,7 +169,7 @@ func downloadSubtitles(cmd *cobra.Command, args []string) {
 		log.WithError(err).Fatal("Download incomplete")
 	}
 
-	if viper.GetBool("dry") {
+	if config.Dry() {
 		ctx := log.WithField("reason", "dry-run")
 		ctx.Warn("Nothing performed")
 		ctx.Warnf("Media files: %v", media.Len())
