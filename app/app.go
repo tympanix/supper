@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -86,10 +85,6 @@ func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 	for _, root := range roots {
 		if _, err := os.Stat(root); os.IsNotExist(err) {
 			return nil, err
-		}
-
-		for _, r := range roots {
-			fmt.Println(r)
 		}
 
 		err := filepath.Walk(root, func(filepath string, f os.FileInfo, err error) error {
