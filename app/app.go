@@ -1,6 +1,8 @@
 package app
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -86,7 +88,14 @@ func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 			return nil, err
 		}
 
+		for _, r := range roots {
+			fmt.Println(r)
+		}
+
 		err := filepath.Walk(root, func(filepath string, f os.FileInfo, err error) error {
+			if f == nil {
+				return errors.New("invalid file path")
+			}
 			if f.IsDir() {
 				return nil
 			}

@@ -31,15 +31,10 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			return -1, err
 		}
 
-		var missingLangs set.Interface
-		if !a.Config().Dry() {
-			missingLangs = set.Difference(lang, cursubs.LanguageSet())
+		missingLangs := set.Difference(lang, cursubs.LanguageSet())
 
-			if missingLangs.Size() == 0 {
-				continue
-			}
-		} else {
-			missingLangs = lang
+		if missingLangs.Size() == 0 {
+			continue
 		}
 
 		subs := list.RatedSubtitles(item)
@@ -98,6 +93,16 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 					}
 					continue
 				}
+
+				var strscore string
+				if best == 0.0 {
+					strscore = "N/A"
+				} else {
+					strscore = fmt.Sprintf("%.0f%%", best*100.0)
+				}
+
+				ctx.WithField("score", strscore).Info("Subtitle downloaded")
+
 				for _, plugin := range a.Config().Plugins() {
 					err := plugin.Run(saved)
 					if err != nil {
@@ -110,16 +115,10 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 					}
 				}
 				numsubs++
-			}
-
-			var strscore string
-			if best == 0.0 {
-				strscore = "N/A"
 			} else {
-				strscore = fmt.Sprintf("%.0f%%", best*100.0)
+				numsubs++
+				ctx.WithField("reason", "dry-run").Info("Skip download")
 			}
-
-			ctx.WithField("score", strscore).Info("Subtitle downloaded")
 		}
 	}
 	return numsubs, nil
