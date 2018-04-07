@@ -1,6 +1,6 @@
 // +build !windows
 
-package plugins
+package plugin
 
 import shellquote "github.com/kballard/go-shellquote"
 

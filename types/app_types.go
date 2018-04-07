@@ -2,9 +2,9 @@ package types
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/fatih/set"
-	"github.com/urfave/cli"
 )
 
 // App is the interface for the top level capabilities of the application.
@@ -13,11 +13,26 @@ import (
 type App interface {
 	Provider
 	http.Handler
-	Plugins() []Plugin
-	Context() *cli.Context
+	Config() Config
 	FindMedia(...string) (LocalMediaList, error)
-	Languages() set.Interface
 	DownloadSubtitles(LocalMediaList, set.Interface) (int, error)
+}
+
+// Config is the interface for application configuration
+type Config interface {
+	Languages() set.Interface
+	Impaired() bool
+	Limit() int
+	Modified() time.Duration
+	Dry() bool
+	Score() int
+	Delay() time.Duration
+	Force() bool
+	Config() string
+	Logfile() string
+	Verbose() bool
+	Strict() bool
+	Plugins() []Plugin
 }
 
 // Plugin is an interface for external functionality

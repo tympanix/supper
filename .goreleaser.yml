@@ -6,6 +6,7 @@ builds:
       - linux
     goarch:
       - amd64
+  - ldflags: -s -w -X "cmd.AppVersion={{.Env.GOVERSION}}"
 archive:
   files:
     - web/*
