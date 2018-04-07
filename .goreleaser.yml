@@ -13,10 +13,10 @@ archive:
 nfpm:
   vendor: github.com/tympanix
   maintainer: tympanix <tympanix@gmail.com>
-  description: An automatic subtitle downloader
+  description: Download subtitles in a breeze
   license: GNU-v3.0
   formats:
     - deb
   files:
-    "./web": "/var/lib/supper/web"
-
+    ./web/*: /var/lib/supper/
+    ./web/static/**/*: /var/lib/supper/static
