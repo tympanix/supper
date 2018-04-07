@@ -1,0 +1,26 @@
+# Supper configuration file
+
+# The languages to use with the application
+languages:
+  - en
+  - es
+  - de
+
+# Path to store application logs
+logfile: /var/log/supper.log
+
+# Download only hearing impaired subtitles
+impared: false
+
+# Bind web server to port
+port: 5670
+
+# Localtion of movie library
+movies: /media/movies
+
+# Localtion of tv shows library
+shows: /media/shows
+
+# Plugins supply additional functionality
+plugins:
+  -

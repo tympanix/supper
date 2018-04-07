@@ -1,0 +1,15 @@
+[Unit]
+Description=Supper subtitle manager
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/supper web
+Restart=always
+RestartSec=10
+WorkingDirectory=/var/lib/supper
+User=supper
+Group=supper
+
+[Install]
+WantedBy=multi-user.target

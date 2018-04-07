@@ -12,5 +12,6 @@ debug*
 supper*
 .supper*
 !/supper.go
+!/etc/*
 web/static
 web/js/mock

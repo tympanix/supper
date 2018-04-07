@@ -75,6 +75,10 @@ func init() {
 	// Set up aliases
 	viper.RegisterAlias("lang", "languages")
 
+	// Set up environment variables
+	viper.SetEnvPrefix(AppName)
+	viper.AutomaticEnv()
+
 	viper.SetDefault("author", "tympanix <tympanix@gmail.com>")
 	viper.SetDefault("license", "GNUv3.0")
 }
