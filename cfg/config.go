@@ -1,11 +1,11 @@
 package cfg
 
 import (
-	"fmt"
 	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/plugin"
 	"github.com/tympanix/supper/types"
 
 	"github.com/apex/log"
@@ -50,8 +50,6 @@ func Initialize() {
 		lang.Add(_lang)
 	}
 
-	fmt.Println(viper.Get("plugins"))
-
 	// Parse modified flag
 	modified, err := parse.Duration(viper.GetString("modified"))
 	if err != nil {
@@ -66,11 +64,30 @@ func Initialize() {
 			Fatal("Invalid duration")
 	}
 
+	// Parse plugins
+	plugins := make([]types.Plugin, 0)
+	_plugins := viper.Get("plugins")
+	if list, ok := _plugins.([]interface{}); ok {
+		for _, v := range list {
+			if m, ok := v.(map[interface{}]interface{}); ok {
+				p, err := plugin.NewFromMap(m)
+				if err != nil {
+					log.WithError(err).Fatal("Could not instantiate plugin")
+				}
+				plugins = append(plugins, p)
+			} else {
+				log.Fatal("Internal plugin error")
+			}
+		}
+	} else {
+		log.Fatal("Invalid plugins")
+	}
+
 	Default = viperConfig{
 		languages: lang,
 		modified:  modified,
 		delay:     delay,
-		plugins:   make([]types.Plugin, 0),
+		plugins:   plugins,
 	}
 }
 

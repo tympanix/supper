@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/tympanix/supper/cfg"
 )
 
 func init() {
@@ -26,4 +27,8 @@ func showApplicationConfiguration(cmd *cobra.Command, args []string) {
 		}
 		log.WithField(flag.Name, fmt.Sprintf("%v", viper.Get(flag.Name))).Info(flag.Usage)
 	})
+
+	for _, p := range cfg.Default.Plugins() {
+		log.Info(p.Name())
+	}
 }

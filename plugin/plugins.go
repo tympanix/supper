@@ -1,0 +1,64 @@
+package plugin
+
+import (
+	"fmt"
+	"os/exec"
+
+	"github.com/apex/log"
+	"github.com/tympanix/supper/types"
+)
+
+// NewFromMap construct a plugin from an map of attributes
+func NewFromMap(i map[interface{}]interface{}) (*Plugin, error) {
+	plugin := &Plugin{}
+
+	if name, ok := i["name"].(string); ok {
+		plugin.PluginName = name
+	} else {
+		return nil, fmt.Errorf("Invalid plugin name %v", i["name"])
+	}
+
+	if exec, ok := i["exec"].(string); ok {
+		plugin.Exec = exec
+	} else {
+		return nil, fmt.Errorf("Invalid plugin exec: %v", i["exec"])
+	}
+
+	if err := plugin.valid(); err != nil {
+		return nil, err
+	}
+
+	return plugin, nil
+}
+
+// Plugin is a struct enabling external functionality
+type Plugin struct {
+	PluginName string `yaml:"name"`
+	Exec       string `yaml:"exec"`
+}
+
+// Run executes the plugin
+func (p *Plugin) Run(s types.LocalSubtitle) error {
+	cmd := exec.Command(shell[0], shell[1], escape(p.Exec, s.Path()))
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.WithError(err).WithField("plugin", p.Name()).
+			Debugf("Plugin debug\n%s", string(out))
+	}
+	return err
+}
+
+func (p *Plugin) valid() error {
+	if p.Name() == "" {
+		return fmt.Errorf("Missing plugin name")
+	}
+	if p.Exec == "" {
+		return fmt.Errorf("Missing plugin exec for %v", p.Name())
+	}
+	return nil
+}
+
+// Name returns the name of the plugin
+func (p *Plugin) Name() string {
+	return p.PluginName
+}
