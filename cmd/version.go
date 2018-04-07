@@ -23,5 +23,5 @@ func showVersion(cmd *cobra.Command, args []string) {
   log.WithField("commit", AppCommit()).
     Info("Git SCM commit hash")
   log.WithField("date", AppDate()).
-    Info("Release date")
+    Info("Build date")
 }
