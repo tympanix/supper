@@ -1,50 +1,40 @@
-package application
+package app
 
 import (
 	"errors"
 	"fmt"
-	"io"
+	"os"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
-	"github.com/urfave/cli"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 )
 
-var green = color.New(color.FgGreen)
-var red = color.New(color.FgRed)
-var yellow = color.New(color.FgYellow)
-
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
-// langauge in the language set. Any output is written to the ourpur writer
-func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface, out io.Writer) (int, error) {
+// langauge in the language set
+func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) (int, error) {
 	numsubs := 0
-
-	dry := a.Context().GlobalBool("dry")
-	hi := a.Context().GlobalBool("impaired")
-	score := a.Context().GlobalInt("score")
-	force := a.Context().GlobalBool("force")
-	delay, err := parse.Duration(a.Context().GlobalString("delay"))
-
-	if err != nil {
-		return 0, errors.New("could not parse delay time format")
-	}
 
 	// Iterate all media files found in each path
 	for i, item := range media.List() {
+		ctx := log.WithFields(log.Fields{
+			"media": item,
+			"item":  fmt.Sprintf("%v/%v", i+1, media.Len()),
+		})
+
 		cursubs, err := item.ExistingSubtitles()
 
 		if err != nil {
-			return -1, cli.NewExitError(err, 2)
+			return -1, err
 		}
 
 		var missingLangs set.Interface
-		if !force {
+		if !a.Config().Dry() {
 			missingLangs = set.Difference(lang, cursubs.LanguageSet())
 
 			if missingLangs.Size() == 0 {
@@ -54,60 +44,84 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			missingLangs = lang
 		}
 
-		fmt.Fprintf(out, "(%v/%v) - %s\n", i+1, media.Len(), item)
-
 		subs := list.RatedSubtitles(item)
 
-		if !dry {
+		if !a.Config().Dry() {
 			search, err := a.SearchSubtitles(item)
 			if err != nil {
-				return -1, cli.NewExitError(err, 2)
+				return -1, err
 			}
 			for _, s := range search {
 				subs.Add(s)
 			}
 		}
 
-		subs = subs.HearingImpaired(hi)
+		subs = subs.HearingImpaired(a.Config().Dry())
 
 		// Download subtitle for each language
 		for _, l := range missingLangs.List() {
-			if delay > 0 {
-				time.Sleep(delay)
+			ctx = ctx.WithField("lang", display.English.Languages().Name(l))
+
+			if a.Config().Delay() > 0 {
+				time.Sleep(a.Config().Delay())
 			}
 
 			l, ok := l.(language.Tag)
 
 			if !ok {
-				return -1, cli.NewExitError(err, 3)
+				return -1, err
 			}
 
 			langsubs := subs.FilterLanguage(l)
 
-			if langsubs.Len() == 0 && !dry {
-				red.Fprintln(out, " - no subtitles found")
+			if langsubs.Len() == 0 && !a.Config().Dry() {
+				ctx.Warn("Subtitle not available")
 				continue
 			}
 
-			if !dry {
-				sub, best := langsubs.Best()
-				if best < (float32(score) / 100.0) {
-					yellow.Fprintf(out, " - score too low %.0f%%\n", best*100.0)
+			var best float32
+
+			if !a.Config().Dry() {
+				var sub types.Subtitle
+				sub, best = langsubs.Best()
+				if best < (float32(a.Config().Score()) / 100.0) {
+					ctx.Warnf("Score too low %.0f%%", best*100.0)
 					continue
 				}
 				onl, ok := sub.(types.OnlineSubtitle)
 				if !ok {
-					panic("subtitle could not be cast to online subtitle")
+					ctx.Fatal("Subtitle could not be cast to online subtitle")
 				}
-				err := item.SaveSubtitle(onl, onl.Language())
+				saved, err := item.SaveSubtitle(onl, onl.Language())
 				if err != nil {
-					red.Fprintln(out, err.Error())
+					ctx.WithError(err).Error("Subtitle error")
+					if a.Config().Strict() {
+						os.Exit(1)
+					}
 					continue
+				}
+				for _, plugin := range a.Config().Plugins() {
+					err := plugin.Run(saved)
+					if err != nil {
+						ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
+						if a.Config().Strict() {
+							os.Exit(1)
+						}
+					} else {
+						ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
+					}
 				}
 				numsubs++
 			}
 
-			green.Fprintf(out, " - %v\n", display.English.Languages().Name(l))
+			var strscore string
+			if best == 0.0 {
+				strscore = "N/A"
+			} else {
+				strscore = fmt.Sprintf("%.0f%%", best*100.0)
+			}
+
+			ctx.WithField("score", strscore).Info("Subtitle downloaded")
 		}
 	}
 	return numsubs, nil

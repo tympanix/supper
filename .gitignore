@@ -10,6 +10,7 @@ dist
 mock
 debug*
 supper*
+.supper*
 !/supper.go
 web/static
 web/js/mock

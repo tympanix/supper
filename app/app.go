@@ -1,18 +1,17 @@
-package application
+package app
 
 import (
 	"net/http"
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/set"
+	"github.com/spf13/viper"
 	"github.com/tympanix/supper/api"
+	"github.com/tympanix/supper/cfg"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
-	"github.com/urfave/cli"
-	"golang.org/x/text/language"
 )
 
 var filetypes = []string{
@@ -23,17 +22,23 @@ var filetypes = []string{
 type Application struct {
 	types.Provider
 	*http.ServeMux
-	context *cli.Context
+	cfg types.Config
 }
 
-func New(context *cli.Context) types.App {
+// New returns a new application from the cli context
+func New(cfg types.Config) types.App {
+	// config, err := plugins.Load(cfg.Config())
+	// if err != nil {
+	// 	panic(err)
+	// }
+
 	app := &Application{
 		Provider: provider.Subscene(),
+		cfg:      cfg,
 		ServeMux: http.NewServeMux(),
-		context:  context,
 	}
 
-	static := context.String("static")
+	static := viper.GetString("static")
 
 	api := api.New(app)
 	app.ServeMux.Handle("/api/", http.StripPrefix("/api", api))
@@ -44,22 +49,14 @@ func New(context *cli.Context) types.App {
 	return app
 }
 
-// Context returns the CLI context of the application (e.g. flags, args ect.)
-func (a *Application) Context() *cli.Context {
-	return a.context
+// NewFromDefault construct an application using the default config
+func NewFromDefault() types.App {
+	return New(cfg.Default)
 }
 
-func (a *Application) Languages() set.Interface {
-	// Parse all language flags into slice of tags
-	lang := set.New()
-	for _, tag := range a.Context().GlobalStringSlice("lang") {
-		_lang, err := language.Parse(tag)
-		if err != nil {
-			os.Exit(5)
-		}
-		lang.Add(_lang)
-	}
-	return lang
+// Config returns the configuration for the application
+func (a *Application) Config() types.Config {
+	return a.cfg
 }
 
 // WebAppHandler serves a single-page web application

@@ -20,7 +20,7 @@ type jsonLang struct {
 func (a *API) config(w http.ResponseWriter, r *http.Request) interface{} {
 	if r.Method == "GET" {
 		langs := make([]jsonLang, 0)
-		for _, l := range a.Languages().List() {
+		for _, l := range a.Config().Languages().List() {
 			if tag, ok := l.(language.Tag); ok {
 				langs = append(langs, jsonLang{
 					tag,

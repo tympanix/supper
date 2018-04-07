@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -87,7 +86,7 @@ func (a *API) singleSubtitle(w http.ResponseWriter, r *http.Request) interface{}
 	if tag == language.Und {
 		return errors.New("unknown subtitle language")
 	}
-	err = media.SaveSubtitle(sub, tag)
+	_, err = media.SaveSubtitle(sub, tag)
 	if err != nil {
 		return err
 	}
@@ -143,7 +142,7 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	num, err := a.DownloadSubtitles(media, langs, ioutil.Discard)
+	num, err := a.DownloadSubtitles(media, langs)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}

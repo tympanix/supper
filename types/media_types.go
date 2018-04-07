@@ -43,13 +43,18 @@ type Metadata interface {
 	AllTags() []string
 }
 
+// Local is an interface for media content which is stored on disk
+type Local interface {
+	os.FileInfo
+	Path() string
+}
+
 // LocalMedia is an interface for media found locally on disk
 type LocalMedia interface {
-	os.FileInfo
+	Local
 	Media
-	Path() string
 	ExistingSubtitles() (SubtitleList, error)
-	SaveSubtitle(Downloadable, language.Tag) error
+	SaveSubtitle(Downloadable, language.Tag) (LocalSubtitle, error)
 }
 
 // Movie interface is for movie type media material
@@ -78,6 +83,12 @@ type Subtitle interface {
 	Language() language.Tag
 	IsLang(language.Tag) bool
 	IsHI() bool
+}
+
+// LocalSubtitle is an subtitle which is stored on disk
+type LocalSubtitle interface {
+	Local
+	Subtitle
 }
 
 // OnlineSubtitle is a subtitle obtained from the internet
