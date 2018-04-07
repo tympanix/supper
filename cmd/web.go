@@ -36,5 +36,6 @@ func startWebServer(cmd *cobra.Command, args []string) {
 	address := fmt.Sprintf(":%v", viper.GetInt("port"))
 
 	log.Infof("Listening on %v...\n", viper.GetInt("port"))
-	log.Error(http.ListenAndServe(address, app).Error())
+	log.WithError(http.ListenAndServe(address, app)).
+		Fatal("Web application exited abnormally")
 }

@@ -27,11 +27,6 @@ type Application struct {
 
 // New returns a new application from the cli context
 func New(cfg types.Config) types.App {
-	// config, err := plugins.Load(cfg.Config())
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	app := &Application{
 		Provider: provider.Subscene(),
 		cfg:      cfg,
