@@ -19,6 +19,8 @@ func Initialize(config types.Config) {
 	// Use temporary logger during initialisation
 	log.SetHandler(text.Default)
 
+	handlers = make([]log.Handler, 0)
+
 	logfile := config.Logfile()
 
 	if logfile != "" {

@@ -80,6 +80,12 @@ func init() {
 }
 
 func readConfigFiles() {
+	// Parse and set global configuration reference
+	cfg.Initialize()
+
+	// Set up logging capabilities from configuration
+	logutil.Initialize(cfg.Default)
+
 	config := viper.GetString("config")
 	if config != "" {
 		// Use config file from the flag
@@ -88,12 +94,18 @@ func readConfigFiles() {
 		if err := viper.ReadInConfig(); err != nil {
 			log.WithError(err).Fatal("Could not read config file")
 			os.Exit(1)
+		} else {
+			log.WithField("file", viper.ConfigFileUsed()).
+				Debug("Loaded configuration file")
 		}
 	} else {
 		// Use default configuration
 		viper.SetConfigName(strings.ToLower(AppName))
 		viper.AddConfigPath(cfg.DefaultPath(AppName))
-		viper.ReadInConfig()
+		if err := viper.ReadInConfig(); err == nil {
+			log.WithField("file", viper.ConfigFileUsed()).
+				Debug("Loaded default configuration")
+		}
 
 		// Merge in local configuration
 		viper.SetConfigName(fmt.Sprintf(".%v", strings.ToLower(AppName)))
@@ -104,6 +116,12 @@ func readConfigFiles() {
 			// If no local configuration, use global configuration
 			viper.AddConfigPath(cfg.GlobalPath(AppName))
 			viper.MergeInConfig()
+
+			log.WithField("file", viper.ConfigFileUsed()).
+				Debug("Loaded global configuration")
+		} else {
+			log.WithField("file", viper.ConfigFileUsed()).
+				Debug("Loaded local configuration")
 		}
 	}
 
