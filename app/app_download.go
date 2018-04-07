@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -9,7 +8,6 @@ import (
 	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
-	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
