@@ -72,6 +72,9 @@ func init() {
 	viper.BindPFlag("verbose", flags.Lookup("verbose"))
 	viper.BindPFlag("strict", flags.Lookup("strict"))
 
+	// Set up aliases
+	viper.RegisterAlias("lang", "languages")
+
 	viper.SetDefault("author", "tympanix <tympanix@gmail.com>")
 	viper.SetDefault("license", "GNUv3.0")
 }
