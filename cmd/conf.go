@@ -28,7 +28,9 @@ func showApplicationConfiguration(cmd *cobra.Command, args []string) {
 		log.WithField(flag.Name, fmt.Sprintf("%v", viper.Get(flag.Name))).Info(flag.Usage)
 	})
 
+	plugins := make([]string, 0)
 	for _, p := range cfg.Default.Plugins() {
-		log.Info(p.Name())
+		plugins = append(plugins, p.Name())
 	}
+	log.WithField("plugins", plugins).Info("plugins adds external functionality")
 }
