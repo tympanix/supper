@@ -14,19 +14,42 @@ import (
 	"github.com/tympanix/supper/logutil"
 )
 
-const (
-	// AppName is the name of the application
-	AppName = "Supper"
-	// AppDesc describes the application in one sentence
-	AppDesc = "Download subtitles in a breeze"
-	// AppVersion is the application version
-	AppVersion = "master"
+var (
+	appName    = "Supper"
+	appDesc    = "Download subtitles in a breeze"
+	appVersion = "master"  // set with ldflags -X
+	appCommit  = "HEAD"    // set with ldflags -X
+	appDate    = "unknown" // set with ldflags -X
 )
 
+// AppName returns the name of the application
+func AppName() string {
+	return appName
+}
+
+// AppVersion returns the version of the application
+func AppVersion() string {
+	return appVersion
+}
+
+// AppDesc return the description of the application
+func AppDesc() string {
+	return appDesc
+}
+
+// AppCommit returns the scm commit hash of the application
+func AppCommit() string {
+	return appCommit
+}
+
+// AppDate returns the build date of the application
+func AppDate() string {
+	return appDate
+}
+
 var rootCmd = &cobra.Command{
-	Use:              strings.ToLower(AppName),
-	Version:          AppVersion,
-	Short:            AppDesc,
+	Use:              strings.ToLower(AppName()),
+	Short:            AppDesc(),
 	PersistentPreRun: validateFlags,
 	Args:             validateArgs,
 	Run:              downloadSubtitles,
@@ -57,6 +80,7 @@ func init() {
 	flags.String("logfile", "", "store application logs in specified path")
 	flags.BoolP("verbose", "v", false, "enable verbose logging")
 	flags.Bool("strict", false, "exit the application on any error instead of proceeding to next media item")
+	flags.Bool("version", false, "show the application version and exit")
 
 	// Bind flags to viper
 	viper.BindPFlag("lang", flags.Lookup("lang"))
@@ -71,13 +95,10 @@ func init() {
 	viper.BindPFlag("logfile", flags.Lookup("logfile"))
 	viper.BindPFlag("verbose", flags.Lookup("verbose"))
 	viper.BindPFlag("strict", flags.Lookup("strict"))
+	viper.BindPFlag("version", flags.Lookup("version"))
 
 	// Set up aliases
 	viper.RegisterAlias("lang", "languages")
-
-	// Set up environment variables
-	viper.SetEnvPrefix(AppName)
-	viper.AutomaticEnv()
 
 	viper.SetDefault("author", "tympanix <tympanix@gmail.com>")
 	viper.SetDefault("license", "GNUv3.0")
@@ -104,21 +125,21 @@ func readConfigFiles() {
 		}
 	} else {
 		// Use default configuration
-		viper.SetConfigName(strings.ToLower(AppName))
-		viper.AddConfigPath(cfg.DefaultPath(AppName))
+		viper.SetConfigName(strings.ToLower(AppName()))
+		viper.AddConfigPath(cfg.DefaultPath(AppName()))
 		if err := viper.ReadInConfig(); err == nil {
 			log.WithField("file", viper.ConfigFileUsed()).
 				Debug("Loaded default configuration")
 		}
 
 		// Merge in local configuration
-		viper.SetConfigName(fmt.Sprintf(".%v", strings.ToLower(AppName)))
-		viper.AddConfigPath(cfg.HomePath(AppName))
+		viper.SetConfigName(fmt.Sprintf(".%v", strings.ToLower(AppName())))
+		viper.AddConfigPath(cfg.HomePath(AppName()))
 		viper.AddConfigPath(".")
 
 		if err := viper.MergeInConfig(); err != nil {
 			// If no local configuration, use global configuration
-			viper.AddConfigPath(cfg.GlobalPath(AppName))
+			viper.AddConfigPath(cfg.GlobalPath(AppName()))
 			viper.MergeInConfig()
 
 			log.WithField("file", viper.ConfigFileUsed()).
@@ -148,8 +169,14 @@ func validateFlags(cmd *cobra.Command, args []string) {
 }
 
 func validateArgs(cmd *cobra.Command, args []string) error {
+	if viper.GetBool("version") {
+		showVersion(cmd, args)
+		os.Exit(0)
+	}
+
 	if len(args) == 0 {
-		log.Fatal("Missing media arguments")
+		log.WithField("args", fmt.Sprintf("%v", len(args))).
+			Fatal("Missing media arguments")
 	}
 
 	// Make sure every arg is a valid file path

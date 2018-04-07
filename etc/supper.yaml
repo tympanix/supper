@@ -15,6 +15,9 @@ impared: false
 # Bind web server to port
 port: 5670
 
+# Location of web root for static resources
+static: /var/lib/supper
+
 # Localtion of movie library
 movies: /media/movies
 

@@ -6,7 +6,11 @@ builds:
       - linux
     goarch:
       - amd64
-  - ldflags: -s -w -X "cmd.AppVersion={{.Env.GOVERSION}}"
+  - ldflags: >
+      -s -w
+      -X github.com/tympanix/supper/cmd.appVersion={{.Version}}
+      -X github.com/tympanix/supper/cmd.appCommit={{.Commit}}
+      -X github.com/tympanix/supper/cmd.appDate={{.Date}}
 archive:
   files:
     - web/*
@@ -21,5 +25,5 @@ nfpm:
   files:
     ./web/*: /var/lib/supper/
     ./web/static/**/*: /var/lib/supper/static
-    ./etc/supper.service: /lib/systemd/systemd/supper.service
+    ./etc/supper.service: /lib/systemd/system/supper.service
     ./etc/supper.yaml: /etc/supper/supper.yaml
