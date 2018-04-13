@@ -139,6 +139,7 @@ func readConfigFiles() {
 
 		if err := viper.MergeInConfig(); err != nil {
 			// If no local configuration, use global configuration
+			viper.SetConfigName(strings.ToLower(AppName()))
 			viper.AddConfigPath(cfg.GlobalPath(AppName()))
 			if err := viper.MergeInConfig(); err != nil {
 				log.WithField("file", viper.ConfigFileUsed()).
