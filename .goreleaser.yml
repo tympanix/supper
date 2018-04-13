@@ -26,4 +26,5 @@ nfpm:
     ./web/*: /var/lib/supper/
     ./web/static/**/*: /var/lib/supper/static
     ./etc/supper.service: /lib/systemd/system/supper.service
+  config_files:
     ./etc/supper.yaml: /etc/supper/supper.yaml
