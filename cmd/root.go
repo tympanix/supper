@@ -102,12 +102,6 @@ func init() {
 
 	viper.SetDefault("author", "tympanix <tympanix@gmail.com>")
 	viper.SetDefault("license", "GNUv3.0")
-
-	// Parse and set global configuration reference
-	cfg.Initialize()
-
-	// Set up logging capabilities from configuration
-	logutil.Initialize(cfg.Default)
 }
 
 func readConfigFiles() {
