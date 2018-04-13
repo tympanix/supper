@@ -82,8 +82,11 @@ func init() {
 	flags.Bool("strict", false, "exit the application on any error instead of proceeding to next media item")
 	flags.Bool("version", false, "show the application version and exit")
 
+	// Set up aliases
+	viper.RegisterAlias("lang", "languages")
+
 	// Bind flags to viper
-	viper.BindPFlag("lang", flags.Lookup("lang"))
+	viper.BindPFlag("languages", flags.Lookup("lang"))
 	viper.BindPFlag("impaired", flags.Lookup("impaired"))
 	viper.BindPFlag("limit", flags.Lookup("limit"))
 	viper.BindPFlag("modified", flags.Lookup("modified"))
@@ -97,11 +100,14 @@ func init() {
 	viper.BindPFlag("strict", flags.Lookup("strict"))
 	viper.BindPFlag("version", flags.Lookup("version"))
 
-	// Set up aliases
-	viper.RegisterAlias("lang", "languages")
-
 	viper.SetDefault("author", "tympanix <tympanix@gmail.com>")
 	viper.SetDefault("license", "GNUv3.0")
+
+	// Parse and set global configuration reference
+	cfg.Initialize()
+
+	// Set up logging capabilities from configuration
+	logutil.Initialize(cfg.Default)
 }
 
 func readConfigFiles() {
@@ -140,10 +146,13 @@ func readConfigFiles() {
 		if err := viper.MergeInConfig(); err != nil {
 			// If no local configuration, use global configuration
 			viper.AddConfigPath(cfg.GlobalPath(AppName()))
-			viper.MergeInConfig()
-
-			log.WithField("file", viper.ConfigFileUsed()).
-				Debug("Loaded global configuration")
+			if err := viper.MergeInConfig(); err != nil {
+				log.WithField("file", viper.ConfigFileUsed()).
+					Debug("Loaded global configuration")
+			} else {
+				log.WithField("file", "None").
+					Debug("No configuration file loaded")
+			}
 		} else {
 			log.WithField("file", viper.ConfigFileUsed()).
 				Debug("Loaded local configuration")
