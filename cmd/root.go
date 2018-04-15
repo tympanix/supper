@@ -142,11 +142,11 @@ func readConfigFiles() {
 			viper.SetConfigName(strings.ToLower(AppName()))
 			viper.AddConfigPath(cfg.GlobalPath(AppName()))
 			if err := viper.MergeInConfig(); err != nil {
-				log.WithField("file", viper.ConfigFileUsed()).
-					Debug("Loaded global configuration")
-			} else {
 				log.WithField("file", "None").
 					Debug("No configuration file loaded")
+			} else {
+				log.WithField("file", viper.ConfigFileUsed()).
+					Debug("Loaded global configuration")
 			}
 		} else {
 			log.WithField("file", viper.ConfigFileUsed()).
