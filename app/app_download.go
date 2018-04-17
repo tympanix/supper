@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -18,7 +19,21 @@ import (
 func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) (int, error) {
 	numsubs := 0
 
-	// Iterate all media files found in each path
+	if media == nil {
+		return -1, errors.New("no media supplied for subtitles")
+	}
+
+	if lang == nil {
+		return -1, errors.New("no languages supplied for subtitles")
+	}
+
+	media, err := media.FilterMissingSubs(lang)
+
+	if err != nil {
+		return -1, nil
+	}
+
+	// Iterate all media files in the list
 	for i, item := range media.List() {
 		ctx := log.WithFields(log.Fields{
 			"media": item,
