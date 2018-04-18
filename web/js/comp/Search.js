@@ -63,7 +63,7 @@ class Search extends Component {
 
     return (
       <div>
-        <input type="text" className="highlight" spellCheck="false"
+        <input type="text" className="highlight big" spellCheck="false"
           onKeyUp={this.handleKey.bind(this)}
           ref={(i) => {this.searchInput = i}}
           value={this.state.search}
