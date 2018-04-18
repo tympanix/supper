@@ -28,6 +28,7 @@
     "file-loader": "^1.1.6",
     "flag-icon-css": "^2.9.0",
     "install": "^0.10.2",
+    "miqu": "^0.1.0",
     "node-sass": "^4.7.2",
     "npm": "^5.6.0",
     "react": "^16.2.0",
