@@ -6,18 +6,24 @@ class FolderStore extends EventEmitter {
     super()
     this.folders = []
     this.search = ""
+    this.loading = true
     this.update()
   }
 
   update() {
     API.getFolders().then(folders => {
       this.folders = folders
+      this.loading = false
       this.emit("change")
     })
   }
 
   getAll() {
     return this.folders
+  }
+
+  isLoading() {
+    return this.loading
   }
 
   getSearch() {

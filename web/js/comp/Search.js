@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Redirect } from 'react-router'
 
 import MediaList from './MediaList'
+import Spinner from './Spinner'
 
 import { folderStore } from '../stores'
 
@@ -16,6 +17,7 @@ class Search extends Component {
     this.state = {
       media: folderStore.getAll(),
       search: folderStore.getSearch(),
+      loading: folderStore.isLoading(),
       redirect: false,
     }
   }
@@ -33,7 +35,10 @@ class Search extends Component {
   }
 
   getFolders() {
-    this.setState({media: folderStore.getAll()})
+    this.setState({
+      media: folderStore.getAll(),
+      loading: folderStore.isLoading()
+    })
   }
 
   handleKey(event) {
@@ -71,7 +76,11 @@ class Search extends Component {
           onBlur={this.handleBlur.bind(this)}
           placeholder="Search Media">
         </input>
-        <MediaList list={media} ref={(m) => {this.mediaList = m}} />
+        {this.state.loading ?
+          <Spinner/>
+        :
+          <MediaList list={media} ref={(m) => {this.mediaList = m}} />
+        }
       </div>
     );
   }
