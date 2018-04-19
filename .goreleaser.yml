@@ -28,3 +28,5 @@ nfpm:
     ./etc/supper.service: /lib/systemd/system/supper.service
   config_files:
     ./etc/supper.yaml: /etc/supper/supper.yaml
+  scripts:
+    preinstall: ./etc/preinstall.sh

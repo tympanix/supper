@@ -7,7 +7,7 @@ languages:
   - de
 
 # Path to store application logs
-logfile: /var/log/supper.log
+logfile: /var/log/supper/supper.log
 
 # Download only hearing impaired subtitles
 impared: false

@@ -19,5 +19,8 @@ else
 endif
 
 build:
-	/usr/bin/env npm install
-	/usr/bin/env npm run build
+	npm install
+	npm run build
+
+dist:
+	goreleaser release --rm-dist --skip-publish --skip-validate
