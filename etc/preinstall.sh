@@ -1,11 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/bash
+set -e
+
+LOGDIR=/var/log/supper
 
 useradd supper -r -s /bin/false || :
 
-if [[ ! -d /var/log/supper ]]; then
-  mkdir -p /var/log/supper || :
-  chgrp supper /var/log/supper || :
-  chmod g+s /var/log/supper || :
-  touch /var/log/supper/supper.log || :
-  chmod g+w /var/log/supper/supper.log || : 
+if [[ ! -d "$LOGDIR" ]]; then
+  mkdir -p $LOGDIR || :
+  chgrp supper $LOGDIR || :
+  chmod g+s $LOGDIR || :
+  touch $LOGDIR/supper.log || :
+  chmod g+w $LOGDIR/supper.log || :
 fi

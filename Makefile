@@ -24,3 +24,4 @@ build:
 
 dist:
 	goreleaser release --rm-dist --skip-publish --skip-validate
+.PHONY: dist

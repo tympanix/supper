@@ -30,3 +30,4 @@ nfpm:
     ./etc/supper.yaml: /etc/supper/supper.yaml
   scripts:
     preinstall: ./etc/preinstall.sh
+    postinstall: ./etc/postinstall.sh
