@@ -5,7 +5,7 @@ LOGDIR=/var/log/supper
 
 useradd supper -r -s /bin/false || :
 
-if [[ ! -d "$LOGDIR" ]]; then
+if [[ ! -d $LOGDIR ]]; then
   mkdir -p $LOGDIR || :
   chgrp supper $LOGDIR || :
   chmod g+s $LOGDIR || :
