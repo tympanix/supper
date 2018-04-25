@@ -16,12 +16,14 @@ import (
 	"golang.org/x/text/language"
 )
 
+// File represents a local media file on disk
 type File struct {
 	os.FileInfo
 	types.Media
 	path string
 }
 
+// MarshalJSON returns the JSON represnetation of a media file
 func (f *File) MarshalJSON() (b []byte, err error) {
 	if js, ok := f.Media.Meta().(json.Marshaler); ok {
 		return js.MarshalJSON()
@@ -33,10 +35,12 @@ func (f *File) String() string {
 	return f.Meta().String()
 }
 
+// Path returns the path to the media file
 func (f *File) Path() string {
 	return f.path
 }
 
+// ExistingSubtitles returns a list of existing subtitles for the media
 func (f *File) ExistingSubtitles() (types.SubtitleList, error) {
 	folder := filepath.Dir(f.Path())
 	name := parse.Filename(f.Path())
@@ -114,36 +118,13 @@ func (f *File) SaveSubtitle(s types.Downloadable, lang language.Tag) (types.Loca
 	return sub, nil
 }
 
-func NewFile(file os.FileInfo, meta types.Metadata, path string) *File {
-	return &File{file, NewType(meta), path}
-}
-
-type Type struct {
-	types.Metadata
-}
-
-func (m *Type) Meta() types.Metadata {
-	return m.Metadata
-}
-
-func (m *Type) TypeMovie() (r types.Movie, ok bool) {
-	r, ok = m.Metadata.(types.Movie)
-	return
-}
-
-func (m *Type) TypeEpisode() (r types.Episode, ok bool) {
-	r, ok = m.Metadata.(types.Episode)
-	return
-}
-
-func NewType(m types.Metadata) *Type {
-	return &Type{m}
-}
-
-// New parses a file into media attributes
-func New(path string) (types.LocalMedia, error) {
-	filename := parse.Filename(path)
-	media, err := NewMetadata(filename)
+// NewFromPath parses a filepath into a media object. The path may be an
+// absolute or relative path. The filename of the media must contain
+// appropriate informations to describe the media file.
+func NewFromPath(path string) (types.LocalMedia, error) {
+	filename := filepath.Base(path)
+	basename := strings.TrimSuffix(filename, filepath.Ext(filename))
+	media, err := NewFromString(basename)
 
 	if err != nil {
 		return nil, err
@@ -155,17 +136,12 @@ func New(path string) (types.LocalMedia, error) {
 		return nil, err
 	}
 
-	if movie, ok := media.(types.Movie); ok {
-		return NewFile(file, movie, path), nil
-	} else if episode, ok := media.(types.Episode); ok {
-		return NewFile(file, episode, path), nil
-	} else {
-		return nil, errors.New("unknown media type")
-	}
+	return &File{file, media, path}, nil
 }
 
-// NewMetadata returns a metadata object parsed from the string
-func NewMetadata(str string) (types.Metadata, error) {
+// NewFromString returns a media object parsed from a string describing the
+// media. This could be the name of a file (without extension)
+func NewFromString(str string) (types.Media, error) {
 	if episodeRegexp.MatchString(str) {
 		return NewEpisode(str)
 	}
@@ -175,6 +151,7 @@ func NewMetadata(str string) (types.Metadata, error) {
 // FilePath is a string describing a path to a file
 type FilePath string
 
+// Path return the path to a file
 func (p FilePath) Path() string {
 	return string(p)
 }

@@ -33,7 +33,7 @@ func (t *tmdb) Scrape(m types.Media) (types.Media, error) {
 	if movie, ok := m.TypeMovie(); ok {
 		return t.searchMovie(movie)
 	}
-	return nil, errors.New("not supported by tmdb")
+	return nil, mediaNotSupported("tmdb")
 }
 
 func (t *tmdb) url(p string) (*url.URL, error) {
@@ -104,10 +104,10 @@ func (t *tmdb) searchMovie(m types.Movie) (types.Media, error) {
 		return nil, err
 	}
 
-	movie := media.MovieMeta{
+	movie := media.Movie{
 		NameX: res.Results[0].OriginalTitle,
 		YearX: d.Year(),
 	}
 
-	return media.NewType(&movie), nil
+	return &movie, nil
 }
