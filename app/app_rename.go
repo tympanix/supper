@@ -104,7 +104,9 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 			}
 		}
 
-		fmt.Println(scraped)
+		if err := m.Merge(scraped); err != nil {
+			return err
+		}
 
 		if movie, ok := m.TypeMovie(); ok {
 			return a.renameMovie(m, movie, doRename, templates.Movies)
