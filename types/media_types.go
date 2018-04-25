@@ -16,6 +16,11 @@ type Provider interface {
 	ResolveSubtitle(Linker) (Downloadable, error)
 }
 
+// Scraper interfaces with 3rd party APIs to scrape meta data
+type Scraper interface {
+	Scrape(Media) (Media, error)
+}
+
 // Downloadable is an interface for media that can be downloaded from the internet
 type Downloadable interface {
 	Download() (io.ReadCloser, error)
@@ -68,6 +73,7 @@ type Movie interface {
 type Episode interface {
 	Metadata
 	TVShow() string
+	EpisodeName() string
 	Episode() int
 	Season() int
 }

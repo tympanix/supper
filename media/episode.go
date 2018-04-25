@@ -11,14 +11,15 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
-var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})(?:[Ee]\d{1,2})?[\W_]+(.*)$`)
+var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})(?:[Ee]\d{1,2})?[\W_]*(.*)$`)
 
 // EpisodeMeta represents an episode from a TV show
 type EpisodeMeta struct {
 	Metadata
-	name    string
-	episode int
-	season  int
+	NameX        string
+	EpisodeNameX string
+	EpisodeX     int
+	SeasonX      int
 }
 
 func (e *EpisodeMeta) MarshalJSON() (b []byte, err error) {
@@ -62,9 +63,9 @@ func NewEpisode(filename string) (*EpisodeMeta, error) {
 
 	return &EpisodeMeta{
 		Metadata: ParseMetadata(tags),
-		name:     parse.CleanName(name),
-		episode:  episode,
-		season:   season,
+		NameX:    parse.CleanName(name),
+		EpisodeX: episode,
+		SeasonX:  season,
 	}, nil
 }
 
@@ -74,17 +75,22 @@ func (e *EpisodeMeta) String() string {
 
 // TVShow is the name of the TV show
 func (e *EpisodeMeta) TVShow() string {
-	return e.name
+	return e.NameX
+}
+
+// EpisodeName is the name of the episode
+func (e *EpisodeMeta) EpisodeName() string {
+	return e.EpisodeNameX
 }
 
 // Episode is the episode number in the season
 func (e *EpisodeMeta) Episode() int {
-	return e.episode
+	return e.EpisodeX
 }
 
 // Season is the season number of the show
 func (e *EpisodeMeta) Season() int {
-	return e.season
+	return e.SeasonX
 }
 
 // Matches an episode against a subtitle
