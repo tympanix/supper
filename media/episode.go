@@ -39,12 +39,14 @@ func (e *Episode) MarshalJSON() (b []byte, err error) {
 	})
 }
 
-// NewEpisode parses media info from a file
+// NewEpisode parses media info from a filename (without extension). The
+// filename must describe the episode adequately (e.g. must contain season
+// and episode numbers)
 func NewEpisode(filename string) (*Episode, error) {
 	groups := episodeRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
-		return nil, errors.New("could not parse media")
+		return nil, errors.New("could not parse episode")
 	}
 
 	name := groups[1]

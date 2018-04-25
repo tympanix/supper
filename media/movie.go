@@ -36,12 +36,13 @@ func (m *Movie) MarshalJSON() (b []byte, err error) {
 
 var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]+(19\d\d|20\d\d)[\W_]+(.*)$`)
 
-// NewMovie parses media info from a file
+// NewMovie parses media info from a filename (without extension). The filename
+// must describe the movie adequately (e.g. must contain the release year)
 func NewMovie(filename string) (*Movie, error) {
 	groups := movieRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
-		return nil, errors.New("could not parse media")
+		return nil, errors.New("could not parse movie")
 	}
 
 	name := groups[1]
