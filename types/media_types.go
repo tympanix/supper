@@ -34,6 +34,7 @@ type Evaluator interface {
 // Media is an interface for movies and TV shows
 type Media interface {
 	Meta() Metadata
+	Merge(Media) error
 	TypeMovie() (Movie, bool)
 	TypeEpisode() (Episode, bool)
 }

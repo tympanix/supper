@@ -107,7 +107,7 @@ func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 			if !fileIsMedia(f) {
 				return nil
 			}
-			_media, err := media.New(filepath)
+			_media, err := media.NewFromPath(filepath)
 			if err != nil {
 				return nil
 			}

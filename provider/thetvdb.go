@@ -193,12 +193,12 @@ func (t *thetvdb) searchTV(e types.Episode) (types.Media, error) {
 		return nil, err
 	}
 
-	scraped := media.EpisodeMeta{
+	scraped := media.Episode{
 		NameX:        seriesData.Data[0].SeriesName,
 		EpisodeNameX: episodeData.Data[0].EpisodeName,
 		EpisodeX:     episodeData.Data[0].Episode,
 		SeasonX:      episodeData.Data[0].Season,
 	}
 
-	return media.NewType(&scraped), nil
+	return &scraped, nil
 }

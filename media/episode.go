@@ -13,8 +13,8 @@ import (
 
 var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\d{1,2})(?:[Ee]\d{1,2})?[\W_]*(.*)$`)
 
-// EpisodeMeta represents an episode from a TV show
-type EpisodeMeta struct {
+// Episode represents an episode from a TV show
+type Episode struct {
 	Metadata
 	NameX        string
 	EpisodeNameX string
@@ -22,7 +22,8 @@ type EpisodeMeta struct {
 	SeasonX      int
 }
 
-func (e *EpisodeMeta) MarshalJSON() (b []byte, err error) {
+// MarshalJSON returns the JSON representation of an episode
+func (e *Episode) MarshalJSON() (b []byte, err error) {
 	type jsonEpisode struct {
 		Meta    Metadata `json:"metadata"`
 		Name    string   `json:"name"`
@@ -39,7 +40,7 @@ func (e *EpisodeMeta) MarshalJSON() (b []byte, err error) {
 }
 
 // NewEpisode parses media info from a file
-func NewEpisode(filename string) (*EpisodeMeta, error) {
+func NewEpisode(filename string) (*Episode, error) {
 	groups := episodeRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
@@ -61,7 +62,7 @@ func NewEpisode(filename string) (*EpisodeMeta, error) {
 
 	tags := groups[4]
 
-	return &EpisodeMeta{
+	return &Episode{
 		Metadata: ParseMetadata(tags),
 		NameX:    parse.CleanName(name),
 		EpisodeX: episode,
@@ -69,36 +70,56 @@ func NewEpisode(filename string) (*EpisodeMeta, error) {
 	}, nil
 }
 
-func (e *EpisodeMeta) String() string {
+func (e *Episode) String() string {
 	return fmt.Sprintf("%s S%02dE%02d", e.TVShow(), e.Season(), e.Episode())
 }
 
 // TVShow is the name of the TV show
-func (e *EpisodeMeta) TVShow() string {
+func (e *Episode) TVShow() string {
 	return e.NameX
 }
 
+// Merge merges metadata from another episode
+func (e *Episode) Merge(other types.Media) error {
+	if episode, ok := other.TypeEpisode(); ok {
+		if e.Season() != episode.Season() {
+			return errors.New("invalid media merge of different seasons")
+		}
+		if e.Episode() != episode.Episode() {
+			return errors.New("invalid media merge of different episodes")
+		}
+		e.NameX = episode.TVShow()
+		e.EpisodeNameX = episode.EpisodeName()
+	}
+	return errors.New("invalid media merge of different media")
+}
+
+// Meta returns the metadata interface for the episode
+func (e *Episode) Meta() types.Metadata {
+	return e.Metadata
+}
+
+// TypeEpisode returns true since an episode is an episode
+func (e *Episode) TypeEpisode() (types.Episode, bool) {
+	return e, true
+}
+
+// TypeMovie returns false since an episode is not a movie
+func (e *Episode) TypeMovie() (types.Movie, bool) {
+	return nil, false
+}
+
 // EpisodeName is the name of the episode
-func (e *EpisodeMeta) EpisodeName() string {
+func (e *Episode) EpisodeName() string {
 	return e.EpisodeNameX
 }
 
 // Episode is the episode number in the season
-func (e *EpisodeMeta) Episode() int {
+func (e *Episode) Episode() int {
 	return e.EpisodeX
 }
 
 // Season is the season number of the show
-func (e *EpisodeMeta) Season() int {
+func (e *Episode) Season() int {
 	return e.SeasonX
-}
-
-// Matches an episode against a subtitle
-func (e *EpisodeMeta) Matches(types.Subtitle) bool {
-	return true
-}
-
-// Score returns the likelyhood of the subtitle maching the episode
-func (e *EpisodeMeta) Score(types.Subtitle) float32 {
-	return 0.0
 }

@@ -169,7 +169,7 @@ func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineS
 
 		hi := s.Find("td.a41").Length() > 0
 
-		meta, err := media.NewMetadata(name)
+		meta, err := media.NewFromString(name)
 
 		if err != nil {
 			return
@@ -182,7 +182,7 @@ func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineS
 		}
 
 		subs = append(subs, &subsceneSubtitle{
-			Media:       media.NewType(meta),
+			Media:       meta,
 			subsceneURL: subsceneURL(url),
 			lang:        langTag,
 			comment:     comm,

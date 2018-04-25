@@ -104,10 +104,10 @@ func (t *tmdb) searchMovie(m types.Movie) (types.Media, error) {
 		return nil, err
 	}
 
-	movie := media.MovieMeta{
+	movie := media.Movie{
 		NameX: res.Results[0].OriginalTitle,
 		YearX: d.Year(),
 	}
 
-	return media.NewType(&movie), nil
+	return &movie, nil
 }

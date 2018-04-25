@@ -61,6 +61,11 @@ func (l *LocalSubtitle) Language() language.Tag {
 	return l.lang
 }
 
+// Merge is not supported for subtitles
+func (l *LocalSubtitle) Merge(other types.Media) error {
+	return errors.New("merging of subtitles is not supported")
+}
+
 func (l *LocalSubtitle) String() string {
 	return display.English.Languages().Name(l.Language())
 }

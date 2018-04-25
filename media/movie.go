@@ -11,15 +11,16 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
-// MovieMeta represents a movie file
-type MovieMeta struct {
+// Movie represents a movie file
+type Movie struct {
 	Metadata
 	NameX string
 	YearX int
 	tags  string
 }
 
-func (m *MovieMeta) MarshalJSON() (b []byte, err error) {
+// MarshalJSON return the JSON representation of a movie
+func (m *Movie) MarshalJSON() (b []byte, err error) {
 	type jsonMovie struct {
 		Meta Metadata `json:"metadata"`
 		Name string   `json:"name"`
@@ -36,7 +37,7 @@ func (m *MovieMeta) MarshalJSON() (b []byte, err error) {
 var movieRegexp = regexp.MustCompile(`^(.+?)[\W_]+(19\d\d|20\d\d)[\W_]+(.*)$`)
 
 // NewMovie parses media info from a file
-func NewMovie(filename string) (*MovieMeta, error) {
+func NewMovie(filename string) (*Movie, error) {
 	groups := movieRegexp.FindStringSubmatch(filename)
 
 	if groups == nil {
@@ -51,7 +52,7 @@ func NewMovie(filename string) (*MovieMeta, error) {
 		return nil, err
 	}
 
-	return &MovieMeta{
+	return &Movie{
 		Metadata: ParseMetadata(tags),
 		NameX:    parse.CleanName(name),
 		tags:     tags,
@@ -59,26 +60,42 @@ func NewMovie(filename string) (*MovieMeta, error) {
 	}, nil
 }
 
-func (m *MovieMeta) String() string {
+func (m *Movie) String() string {
 	return fmt.Sprintf("%s (%v)", m.MovieName(), m.Year())
 }
 
+// Merge merges metadata from another movie into this one
+func (m *Movie) Merge(other types.Media) error {
+	if movie, ok := other.TypeMovie(); ok {
+		if m.Year() != movie.Year() {
+			return errors.New("invalid media merge year does not match")
+		}
+		m.NameX = movie.MovieName()
+	}
+	return errors.New("invalid media merge not same media type")
+}
+
+// Meta returnes the metadata interface for a movie
+func (m *Movie) Meta() types.Metadata {
+	return m.Metadata
+}
+
+// TypeEpisode returns false, since a movie is not an episode
+func (m *Movie) TypeEpisode() (types.Episode, bool) {
+	return nil, false
+}
+
+// TypeMovie returns true, since a movie is a movie
+func (m *Movie) TypeMovie() (types.Movie, bool) {
+	return m, true
+}
+
 // MovieName is the name of the movie
-func (m *MovieMeta) MovieName() string {
+func (m *Movie) MovieName() string {
 	return m.NameX
 }
 
 // Year is the release year of the movie
-func (m *MovieMeta) Year() int {
+func (m *Movie) Year() int {
 	return m.YearX
-}
-
-// Matches a movie against a subtitle
-func (m *MovieMeta) Matches(types.Subtitle) bool {
-	return true
-}
-
-// Score returns the likelyhood of the subtitle maching the movie
-func (m *MovieMeta) Score(types.Subtitle) float32 {
-	return 0.0
 }
