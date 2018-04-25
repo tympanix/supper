@@ -25,20 +25,20 @@ import (
 	"golang.org/x/text/language"
 )
 
-// HOST is the URL for subscene
-const HOST = "https://subscene.com"
+// subsceneHost is the URL for subscene
+const subsceneHost = "https://subscene.com"
 
-// DELAY is the delay between calls to subscene to prevent spamming
-const DELAY = 500 * time.Millisecond
+// subsceneDelay is the delay between calls to subscene to prevent spamming
+const subsceneDelay = 500 * time.Millisecond
 
-var lock = new(sync.Mutex)
+var subsceneLock = new(sync.Mutex)
 
 // lockSubscene is used to limit the number of calls to subscene to prevent spamming
 func lockSubscene() {
-	lock.Lock()
+	subsceneLock.Lock()
 	go func() {
-		time.Sleep(DELAY)
-		lock.Unlock()
+		time.Sleep(subsceneDelay)
+		subsceneLock.Unlock()
 	}()
 }
 
@@ -132,7 +132,7 @@ func (s *subscene) FindMediaURL(media types.Media) (string, error) {
 		return "", errors.New("no media found on subscene.com")
 	}
 
-	return fmt.Sprintf("%s%s", HOST, result), nil
+	return fmt.Sprintf("%s%s", subsceneHost, result), nil
 }
 
 // SearchSubtitles searches subscene.com for subtitles
@@ -241,7 +241,7 @@ func (uri subsceneURL) Link() string {
 }
 
 func (uri subsceneURL) Download() (io.ReadCloser, error) {
-	fulluri := fmt.Sprintf("%s%s", HOST, string(uri))
+	fulluri := fmt.Sprintf("%s%s", subsceneHost, string(uri))
 
 	suburl, err := url.ParseRequestURI(fulluri)
 
@@ -268,7 +268,7 @@ func (uri subsceneURL) Download() (io.ReadCloser, error) {
 		return nil, errors.New("could not find download link from subscene")
 	}
 
-	download = fmt.Sprintf("%s%s", HOST, download)
+	download = fmt.Sprintf("%s%s", subsceneHost, download)
 
 	resp, err := http.Get(download)
 

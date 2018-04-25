@@ -14,9 +14,9 @@ import (
 // MovieMeta represents a movie file
 type MovieMeta struct {
 	Metadata
-	name string
-	tags string
-	year int
+	NameX string
+	YearX int
+	tags  string
 }
 
 func (m *MovieMeta) MarshalJSON() (b []byte, err error) {
@@ -28,8 +28,8 @@ func (m *MovieMeta) MarshalJSON() (b []byte, err error) {
 
 	return json.Marshal(jsonMovie{
 		m.Metadata,
-		m.name,
-		m.year,
+		m.NameX,
+		m.YearX,
 	})
 }
 
@@ -53,9 +53,9 @@ func NewMovie(filename string) (*MovieMeta, error) {
 
 	return &MovieMeta{
 		Metadata: ParseMetadata(tags),
-		name:     parse.CleanName(name),
+		NameX:    parse.CleanName(name),
 		tags:     tags,
-		year:     year,
+		YearX:    year,
 	}, nil
 }
 
@@ -65,12 +65,12 @@ func (m *MovieMeta) String() string {
 
 // MovieName is the name of the movie
 func (m *MovieMeta) MovieName() string {
-	return m.name
+	return m.NameX
 }
 
 // Year is the release year of the movie
 func (m *MovieMeta) Year() int {
-	return m.year
+	return m.YearX
 }
 
 // Matches a movie against a subtitle
