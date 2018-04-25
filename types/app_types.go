@@ -14,8 +14,10 @@ type App interface {
 	Provider
 	http.Handler
 	Config() Config
+	Scrapers() []Scraper
 	FindMedia(...string) (LocalMediaList, error)
 	DownloadSubtitles(LocalMediaList, set.Interface) (int, error)
+	RenameMedia(LocalMediaList) error
 }
 
 // Config is the interface for application configuration

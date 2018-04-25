@@ -34,7 +34,7 @@ func (t *thetvdb) Scrape(m types.Media) (types.Media, error) {
 	if e, ok := m.TypeEpisode(); ok {
 		return t.searchTV(e)
 	}
-	return nil, errors.New("not supported by thetvdb")
+	return nil, mediaNotSupported("thetvdb")
 }
 
 func (t *thetvdb) Get(url string) (*http.Response, error) {

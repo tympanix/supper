@@ -23,7 +23,8 @@ var filetypes = []string{
 type Application struct {
 	types.Provider
 	*http.ServeMux
-	cfg types.Config
+	cfg      types.Config
+	scrapers []types.Scraper
 }
 
 // New returns a new application from the cli context
@@ -32,6 +33,10 @@ func New(cfg types.Config) types.App {
 		Provider: provider.Subscene(),
 		cfg:      cfg,
 		ServeMux: http.NewServeMux(),
+		scrapers: []types.Scraper{
+			provider.TheMovieDB(""),
+			provider.TheTVDB(""),
+		},
 	}
 
 	static := viper.GetString("static")
@@ -76,6 +81,11 @@ func fileIsMedia(f os.FileInfo) bool {
 		}
 	}
 	return false
+}
+
+// Scrapers returns the list of supported scrapers
+func (a *Application) Scrapers() []types.Scraper {
+	return a.scrapers
 }
 
 // FindMedia searches for media files
