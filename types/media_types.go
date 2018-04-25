@@ -35,13 +35,13 @@ type Evaluator interface {
 type Media interface {
 	Meta() Metadata
 	Merge(Media) error
+	String() string
 	TypeMovie() (Movie, bool)
 	TypeEpisode() (Episode, bool)
 }
 
 // Metadata is an interface metadata information
 type Metadata interface {
-	String() string
 	Group() string
 	Codec() codec.Tag
 	Quality() quality.Tag

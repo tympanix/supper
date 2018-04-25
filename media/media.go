@@ -31,8 +31,9 @@ func (f *File) MarshalJSON() (b []byte, err error) {
 	return nil, errors.New("media could not be json encoded")
 }
 
+// String returns a string representation of the media in the file
 func (f *File) String() string {
-	return f.Meta().String()
+	return f.Media.String()
 }
 
 // Path returns the path to the media file
