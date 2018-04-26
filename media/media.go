@@ -20,7 +20,7 @@ import (
 type File struct {
 	os.FileInfo
 	types.Media
-	path string
+	FilePath
 }
 
 // MarshalJSON returns the JSON represnetation of a media file
@@ -31,13 +31,9 @@ func (f *File) MarshalJSON() (b []byte, err error) {
 	return nil, errors.New("media could not be json encoded")
 }
 
+// String returns a string representation of the media in the file
 func (f *File) String() string {
-	return f.Meta().String()
-}
-
-// Path returns the path to the media file
-func (f *File) Path() string {
-	return f.path
+	return f.Media.String()
 }
 
 // ExistingSubtitles returns a list of existing subtitles for the media
@@ -136,7 +132,11 @@ func NewFromPath(path string) (types.LocalMedia, error) {
 		return nil, err
 	}
 
-	return &File{file, media, path}, nil
+	return &File{
+		FileInfo: file,
+		Media:    media,
+		FilePath: FilePath(path),
+	}, nil
 }
 
 // NewFromString returns a media object parsed from a string describing the

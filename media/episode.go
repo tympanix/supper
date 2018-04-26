@@ -92,6 +92,7 @@ func (e *Episode) Merge(other types.Media) error {
 		}
 		e.NameX = episode.TVShow()
 		e.EpisodeNameX = episode.EpisodeName()
+		return nil
 	}
 	return errors.New("invalid media merge of different media")
 }

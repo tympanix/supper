@@ -72,6 +72,7 @@ func (m *Movie) Merge(other types.Media) error {
 			return errors.New("invalid media merge year does not match")
 		}
 		m.NameX = movie.MovieName()
+		return nil
 	}
 	return errors.New("invalid media merge not same media type")
 }

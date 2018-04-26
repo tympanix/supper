@@ -35,6 +35,13 @@ type Config interface {
 	Verbose() bool
 	Strict() bool
 	Plugins() []Plugin
+	APIKeys() APIKeys
+}
+
+// APIKeys is the interface for configuration of 3rd party APIs
+type APIKeys interface {
+	TheTVDB() string
+	TheMovieDB() string
 }
 
 // Plugin is an interface for external functionality

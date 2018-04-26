@@ -65,6 +65,7 @@ func hardlinkRenamer(local types.Local, dest string) error {
 	return nil
 }
 
+// Renamers holds the available renaming actions of the application
 var Renamers = map[string]renamer{
 	"copy":     renamer(copyRenamer),
 	"move":     renamer(moveRenamer),
@@ -91,17 +92,10 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 	}
 
 	for _, m := range list.List() {
-		var scraped types.Media
-		for _, s := range a.Scrapers() {
-			var err error
-			scraped, err = s.Scrape(m)
+		scraped, err := a.scrapeMedia(m)
 
-			if err != nil {
-				if provider.IsErrMediaNotSupported(err) {
-					continue
-				}
-				return err
-			}
+		if err != nil {
+			return err
 		}
 
 		if err := m.Merge(scraped); err != nil {
@@ -119,15 +113,30 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 	return nil
 }
 
+func (a *Application) scrapeMedia(m types.Media) (types.Media, error) {
+	for _, s := range a.Scrapers() {
+		scraped, err := s.Scrape(m)
+
+		if err != nil {
+			if provider.IsErrMediaNotSupported(err) {
+				continue
+			}
+			return nil, err
+		}
+		return scraped, nil
+	}
+	return nil, errors.New("no scrapers to use for media")
+}
+
 func (a *Application) renameMovie(local types.Local, m types.Movie, rename renamer, template string) error {
 	folder := fmt.Sprintf("%v (%v)", m.MovieName(), m.Year())
-	media := fmt.Sprintf("%v.%v", folder, filepath.Ext(local.Path()))
+	media := fmt.Sprintf("%v%v", folder, filepath.Ext(local.Path()))
 	return rename(local, filepath.Join(folder, media))
 }
 
 func (a *Application) renameEpisode(local types.Local, m types.Episode, rename renamer, template string) error {
 	showFolder := fmt.Sprintf("%v", m.TVShow())
 	seasonFolder := fmt.Sprintf("Season %02d", m.Season())
-	mediaFile := fmt.Sprintf("%v S%02dE%02d.%v", m.TVShow(), m.Season(), m.Episode(), filepath.Ext(local.Path()))
+	mediaFile := fmt.Sprintf("%v - S%02dE%02d - %v%v", m.TVShow(), m.Season(), m.Episode(), m.EpisodeName(), filepath.Ext(local.Path()))
 	return rename(local, filepath.Join(showFolder, seasonFolder, mediaFile))
 }

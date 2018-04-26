@@ -34,6 +34,7 @@ type viperConfig struct {
 	modified  time.Duration
 	delay     time.Duration
 	plugins   []types.Plugin
+	apikeys   map[string]string
 }
 
 // Initialize construct the default configuration object using viper.
@@ -80,6 +81,7 @@ func Initialize() {
 		modified:  modified,
 		delay:     delay,
 		plugins:   plugins,
+		apikeys:   viper.GetStringMapString("apikeys"),
 	}
 }
 
@@ -133,4 +135,16 @@ func (v viperConfig) Score() int {
 
 func (v viperConfig) Plugins() []types.Plugin {
 	return v.plugins
+}
+
+func (v viperConfig) APIKeys() types.APIKeys {
+	return v
+}
+
+func (v viperConfig) TheTVDB() string {
+	return v.apikeys["thetvdb"]
+}
+
+func (v viperConfig) TheMovieDB() string {
+	return v.apikeys["themoviedb"]
 }

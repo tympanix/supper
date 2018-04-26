@@ -34,8 +34,8 @@ func New(cfg types.Config) types.App {
 		cfg:      cfg,
 		ServeMux: http.NewServeMux(),
 		scrapers: []types.Scraper{
-			provider.TheMovieDB(""),
-			provider.TheTVDB(""),
+			provider.TheMovieDB(cfg.APIKeys().TheMovieDB()),
+			provider.TheTVDB(cfg.APIKeys().TheTVDB()),
 		},
 	}
 
