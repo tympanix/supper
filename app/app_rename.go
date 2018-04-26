@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -82,15 +83,6 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 		return fmt.Errorf("%s: unknown action", viper.GetString("action"))
 	}
 
-	templates := struct {
-		Movies  string `mapstructure:"movies"`
-		TVShows string `mapstructure:"tvshows"`
-	}{}
-
-	if err := viper.UnmarshalKey("templates", &templates); err != nil {
-		return err
-	}
-
 	for _, m := range list.List() {
 		scraped, err := a.scrapeMedia(m)
 
@@ -103,9 +95,9 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 		}
 
 		if movie, ok := m.TypeMovie(); ok {
-			return a.renameMovie(m, movie, doRename, templates.Movies)
+			return a.renameMovie(m, movie, doRename)
 		} else if episode, ok := m.TypeEpisode(); ok {
-			return a.renameEpisode(m, episode, doRename, templates.TVShows)
+			return a.renameEpisode(m, episode, doRename)
 		} else {
 			return errors.New("unknown media format cannot rename")
 		}
@@ -128,15 +120,50 @@ func (a *Application) scrapeMedia(m types.Media) (types.Media, error) {
 	return nil, errors.New("no scrapers to use for media")
 }
 
-func (a *Application) renameMovie(local types.Local, m types.Movie, rename renamer, template string) error {
-	folder := fmt.Sprintf("%v (%v)", m.MovieName(), m.Year())
-	media := fmt.Sprintf("%v%v", folder, filepath.Ext(local.Path()))
-	return rename(local, filepath.Join(folder, media))
+func (a *Application) renameMovie(local types.Local, m types.Movie, rename renamer) error {
+	var buf bytes.Buffer
+	template := a.Config().Templates().Movies()
+	data := struct {
+		Movie   string
+		Year    int
+		Quality string
+		Codec   string
+		Group   string
+	}{
+		Movie:   m.MovieName(),
+		Year:    m.Year(),
+		Quality: m.Quality().String(),
+		Codec:   m.Codec().String(),
+		Group:   m.Group(),
+	}
+	if err := template.Execute(&buf, &data); err != nil {
+		return err
+	}
+	return rename(local, buf.String()+filepath.Ext(local.Name()))
 }
 
-func (a *Application) renameEpisode(local types.Local, m types.Episode, rename renamer, template string) error {
-	showFolder := fmt.Sprintf("%v", m.TVShow())
-	seasonFolder := fmt.Sprintf("Season %02d", m.Season())
-	mediaFile := fmt.Sprintf("%v - S%02dE%02d - %v%v", m.TVShow(), m.Season(), m.Episode(), m.EpisodeName(), filepath.Ext(local.Path()))
-	return rename(local, filepath.Join(showFolder, seasonFolder, mediaFile))
+func (a *Application) renameEpisode(local types.Local, e types.Episode, rename renamer) error {
+	var buf bytes.Buffer
+	template := a.Config().Templates().TVShows()
+	data := struct {
+		TVShow  string
+		Name    string
+		Episode int
+		Season  int
+		Quality string
+		Codec   string
+		Group   string
+	}{
+		TVShow:  e.TVShow(),
+		Name:    e.EpisodeName(),
+		Episode: e.Episode(),
+		Season:  e.Season(),
+		Quality: e.Quality().String(),
+		Codec:   e.Codec().String(),
+		Group:   e.Group(),
+	}
+	if err := template.Execute(&buf, &data); err != nil {
+		return err
+	}
+	return rename(local, buf.String()+filepath.Ext(local.Name()))
 }

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"html/template"
 	"net/http"
 	"time"
 
@@ -36,12 +37,19 @@ type Config interface {
 	Strict() bool
 	Plugins() []Plugin
 	APIKeys() APIKeys
+	Templates() Templates
 }
 
 // APIKeys is the interface for configuration of 3rd party APIs
 type APIKeys interface {
 	TheTVDB() string
 	TheMovieDB() string
+}
+
+// Templates is an interface for renaming templates for the application
+type Templates interface {
+	Movies() *template.Template
+	TVShows() *template.Template
 }
 
 // Plugin is an interface for external functionality

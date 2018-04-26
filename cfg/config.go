@@ -1,6 +1,8 @@
 package cfg
 
 import (
+	"fmt"
+	"html/template"
 	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -29,12 +31,19 @@ func init() {
 	homePath = home
 }
 
+var renameFuncs = template.FuncMap{
+	"pad": func(d int) string {
+		return fmt.Sprintf("%02d", d)
+	},
+}
+
 type viperConfig struct {
 	languages set.Interface
 	modified  time.Duration
 	delay     time.Duration
 	plugins   []types.Plugin
 	apikeys   map[string]string
+	templates map[string]*template.Template
 }
 
 // Initialize construct the default configuration object using viper.
@@ -76,12 +85,22 @@ func Initialize() {
 		plugins = append(plugins, &p)
 	}
 
+	templates := make(map[string]*template.Template)
+	for k, t := range viper.GetStringMapString("templates") {
+		tmp, err := template.New(k).Funcs(renameFuncs).Parse(t)
+		if err != nil {
+			log.WithError(err).Fatal("could not parse renaming template")
+		}
+		templates[k] = tmp
+	}
+
 	Default = viperConfig{
 		languages: lang,
 		modified:  modified,
 		delay:     delay,
 		plugins:   plugins,
 		apikeys:   viper.GetStringMapString("apikeys"),
+		templates: templates,
 	}
 }
 
@@ -147,4 +166,16 @@ func (v viperConfig) TheTVDB() string {
 
 func (v viperConfig) TheMovieDB() string {
 	return v.apikeys["themoviedb"]
+}
+
+func (v viperConfig) Templates() types.Templates {
+	return v
+}
+
+func (v viperConfig) Movies() *template.Template {
+	return v.templates["movies"]
+}
+
+func (v viperConfig) TVShows() *template.Template {
+	return v.templates["tvshows"]
 }
