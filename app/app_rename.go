@@ -102,6 +102,11 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 				}
 				return err
 			}
+			continue
+		}
+
+		if scraped == nil {
+			return errors.New("no scrapers to use for media")
 		}
 
 		if err := m.Merge(scraped); err != nil {

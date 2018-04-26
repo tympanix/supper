@@ -2,10 +2,14 @@ package provider
 
 import "fmt"
 
-type errMediaNotSupported error
+type errMediaNotSupported struct {
+	error
+}
 
 func mediaNotSupported(api string) errMediaNotSupported {
-	return errMediaNotSupported(fmt.Errorf("media not supported %v", api))
+	return errMediaNotSupported{
+		fmt.Errorf("media not supported %v", api),
+	}
 }
 
 // IsErrMediaNotSupported return true if the error dictates taht the media
