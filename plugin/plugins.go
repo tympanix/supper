@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 
@@ -33,7 +34,11 @@ type Plugin struct {
 
 // Run executes the plugin
 func (p *Plugin) Run(s types.LocalSubtitle) error {
-	cmd := exec.Command(shell[0], shell[1], escape(p.Exec, s.Path()))
+	path, ok := s.(types.Pather)
+	if !ok {
+		return errors.New("could not run plugin")
+	}
+	cmd := exec.Command(shell[0], shell[1], escape(p.Exec, path.Path()))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.WithError(err).WithField("plugin", p.Name()).

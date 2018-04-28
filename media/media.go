@@ -155,3 +155,7 @@ type FilePath string
 func (p FilePath) Path() string {
 	return string(p)
 }
+
+func (p FilePath) Open() (io.ReadCloser, error) {
+	return os.Open(string(p))
+}
