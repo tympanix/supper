@@ -3,6 +3,8 @@ package cfg
 import (
 	"fmt"
 	"html/template"
+	"regexp"
+	"strings"
 	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -15,6 +17,39 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/text/language"
 )
+
+type mediaConfig struct {
+	DirectoryX string `mapstructure:"directory"`
+	TemplateX  string `mapstructure:"template"`
+}
+
+func (m mediaConfig) Interface() *Media {
+	template := template.New(m.DirectoryX).Funcs(renameFuncs)
+	template, err := template.Parse(cleanTemplate(m.TemplateX))
+	if err != nil {
+		log.WithError(err).Fatal("could not parse renaming template")
+	}
+	return &Media{
+		directory: m.DirectoryX,
+		template:  template,
+	}
+}
+
+// Media is a configuration object for media collections
+type Media struct {
+	directory string
+	template  *template.Template
+}
+
+// Directory returns the directory whe the media is located
+func (m *Media) Directory() string {
+	return m.directory
+}
+
+// Template returns the template for renaming the media
+func (m *Media) Template() *template.Template {
+	return m.template
+}
 
 // Default holds the global application configuration instance
 var Default types.Config
@@ -37,13 +72,23 @@ var renameFuncs = template.FuncMap{
 	},
 }
 
+var templateRegex = regexp.MustCompile(`[\r\n]`)
+var seperatorRegex = regexp.MustCompile(`\s*/\s*`)
+
+func cleanTemplate(template string) string {
+	cleaned := templateRegex.ReplaceAllString(template, "")
+	cleaned = seperatorRegex.ReplaceAllString(cleaned, "/")
+	return strings.TrimSpace(cleaned)
+}
+
 type viperConfig struct {
 	languages set.Interface
 	modified  time.Duration
 	delay     time.Duration
 	plugins   []types.Plugin
 	apikeys   map[string]string
-	templates map[string]*template.Template
+	movies    types.MediaConfig
+	tvshows   types.MediaConfig
 }
 
 // Initialize construct the default configuration object using viper.
@@ -85,13 +130,21 @@ func Initialize() {
 		plugins = append(plugins, &p)
 	}
 
-	templates := make(map[string]*template.Template)
-	for k, t := range viper.GetStringMapString("templates") {
-		tmp, err := template.New(k).Funcs(renameFuncs).Parse(t)
-		if err != nil {
-			log.WithError(err).Fatal("could not parse renaming template")
+	media := map[string]*Media{
+		"movies":  &Media{},
+		"tvshows": &Media{},
+	}
+
+	for k, v := range media {
+		sub := viper.Sub(k)
+		if sub == nil {
+			continue
 		}
-		templates[k] = tmp
+		var media mediaConfig
+		if err := sub.Unmarshal(&media); err != nil {
+			log.WithError(err).Fatalf("invalid configuration for %v", k)
+		}
+		*v = *media.Interface()
 	}
 
 	Default = viperConfig{
@@ -100,7 +153,8 @@ func Initialize() {
 		delay:     delay,
 		plugins:   plugins,
 		apikeys:   viper.GetStringMapString("apikeys"),
-		templates: templates,
+		movies:    media["movies"],
+		tvshows:   media["tvshows"],
 	}
 }
 
@@ -168,14 +222,10 @@ func (v viperConfig) TheMovieDB() string {
 	return v.apikeys["themoviedb"]
 }
 
-func (v viperConfig) Templates() types.Templates {
-	return v
+func (v viperConfig) Movies() types.MediaConfig {
+	return v.movies
 }
 
-func (v viperConfig) Movies() *template.Template {
-	return v.templates["movies"]
-}
-
-func (v viperConfig) TVShows() *template.Template {
-	return v.templates["tvshows"]
+func (v viperConfig) TVShows() types.MediaConfig {
+	return v.tvshows
 }
