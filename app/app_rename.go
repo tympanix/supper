@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/spf13/viper"
 	"github.com/tympanix/supper/provider"
@@ -74,6 +75,15 @@ var Renamers = map[string]renamer{
 	"hardlink": renamer(hardlinkRenamer),
 }
 
+var pathRegex = regexp.MustCompile(`[%/\?\\\*:\|"<>\n\r]`)
+
+// cleanString cleans the string for unwanted characters such that it can
+// be used safely as a name in a file hierarchy. All path seperators are
+// removed from the string.
+func cleanString(str string) string {
+	return pathRegex.ReplaceAllString(str, "")
+}
+
 // RenameMedia traverses the local media list and renames the media
 func (a *Application) RenameMedia(list types.LocalMediaList) error {
 
@@ -130,11 +140,11 @@ func (a *Application) renameMovie(local types.Local, m types.Movie, rename renam
 		Codec   string
 		Group   string
 	}{
-		Movie:   m.MovieName(),
+		Movie:   cleanString(m.MovieName()),
 		Year:    m.Year(),
 		Quality: m.Quality().String(),
 		Codec:   m.Codec().String(),
-		Group:   m.Group(),
+		Group:   cleanString(m.Group()),
 	}
 	if err := template.Execute(&buf, &data); err != nil {
 		return err
@@ -154,13 +164,13 @@ func (a *Application) renameEpisode(local types.Local, e types.Episode, rename r
 		Codec   string
 		Group   string
 	}{
-		TVShow:  e.TVShow(),
-		Name:    e.EpisodeName(),
+		TVShow:  cleanString(e.TVShow()),
+		Name:    cleanString(e.EpisodeName()),
 		Episode: e.Episode(),
 		Season:  e.Season(),
 		Quality: e.Quality().String(),
 		Codec:   e.Codec().String(),
-		Group:   e.Group(),
+		Group:   cleanString(e.Group()),
 	}
 	if err := template.Execute(&buf, &data); err != nil {
 		return err

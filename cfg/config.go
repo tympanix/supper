@@ -3,6 +3,7 @@ package cfg
 import (
 	"fmt"
 	"html/template"
+	"regexp"
 	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -35,6 +36,14 @@ var renameFuncs = template.FuncMap{
 	"pad": func(d int) string {
 		return fmt.Sprintf("%02d", d)
 	},
+}
+
+var templateRegex = regexp.MustCompile(`[\r\n]`)
+var seperatorRegex = regexp.MustCompile(`\s*/\s*`)
+
+func cleanTemplate(template string) string {
+	cleaned := templateRegex.ReplaceAllString(template, "")
+	return seperatorRegex.ReplaceAllString(cleaned, "/")
 }
 
 type viperConfig struct {
@@ -87,7 +96,7 @@ func Initialize() {
 
 	templates := make(map[string]*template.Template)
 	for k, t := range viper.GetStringMapString("templates") {
-		tmp, err := template.New(k).Funcs(renameFuncs).Parse(t)
+		tmp, err := template.New(k).Funcs(renameFuncs).Parse(cleanTemplate(t))
 		if err != nil {
 			log.WithError(err).Fatal("could not parse renaming template")
 		}
