@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"regexp"
+	"strings"
 	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -43,7 +44,8 @@ var seperatorRegex = regexp.MustCompile(`\s*/\s*`)
 
 func cleanTemplate(template string) string {
 	cleaned := templateRegex.ReplaceAllString(template, "")
-	return seperatorRegex.ReplaceAllString(cleaned, "/")
+	cleaned = seperatorRegex.ReplaceAllString(cleaned, "/")
+	return strings.TrimSpace(cleaned)
 }
 
 type viperConfig struct {
