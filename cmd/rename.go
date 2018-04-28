@@ -16,21 +16,21 @@ func init() {
 		actions = append(actions, a)
 	}
 
-	renameCmd.Flags().StringP("action", "a", "hardlink", fmt.Sprintf("renaming action %v", strings.Join(actions, "|")))
-	renameCmd.Flags().StringP("dir", "d", "", "output directory for renamed files")
+	flags := renameCmd.Flags()
+
+	flags.StringP("action", "a", "hardlink", fmt.Sprintf("renaming action %v", strings.Join(actions, "|")))
 
 	viper.BindPFlag("action", renameCmd.Flags().Lookup("action"))
-	viper.BindPFlag("dir", renameCmd.Flags().Lookup("dir"))
-	viper.BindPFlag("conflict", renameCmd.Flags().Lookup("conflict"))
 
 	rootCmd.AddCommand(renameCmd)
 }
 
 var renameCmd = &cobra.Command{
-	Use:    "rename",
-	Short:  "Rename and process media files",
-	PreRun: validateRenameFlags,
-	Run:    rename,
+	Use:     "rename",
+	Short:   "Rename and process media files",
+	Aliases: []string{"ren"},
+	PreRun:  validateRenameFlags,
+	Run:     renameMedia,
 }
 
 func validateRenameFlags(cmd *cobra.Command, args []string) {
@@ -39,7 +39,7 @@ func validateRenameFlags(cmd *cobra.Command, args []string) {
 	}
 }
 
-func rename(cmd *cobra.Command, args []string) {
+func renameMedia(cmd *cobra.Command, args []string) {
 	app := app.NewFromDefault()
 
 	medialist, err := app.FindMedia(args...)
