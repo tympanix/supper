@@ -15,7 +15,28 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
+type mediaExistsError struct{}
+
+func (s *mediaExistsError) Error() string {
+	return "media allready exists"
+}
+
 type renamer func(types.Local, string) error
+
+// Rename is a wrapper function around a renamer which performs some sanity checks
+func (r renamer) Rename(local types.Local, dest string, force bool) error {
+	_, err := os.Stat(dest)
+	if !force && err == nil {
+		return &mediaExistsError{}
+	}
+	if err == nil {
+		if err := os.Remove(dest); err != nil {
+			return err
+		}
+		log.WithField("path", dest).Debug("Removed existing media")
+	}
+	return r(local, dest)
+}
 
 func copyRenamer(local types.Local, dest string) error {
 	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
@@ -131,7 +152,11 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 		}
 
 		if err != nil {
-			ctx.WithError(err).Error("Rename failed")
+			if _, ok := err.(*mediaExistsError); ok {
+				ctx.WithField("reason", "media already exists").Warn("Rename skipped")
+			} else {
+				ctx.WithError(err).Error("Rename failed")
+			}
 		} else {
 			ctx.Info("Media renamed")
 		}
@@ -178,7 +203,7 @@ func (a *Application) renameMovie(local types.Local, m types.Movie, rename renam
 	}
 	filename := truncateSpaces(buf.String() + filepath.Ext(local.Name()))
 	dest := filepath.Join(a.Config().Movies().Directory(), filename)
-	return rename(local, dest)
+	return rename.Rename(local, dest, a.Config().Force())
 }
 
 func (a *Application) renameEpisode(local types.Local, e types.Episode, rename renamer) error {
@@ -209,5 +234,5 @@ func (a *Application) renameEpisode(local types.Local, e types.Episode, rename r
 	}
 	filename := truncateSpaces(buf.String() + filepath.Ext(local.Name()))
 	dest := filepath.Join(a.Config().TVShows().Directory(), filename)
-	return rename(local, dest)
+	return rename.Rename(local, dest, a.Config().Force())
 }
