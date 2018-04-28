@@ -84,6 +84,13 @@ func cleanString(str string) string {
 	return pathRegex.ReplaceAllString(str, "")
 }
 
+var spaceRegex = regexp.MustCompile(`\s\s+`)
+
+// truncateSpaces replaces all consecutive space characters with a single space
+func truncateSpaces(str string) string {
+	return spaceRegex.ReplaceAllString(str, " ")
+}
+
 // RenameMedia traverses the local media list and renames the media
 func (a *Application) RenameMedia(list types.LocalMediaList) error {
 
@@ -149,7 +156,7 @@ func (a *Application) renameMovie(local types.Local, m types.Movie, rename renam
 	if err := template.Execute(&buf, &data); err != nil {
 		return err
 	}
-	return rename(local, buf.String()+filepath.Ext(local.Name()))
+	return rename(local, truncateSpaces(buf.String()+filepath.Ext(local.Name())))
 }
 
 func (a *Application) renameEpisode(local types.Local, e types.Episode, rename renamer) error {
@@ -175,5 +182,5 @@ func (a *Application) renameEpisode(local types.Local, e types.Episode, rename r
 	if err := template.Execute(&buf, &data); err != nil {
 		return err
 	}
-	return rename(local, buf.String()+filepath.Ext(local.Name()))
+	return rename(local, truncateSpaces(buf.String()+filepath.Ext(local.Name())))
 }
