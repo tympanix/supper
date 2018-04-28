@@ -19,11 +19,6 @@ const (
 	typeShow  = "show"
 )
 
-var folders = map[string]string{
-	"movies": typeMovie,
-	"shows":  typeShow,
-}
-
 type jsonFolder struct {
 	os.FileInfo `json:"-"`
 	Type        string `json:"type"`
@@ -99,8 +94,11 @@ func (a *API) media(w http.ResponseWriter, r *http.Request) interface{} {
 func (a *API) allMedia(w http.ResponseWriter, r *http.Request) interface{} {
 	media := make([]*jsonFolder, 0)
 
-	for flag, mtype := range folders {
-		if path := viper.GetString(flag); path != "" {
+	for mtype, path := range map[string]string{
+		typeMovie: a.Config().Movies().Directory(),
+		typeShow:  a.Config().TVShows().Directory(),
+	} {
+		if path != "" {
 			list, err := findMediaFolders(mtype, path)
 			if err != nil {
 				return Error(err, 500)

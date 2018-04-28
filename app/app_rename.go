@@ -139,7 +139,10 @@ func (a *Application) scrapeMedia(m types.Media) (types.Media, error) {
 
 func (a *Application) renameMovie(local types.Local, m types.Movie, rename renamer) error {
 	var buf bytes.Buffer
-	template := a.Config().Templates().Movies()
+	template := a.Config().Movies().Template()
+	if template == nil {
+		return errors.New("missing template for movies")
+	}
 	data := struct {
 		Movie   string
 		Year    int
@@ -161,7 +164,10 @@ func (a *Application) renameMovie(local types.Local, m types.Movie, rename renam
 
 func (a *Application) renameEpisode(local types.Local, e types.Episode, rename renamer) error {
 	var buf bytes.Buffer
-	template := a.Config().Templates().TVShows()
+	template := a.Config().TVShows().Template()
+	if template == nil {
+		return errors.New("missing template for tvshows")
+	}
 	data := struct {
 		TVShow  string
 		Name    string

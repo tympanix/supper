@@ -12,13 +12,9 @@ import (
 
 func init() {
 	webCmd.Flags().IntP("port", "p", 5670, "port used to serve the web application")
-	webCmd.Flags().String("movies", "", "path to your movie collection")
-	webCmd.Flags().String("shows", "", "path to your tv show collection")
 	webCmd.Flags().String("static", "", "path to the web files to serve")
 
 	viper.BindPFlag("port", webCmd.Flags().Lookup("port"))
-	viper.BindPFlag("movies", webCmd.Flags().Lookup("movies"))
-	viper.BindPFlag("shows", webCmd.Flags().Lookup("shows"))
 	viper.BindPFlag("static", webCmd.Flags().Lookup("static"))
 
 	rootCmd.AddCommand(webCmd)
