@@ -145,7 +145,11 @@ func (a *API) fileList(folder jsonFolder) (interface{}, error) {
 		} else if _, ok := m.TypeMovie(); ok {
 			mtype = typeMovie
 		}
-		relpath, err := filepath.Rel(path, m.Path())
+		mpath, ok := m.(types.Pather)
+		if !ok {
+			return nil, errors.New("invalid media without path")
+		}
+		relpath, err := filepath.Rel(path, mpath.Path())
 		if err != nil {
 			return nil, errors.New("interval path error for media file")
 		}

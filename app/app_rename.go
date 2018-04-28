@@ -42,7 +42,7 @@ func copyRenamer(local types.Local, dest string) error {
 	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
 		return err
 	}
-	file, err := os.Open(local.Path())
+	file, err := local.Open()
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,11 @@ func moveRenamer(local types.Local, dest string) error {
 	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
 		return err
 	}
-	if err := os.Rename(local.Path(), dest); err != nil {
+	mpath, ok := local.(types.Pather)
+	if !ok {
+		return errors.New("can't move media without a path")
+	}
+	if err := os.Rename(mpath.Path(), dest); err != nil {
 		return err
 	}
 	log.WithField("path", dest).Debug("Media moved")
@@ -75,7 +79,11 @@ func symlinkRenamer(local types.Local, dest string) error {
 	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
 		return err
 	}
-	if err := os.Symlink(local.Path(), dest); err != nil {
+	mpath, ok := local.(types.Pather)
+	if !ok {
+		return errors.New("can't symlink media without a path")
+	}
+	if err := os.Symlink(mpath.Path(), dest); err != nil {
 		return err
 	}
 	log.WithField("path", dest).Debug("Media symlinked")
@@ -86,7 +94,11 @@ func hardlinkRenamer(local types.Local, dest string) error {
 	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
 		return err
 	}
-	if err := os.Link(local.Path(), dest); err != nil {
+	mpath, ok := local.(types.Pather)
+	if !ok {
+		return errors.New("can't hardlink media without a path")
+	}
+	if err := os.Link(mpath.Path(), dest); err != nil {
 		return err
 	}
 	log.WithField("path", dest).Debug("Media hardlinked")
