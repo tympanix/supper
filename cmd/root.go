@@ -48,7 +48,7 @@ func AppDate() string {
 var rootCmd = &cobra.Command{
 	Use:              strings.ToLower(AppName()),
 	Short:            AppDesc(),
-	PersistentPreRun: validateFlags,
+	PersistentPreRun: validateMedia,
 	Args:             validateArgs,
 }
 
@@ -146,16 +146,7 @@ func readConfigFiles() {
 	logutil.Initialize(cfg.Default)
 }
 
-func validateFlags(cmd *cobra.Command, args []string) {
-
-}
-
-func validateArgs(cmd *cobra.Command, args []string) error {
-	if viper.GetBool("version") {
-		showVersion(cmd, args)
-		os.Exit(0)
-	}
-
+func validateMedia(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
 		log.WithField("args", fmt.Sprintf("%v", len(args))).
 			Fatal("Missing media arguments")
@@ -166,6 +157,13 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 		if _, err := os.Stat(arg); os.IsNotExist(err) {
 			log.WithField("path", arg).Fatal("Invalid file path")
 		}
+	}
+}
+
+func validateArgs(cmd *cobra.Command, args []string) error {
+	if viper.GetBool("version") {
+		showVersion(cmd, args)
+		os.Exit(0)
 	}
 
 	return nil
