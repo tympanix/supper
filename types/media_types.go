@@ -61,16 +61,10 @@ type MediaArchive interface {
 	io.Closer
 }
 
-// Opener is a interface for devices which can be opened for reading
-type Opener interface {
-	Open() (io.ReadCloser, error)
-}
-
 // Local is an interface for media content which is stored on disk
 type Local interface {
 	os.FileInfo
 	Pather
-	Opener
 }
 
 // Pather is an interface for resources which can be accessed in a local path
