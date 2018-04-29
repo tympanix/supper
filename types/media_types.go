@@ -49,8 +49,9 @@ type Metadata interface {
 	AllTags() []string
 }
 
-// MediaReadCloser is an interface for media which need to be closed
+// MediaReadCloser is an interface for media from streams
 type MediaReadCloser interface {
+	os.FileInfo
 	Media
 	io.ReadCloser
 }

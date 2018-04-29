@@ -34,6 +34,7 @@ var subtitleCmd = &cobra.Command{
 	Use:     "subtitle",
 	Short:   "Download subtitles for media",
 	Aliases: []string{"sub"},
+	Args:    validateMedia,
 	PreRun:  validateSubtitleFlags,
 	Run:     downloadSubtitles,
 }

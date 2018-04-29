@@ -9,16 +9,14 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
-type MediaFromArchive struct {
-	types.Media
-	io.ReadCloser
-}
-
+// ZipArchive is an struct used to extract media files from zip archives
 type ZipArchive struct {
 	*zip.ReadCloser
 	idx int
 }
 
+// Next returns the next media item in the zip archive. If there are not more
+// media files io.EOF is returned
 func (z *ZipArchive) Next() (types.MediaReadCloser, error) {
 	for i := z.idx; i < len(z.File); i++ {
 		z.idx = i + 1
@@ -32,6 +30,7 @@ func (z *ZipArchive) Next() (types.MediaReadCloser, error) {
 			return nil, err
 		}
 		return &MediaFromArchive{
+			FileInfo:   file.FileInfo(),
 			Media:      med,
 			ReadCloser: rc,
 		}, nil
@@ -39,6 +38,7 @@ func (z *ZipArchive) Next() (types.MediaReadCloser, error) {
 	return nil, io.EOF
 }
 
+// NewZipArchive creates a new zip archive object to extract media from
 func NewZipArchive(path string) (types.MediaArchive, error) {
 	r, err := zip.OpenReader(path)
 
