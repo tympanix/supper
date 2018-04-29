@@ -16,27 +16,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-// ErrUnknown is an error for unknown media
-type ErrUnknown struct{}
-
-func (e *ErrUnknown) Error() string {
-	return "media is now of a known format"
-}
-
-// IsUnknown returns true if the error is of type *ErrUnknownMedia
-func IsUnknown(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(*ErrUnknown)
-	return ok
-}
-
-// NewUnknownErr returns a new error indicating unknown media
-func NewUnknownErr() error {
-	return &ErrUnknown{}
-}
-
 // File represents a local media file on disk
 type File struct {
 	os.FileInfo

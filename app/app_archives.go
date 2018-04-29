@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/tympanix/supper/extract"
+	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/types"
 )
 
@@ -57,7 +58,7 @@ func (a *Application) ExtractMedia(m types.MediaReadCloser) error {
 	}
 
 	if err = ensurePath(dest, a.Config().Force()); err != nil {
-		if _, ok := err.(*mediaExistsError); ok {
+		if media.IsExistsErr(err) {
 			ctx.WithField("reason", "media already exists").Warn("Extraction skipped")
 		}
 		return err

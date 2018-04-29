@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/media"
 )
 
 func init() {
@@ -57,30 +58,37 @@ func renameMedia(cmd *cobra.Command, args []string) {
 	}
 
 	if viper.GetBool("extract") {
-		archives, err := app.FindArchives(args...)
-		if err != nil {
-			log.WithError(err).Fatal("Could not open archives")
-		}
-		for _, a := range archives {
-			defer a.Close()
+		extractMedia(cmd, args)
+	}
+}
 
-			m, err := a.Next()
-			for err == nil {
-				if err = app.ExtractMedia(m); err != nil {
+func extractMedia(cmd *cobra.Command, args []string) {
+	app := app.NewFromDefault()
+
+	archives, err := app.FindArchives(args...)
+	if err != nil {
+		log.WithError(err).Fatal("Could not open archives")
+	}
+	for _, a := range archives {
+		defer a.Close()
+
+		m, err := a.Next()
+		for err == nil {
+			if err = app.ExtractMedia(m); err != nil {
+				if !media.IsExistsErr(err) {
 					if app.Config().Strict() {
 						log.WithError(err).Fatal("Extraction failed")
 					} else {
 						log.WithError(err).Error("Extraction failed")
 					}
 				}
-				defer m.Close()
-				m, err = a.Next()
 			}
+			defer m.Close()
+			m, err = a.Next()
+		}
 
-			if err != io.EOF {
-				log.WithError(err).Fatal("Extraction failed")
-			}
+		if err != io.EOF {
+			log.WithError(err).Fatal("Extraction failed")
 		}
 	}
-
 }
