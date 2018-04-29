@@ -1,7 +1,6 @@
 package extract
 
 import (
-	"io"
 	"io/ioutil"
 
 	"github.com/nwaples/rardecode"
@@ -10,10 +9,13 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
+// RarArchive is an struct used to extract media files from rar archives
 type RarArchive struct {
 	*rardecode.ReadCloser
 }
 
+// Next returns the next media item in the rar archive. If there are not more
+// media files io.EOF is returned
 func (r *RarArchive) Next() (types.MediaReadCloser, error) {
 	file, err := r.ReadCloser.Next()
 
@@ -31,10 +33,9 @@ func (r *RarArchive) Next() (types.MediaReadCloser, error) {
 		Media:      med,
 		ReadCloser: ioutil.NopCloser(r.ReadCloser),
 	}, nil
-
-	return nil, io.EOF
 }
 
+// NewRarArchive creates a new rar archive object to extract media from
 func NewRarArchive(path string) (types.MediaArchive, error) {
 	r, err := rardecode.OpenReader(path, "")
 
