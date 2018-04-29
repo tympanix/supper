@@ -19,7 +19,8 @@ type App interface {
 	FindMedia(...string) (LocalMediaList, error)
 	DownloadSubtitles(LocalMediaList, set.Interface) (int, error)
 	RenameMedia(LocalMediaList) error
-	ExtractMedia(...string) ([]MediaArchive, error)
+	FindArchives(...string) ([]MediaArchive, error)
+	ExtractMedia(MediaReadCloser) error
 }
 
 // Config is the interface for application configuration

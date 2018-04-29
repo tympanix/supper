@@ -46,10 +46,9 @@ func AppDate() string {
 }
 
 var rootCmd = &cobra.Command{
-	Use:              strings.ToLower(AppName()),
-	Short:            AppDesc(),
-	PersistentPreRun: validateMedia,
-	Args:             validateArgs,
+	Use:   strings.ToLower(AppName()),
+	Short: AppDesc(),
+	Args:  validateArgs,
 }
 
 // Execute executes the CLI application
@@ -146,7 +145,7 @@ func readConfigFiles() {
 	logutil.Initialize(cfg.Default)
 }
 
-func validateMedia(cmd *cobra.Command, args []string) {
+func validateMedia(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		log.WithField("args", fmt.Sprintf("%v", len(args))).
 			Fatal("Missing media arguments")
@@ -158,6 +157,7 @@ func validateMedia(cmd *cobra.Command, args []string) {
 			log.WithField("path", arg).Fatal("Invalid file path")
 		}
 	}
+	return nil
 }
 
 func validateArgs(cmd *cobra.Command, args []string) error {

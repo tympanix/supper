@@ -11,6 +11,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/spf13/viper"
+	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
 )
@@ -25,6 +26,13 @@ type renamer func(types.Local, string) error
 
 // Rename is a wrapper function around a renamer which performs some sanity checks
 func (r renamer) Rename(local types.Local, dest string, force bool) error {
+	if err := ensurePath(dest, force); err != nil {
+		return err
+	}
+	return r(local, dest)
+}
+
+func ensurePath(dest string, force bool) error {
 	_, err := os.Stat(dest)
 	if !force && err == nil {
 		return &mediaExistsError{}
@@ -35,18 +43,13 @@ func (r renamer) Rename(local types.Local, dest string, force bool) error {
 		}
 		log.WithField("path", dest).Debug("Removed existing media")
 	}
-	return r(local, dest)
-}
-
-func copyRenamer(local types.Local, dest string) error {
 	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
 		return err
 	}
-	file, err := os.Open(local.Path())
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+	return nil
+}
+
+func copyMedia(file io.Reader, dest string) error {
 	out, err := os.Create(dest)
 	if err != nil {
 		return err
@@ -60,10 +63,19 @@ func copyRenamer(local types.Local, dest string) error {
 	return nil
 }
 
-func moveRenamer(local types.Local, dest string) error {
-	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
+func copyRenamer(local types.Local, dest string) error {
+	file, err := os.Open(local.Path())
+	if err != nil {
 		return err
 	}
+	defer file.Close()
+	if err := copyMedia(file, dest); err != nil {
+		return err
+	}
+	return nil
+}
+
+func moveRenamer(local types.Local, dest string) error {
 	if err := os.Rename(local.Path(), dest); err != nil {
 		return err
 	}
@@ -72,9 +84,6 @@ func moveRenamer(local types.Local, dest string) error {
 }
 
 func symlinkRenamer(local types.Local, dest string) error {
-	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
-		return err
-	}
 	if err := os.Symlink(local.Path(), dest); err != nil {
 		return err
 	}
@@ -83,9 +92,6 @@ func symlinkRenamer(local types.Local, dest string) error {
 }
 
 func hardlinkRenamer(local types.Local, dest string) error {
-	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
-		return err
-	}
 	if err := os.Link(local.Path(), dest); err != nil {
 		return err
 	}
@@ -120,7 +126,7 @@ func truncateSpaces(str string) string {
 // RenameMedia traverses the local media list and renames the media
 func (a *Application) RenameMedia(list types.LocalMediaList) error {
 
-	doRename, ok := Renamers[viper.GetString("action")]
+	renamer, ok := Renamers[viper.GetString("action")]
 
 	if !ok {
 		return fmt.Errorf("%s: unknown action", viper.GetString("action"))
@@ -129,26 +135,17 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 	for _, m := range list.List() {
 		ctx := log.WithField("media", m).WithField("action", viper.GetString("action"))
 
-		scraped, err := a.scrapeMedia(m)
+		dest, err := a.scrapeAndRenameMedia(m, m)
 
 		if err != nil {
 			return err
 		}
 
-		if err = m.Merge(scraped); err != nil {
-			return err
-		}
-
-		if movie, ok := m.TypeMovie(); ok {
-			err = a.renameMovie(m, movie, doRename)
-		} else if episode, ok := m.TypeEpisode(); ok {
-			err = a.renameEpisode(m, episode, doRename)
+		if !a.Config().Dry() {
+			err = renamer.Rename(m, dest, a.Config().Force())
 		} else {
-			err = errors.New("unknown media format cannot rename")
-		}
-
-		if a.Config().Strict() && err != nil {
-			return err
+			ctx.WithField("reason", "dry-run").Info("Skip rename")
+			continue
 		}
 
 		if err != nil {
@@ -162,6 +159,41 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 		}
 	}
 	return nil
+}
+
+func (a *Application) scrapeAndRenameMedia(info os.FileInfo, m types.Media) (string, error) {
+	scraped, err := a.scrapeMedia(m)
+
+	if err != nil {
+		return "", err
+	}
+
+	if err = m.Merge(scraped); err != nil {
+		return "", err
+	}
+
+	dest, err := a.renameMedia(info, m)
+
+	if media.IsUnknown(err) && a.Config().Strict() {
+		return "", err
+	}
+
+	if err != nil && !media.IsUnknown(err) {
+		return "", err
+	}
+
+	return dest, nil
+}
+
+func (a *Application) renameMedia(info os.FileInfo, m types.Media) (dest string, err error) {
+	if movie, ok := m.TypeMovie(); ok {
+		dest, err = a.renameMovie(info, movie)
+	} else if episode, ok := m.TypeEpisode(); ok {
+		dest, err = a.renameEpisode(info, episode)
+	} else {
+		return "", media.NewUnknownErr()
+	}
+	return dest, err
 }
 
 func (a *Application) scrapeMedia(m types.Media) (types.Media, error) {
@@ -179,11 +211,11 @@ func (a *Application) scrapeMedia(m types.Media) (types.Media, error) {
 	return nil, errors.New("no scrapers to use for media")
 }
 
-func (a *Application) renameMovie(local types.Local, m types.Movie, rename renamer) error {
+func (a *Application) renameMovie(info os.FileInfo, m types.Movie) (string, error) {
 	var buf bytes.Buffer
 	template := a.Config().Movies().Template()
 	if template == nil {
-		return errors.New("missing template for movies")
+		return "", errors.New("missing template for movies")
 	}
 	data := struct {
 		Movie   string
@@ -199,18 +231,17 @@ func (a *Application) renameMovie(local types.Local, m types.Movie, rename renam
 		Group:   cleanString(m.Group()),
 	}
 	if err := template.Execute(&buf, &data); err != nil {
-		return err
+		return "", err
 	}
-	filename := truncateSpaces(buf.String() + filepath.Ext(local.Name()))
-	dest := filepath.Join(a.Config().Movies().Directory(), filename)
-	return rename.Rename(local, dest, a.Config().Force())
+	filename := truncateSpaces(buf.String() + filepath.Ext(info.Name()))
+	return filepath.Join(a.Config().Movies().Directory(), filename), nil
 }
 
-func (a *Application) renameEpisode(local types.Local, e types.Episode, rename renamer) error {
+func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, error) {
 	var buf bytes.Buffer
 	template := a.Config().TVShows().Template()
 	if template == nil {
-		return errors.New("missing template for tvshows")
+		return "", errors.New("missing template for tvshows")
 	}
 	data := struct {
 		TVShow  string
@@ -230,9 +261,8 @@ func (a *Application) renameEpisode(local types.Local, e types.Episode, rename r
 		Group:   cleanString(e.Group()),
 	}
 	if err := template.Execute(&buf, &data); err != nil {
-		return err
+		return "", err
 	}
-	filename := truncateSpaces(buf.String() + filepath.Ext(local.Name()))
-	dest := filepath.Join(a.Config().TVShows().Directory(), filename)
-	return rename.Rename(local, dest, a.Config().Force())
+	filename := truncateSpaces(buf.String() + filepath.Ext(info.Name()))
+	return filepath.Join(a.Config().TVShows().Directory(), filename), nil
 }

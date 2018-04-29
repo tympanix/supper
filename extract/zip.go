@@ -30,6 +30,7 @@ func (z *ZipArchive) Next() (types.MediaReadCloser, error) {
 			return nil, err
 		}
 		return &MediaFromArchive{
+			FileInfo:   file.FileInfo(),
 			Media:      med,
 			ReadCloser: rc,
 		}, nil

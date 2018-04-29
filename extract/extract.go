@@ -3,6 +3,7 @@ package extract
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	"github.com/tympanix/supper/types"
@@ -25,6 +26,7 @@ func IsNotArchive(err error) bool {
 // MediaFromArchive representa a media item which is located inside a
 // compressed archive
 type MediaFromArchive struct {
+	os.FileInfo
 	types.Media
 	io.ReadCloser
 }

@@ -2,6 +2,7 @@ package extract
 
 import (
 	"io/ioutil"
+	"time"
 
 	"github.com/nwaples/rardecode"
 	"github.com/tympanix/supper/media"
@@ -12,6 +13,30 @@ import (
 // RarArchive is an struct used to extract media files from rar archives
 type RarArchive struct {
 	*rardecode.ReadCloser
+}
+
+type rarInfo struct {
+	*rardecode.FileHeader
+}
+
+func (r *rarInfo) IsDir() bool {
+	return r.FileHeader.IsDir
+}
+
+func (r *rarInfo) ModTime() time.Time {
+	return r.FileHeader.ModificationTime
+}
+
+func (r *rarInfo) Name() string {
+	return r.FileHeader.Name
+}
+
+func (r *rarInfo) Size() int64 {
+	return r.FileHeader.UnPackedSize
+}
+
+func (r *rarInfo) Sys() interface{} {
+	return nil
 }
 
 // Next returns the next media item in the rar archive. If there are not more
@@ -30,6 +55,7 @@ func (r *RarArchive) Next() (types.MediaReadCloser, error) {
 	}
 
 	return &MediaFromArchive{
+		FileInfo:   &rarInfo{file},
 		Media:      med,
 		ReadCloser: ioutil.NopCloser(r.ReadCloser),
 	}, nil

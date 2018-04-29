@@ -20,7 +20,7 @@ func TestZipArchive(t *testing.T) {
 
 	movie, ok := med.TypeMovie()
 	assert.True(t, ok)
-	assert.Equal(t, "Blade Runner", movie.MovieName())
+	assert.Equal(t, "Blade Runner 2049", movie.MovieName())
 	assert.Equal(t, 2017, movie.Year())
 
 	med, err = media.Next()
