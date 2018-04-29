@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/media"
 )
 
 func init() {
@@ -67,10 +68,12 @@ func renameMedia(cmd *cobra.Command, args []string) {
 			m, err := a.Next()
 			for err == nil {
 				if err = app.ExtractMedia(m); err != nil {
-					if app.Config().Strict() {
-						log.WithError(err).Fatal("Extraction failed")
-					} else {
-						log.WithError(err).Error("Extraction failed")
+					if !media.IsExistsErr(err) {
+						if app.Config().Strict() {
+							log.WithError(err).Fatal("Extraction failed")
+						} else {
+							log.WithError(err).Error("Extraction failed")
+						}
 					}
 				}
 				defer m.Close()

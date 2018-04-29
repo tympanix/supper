@@ -16,12 +16,6 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
-type mediaExistsError struct{}
-
-func (s *mediaExistsError) Error() string {
-	return "media already exists"
-}
-
 type renamer func(types.Local, string) error
 
 // Rename is a wrapper function around a renamer which performs some sanity checks
@@ -35,7 +29,7 @@ func (r renamer) Rename(local types.Local, dest string, force bool) error {
 func ensurePath(dest string, force bool) error {
 	_, err := os.Stat(dest)
 	if !force && err == nil {
-		return &mediaExistsError{}
+		return media.NewExistsErr()
 	}
 	if err == nil {
 		if err := os.Remove(dest); err != nil {
@@ -149,7 +143,7 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 		}
 
 		if err != nil {
-			if _, ok := err.(*mediaExistsError); ok {
+			if media.IsExistsErr(err) {
 				ctx.WithField("reason", "media already exists").Warn("Rename skipped")
 			} else {
 				ctx.WithError(err).Error("Rename failed")
