@@ -19,7 +19,7 @@ import (
 type mediaExistsError struct{}
 
 func (s *mediaExistsError) Error() string {
-	return "media allready exists"
+	return "media already exists"
 }
 
 type renamer func(types.Local, string) error
