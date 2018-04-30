@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"path"
 	"strconv"
@@ -18,15 +17,19 @@ const tmdbHost = "https://api.themoviedb.org/3/"
 
 const tmdbTimeFormat = "2006-01-02"
 
+var tmdbClient = NewAPIClient(35)
+
 // TheMovieDB is a scraper for themoviedb.org
 func TheMovieDB(token string) types.Scraper {
 	return &tmdb{
-		token: token,
+		client: tmdbClient,
+		token:  token,
 	}
 }
 
 type tmdb struct {
-	token string
+	client *APIClient
+	token  string
 }
 
 func (t *tmdb) Scrape(m types.Media) (types.Media, error) {
@@ -64,7 +67,7 @@ func (t *tmdb) searchMovie(m types.Movie) (types.Media, error) {
 	q.Set("year", strconv.Itoa(m.Year()))
 	url.RawQuery = q.Encode()
 
-	resp, err := http.Get(url.String())
+	resp, err := t.client.Get(url.String())
 
 	if err != nil {
 		return nil, err

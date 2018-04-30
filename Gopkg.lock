@@ -191,6 +191,15 @@
 
 [[projects]]
   branch = "master"
+  name = "go.uber.org/ratelimit"
+  packages = [
+    ".",
+    "internal/clock"
+  ]
+  revision = "c15da02342779cb6dc027fc95ee2277787698f36"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "html",
@@ -230,6 +239,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a2134518e834fa1000304f309d72eced5cbc0ab41695479c829b936a9ea52b35"
+  inputs-digest = "258c9519cc75ad0780c3d3ba4f3dce2e71fbfe566e7c048ff9663cffc8638492"
   solver-name = "gps-cdcl"
   solver-version = 1

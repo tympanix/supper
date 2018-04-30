@@ -84,3 +84,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/nwaples/rardecode"
+
+[[constraint]]
+  branch = "master"
+  name = "go.uber.org/ratelimit"

@@ -16,16 +16,18 @@ import (
 
 const thetvdbHost = "https://api.thetvdb.com/"
 
+var thetvdbClient = NewAPIClient(35)
+
 // TheTVDB is a scraper for thetvdb.com
 func TheTVDB(key string) types.Scraper {
 	return &thetvdb{
-		client: &http.Client{},
+		client: thetvdbClient,
 		key:    key,
 	}
 }
 
 type thetvdb struct {
-	client *http.Client
+	client *APIClient
 	key    string
 	token  string
 }
@@ -84,7 +86,7 @@ func (t *thetvdb) authenticate() error {
 		return err
 	}
 
-	resp, err := http.Post(url.String(), "application/json", bytes.NewBuffer(data))
+	resp, err := t.client.Post(url.String(), "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
 		return err
