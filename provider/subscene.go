@@ -200,7 +200,7 @@ func newZipReader(file *os.File) (*zipReader, error) {
 		return nil, err
 	}
 
-	var srt io.ReadCloser = nil
+	var srt io.ReadCloser
 	for _, f := range data.File {
 		if filepath.Ext(f.Name) == ".srt" {
 			if srt, err = f.Open(); err != nil {
