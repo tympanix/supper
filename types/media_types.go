@@ -77,6 +77,11 @@ type Pather interface {
 type LocalMedia interface {
 	Local
 	Media
+}
+
+// Video is an interface for media which can have subtitles
+type Video interface {
+	LocalMedia
 	ExistingSubtitles() (SubtitleList, error)
 	SaveSubtitle(Downloadable, language.Tag) (LocalSubtitle, error)
 }

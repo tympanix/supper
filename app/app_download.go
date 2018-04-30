@@ -27,14 +27,16 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		return -1, errors.New("no languages supplied for subtitles")
 	}
 
-	media, err := media.FilterMissingSubs(lang)
+	video := media.FilterVideo()
+
+	video, err := video.FilterMissingSubs(lang)
 
 	if err != nil {
 		return -1, nil
 	}
 
 	// Iterate all media files in the list
-	for i, item := range media.List() {
+	for i, item := range video.List() {
 		ctx := log.WithFields(log.Fields{
 			"media": item,
 			"item":  fmt.Sprintf("%v/%v", i+1, media.Len()),

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/fatih/set"
 	"github.com/tympanix/supper/types"
 )
 
@@ -41,19 +40,14 @@ func (l *LocalMedia) FilterModified(d time.Duration) types.LocalMediaList {
 	return NewLocalMedia(media...)
 }
 
-func (l *LocalMedia) FilterMissingSubs(lang set.Interface) (types.LocalMediaList, error) {
-	media := make([]types.LocalMedia, 0)
-	for _, m := range l.List() {
-		extsubs, err := m.ExistingSubtitles()
-		if err != nil {
-			return nil, err
-		}
-		missing := set.Difference(lang, extsubs.LanguageSet())
-		if missing.Size() > 0 {
-			media = append(media, m)
+func (l *LocalMedia) FilterVideo() types.VideoList {
+	video := make([]types.Video, 0)
+	for _, media := range l.List() {
+		if v, ok := media.(types.Video); ok {
+			video = append(video, v)
 		}
 	}
-	return NewLocalMedia(media...), nil
+	return NewVideo(video...)
 }
 
 func (l *LocalMedia) MarshalJSON() (b []byte, err error) {
