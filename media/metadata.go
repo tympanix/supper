@@ -30,6 +30,7 @@ func ParseMetadata(tags string) Metadata {
 	}
 }
 
+// MarshalJSON returns a JSON representation of metadata
 func (m Metadata) MarshalJSON() (b []byte, err error) {
 	return json.Marshal(struct {
 		Group   string `json:"group"`

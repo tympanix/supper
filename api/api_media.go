@@ -133,8 +133,9 @@ func (a *API) fileList(folder jsonFolder) (interface{}, error) {
 	if err != nil {
 		return nil, Error(err, http.StatusInternalServerError)
 	}
+	video := list.FilterVideo()
 	medialist := make([]interface{}, 0)
-	for _, m := range list.List() {
+	for _, m := range video.List() {
 		subs, err := m.ExistingSubtitles()
 		if err != nil {
 			return nil, Error(err, http.StatusInternalServerError)

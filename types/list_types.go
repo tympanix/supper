@@ -31,5 +31,12 @@ type LocalMediaList interface {
 	Add(LocalMedia)
 	List() []LocalMedia
 	FilterModified(time.Duration) LocalMediaList
-	FilterMissingSubs(set.Interface) (LocalMediaList, error)
+	FilterVideo() VideoList
+}
+
+// VideoList is a list of video
+type VideoList interface {
+	List
+	List() []Video
+	FilterMissingSubs(set.Interface) (VideoList, error)
 }

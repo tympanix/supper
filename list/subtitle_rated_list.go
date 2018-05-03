@@ -26,10 +26,10 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 
 	info := []string{
 		s.Link(),
-		s.Meta().Codec().String(),
-		s.Meta().Group(),
-		s.Meta().Quality().String(),
-		s.Meta().Source().String(),
+		s.ForMedia().Meta().Codec().String(),
+		s.ForMedia().Meta().Group(),
+		s.ForMedia().Meta().Quality().String(),
+		s.ForMedia().Meta().Source().String(),
 	}
 
 	hash.Write([]byte(strings.Join(info, "")))
@@ -49,8 +49,8 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 		s.Language(),
 		s.Link(),
 		s.score,
-		s.IsHI(),
-		s.Meta(),
+		s.HearingImpaired(),
+		s.ForMedia().Meta(),
 	})
 }
 
@@ -105,7 +105,7 @@ func (s *ratedSubtitles) Add(subs ...types.Subtitle) {
 		if !ok {
 			panic("rated subtitle list only supports online subtitles")
 		}
-		score := s.Evaluate(s.media, sub)
+		score := s.Evaluate(s.media, sub.ForMedia())
 		if score > 0 {
 			s.subs = append(s.subs, subtitleEntry{
 				OnlineSubtitle: sub,
@@ -120,7 +120,7 @@ func (s *ratedSubtitles) Add(subs ...types.Subtitle) {
 func (s *ratedSubtitles) FilterLanguage(lang language.Tag) types.SubtitleList {
 	_subs := make([]subtitleEntry, 0)
 	for _, sub := range s.subs {
-		if sub.IsLang(lang) {
+		if sub.Language() == lang {
 			_subs = append(_subs, sub)
 		}
 	}
@@ -142,7 +142,7 @@ func (s *ratedSubtitles) FilterScore(score float32) types.SubtitleList {
 func (s *ratedSubtitles) HearingImpaired(hi bool) types.SubtitleList {
 	_subs := make([]subtitleEntry, 0)
 	for _, sub := range s.subs {
-		if sub.IsHI() == hi {
+		if sub.HearingImpaired() == hi {
 			_subs = append(_subs, sub)
 		}
 	}

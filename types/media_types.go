@@ -38,6 +38,7 @@ type Media interface {
 	String() string
 	TypeMovie() (Movie, bool)
 	TypeEpisode() (Episode, bool)
+	TypeSubtitle() (Subtitle, bool)
 }
 
 // Metadata is an interface metadata information
@@ -77,6 +78,11 @@ type Pather interface {
 type LocalMedia interface {
 	Local
 	Media
+}
+
+// Video is an interface for media which can have subtitles
+type Video interface {
+	LocalMedia
 	ExistingSubtitles() (SubtitleList, error)
 	SaveSubtitle(Downloadable, language.Tag) (LocalSubtitle, error)
 }
@@ -104,10 +110,9 @@ type Linker interface {
 
 // Subtitle can be downloaded
 type Subtitle interface {
-	Media
+	ForMedia() Media
 	Language() language.Tag
-	IsLang(language.Tag) bool
-	IsHI() bool
+	HearingImpaired() bool
 }
 
 // LocalSubtitle is an subtitle which is stored on disk
