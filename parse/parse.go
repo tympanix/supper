@@ -54,6 +54,14 @@ func CleanName(name string) string {
 	return strings.TrimSpace(name)
 }
 
+var allowedIdentity = regexp.MustCompile(`[^A-Za-z0-9]`)
+
+// Identity returns a string where special characters are removed. The returned
+// string is suitable for use in an identity string
+func Identity(str string) string {
+	return allowedIdentity.ReplaceAllString(str, "")
+}
+
 // Source parses the source from a filename
 func Source(name string) source.Tag {
 	s := Sources.FindTag(name)

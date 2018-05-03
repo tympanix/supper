@@ -62,6 +62,11 @@ func (l *Subtitle) Language() language.Tag {
 	return l.lang
 }
 
+// Identity returns the identity string for the media which the subtitle matches
+func (l *Subtitle) Identity() string {
+	return l.ForMedia().Identity()
+}
+
 // Merge is not supported for subtitles
 func (l *Subtitle) Merge(other types.Media) error {
 	return l.ForMedia().Merge(other)

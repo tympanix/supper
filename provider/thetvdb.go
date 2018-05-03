@@ -16,7 +16,9 @@ import (
 
 const thetvdbHost = "https://api.thetvdb.com/"
 
-var thetvdbClient = NewAPIClient(35)
+var thetvdbClient = NewAPIClient("TheTVDB", 35)
+
+var thetvdbCache = make(map[string]types.Media)
 
 // TheTVDB is a scraper for thetvdb.com
 func TheTVDB(key string) types.Scraper {
@@ -32,16 +34,24 @@ type thetvdb struct {
 	token  string
 }
 
-func (t *thetvdb) Scrape(m types.Media) (types.Media, error) {
+func (t *thetvdb) Scrape(m types.Media) (src types.Media, err error) {
 	if m == nil {
 		return nil, errors.New("thetvdb: can't scrape nil media")
 	}
-	if e, ok := m.TypeEpisode(); ok {
-		return t.searchTV(e)
-	} else if sub, ok := m.TypeSubtitle(); ok {
-		return t.Scrape(sub.ForMedia())
+	if cache, ok := thetvdbCache[m.Identity()]; ok {
+		return cache, nil
 	}
-	return nil, mediaNotSupported("thetvdb")
+	if e, ok := m.TypeEpisode(); ok {
+		src, err = t.searchTV(e)
+	} else if sub, ok := m.TypeSubtitle(); ok {
+		src, err = t.Scrape(sub.ForMedia())
+	} else {
+		return nil, mediaNotSupported("thetvdb")
+	}
+	if err == nil {
+		thetvdbCache[m.Identity()] = src
+	}
+	return
 }
 
 func (t *thetvdb) Get(url string) (*http.Response, error) {

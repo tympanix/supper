@@ -36,6 +36,7 @@ type Media interface {
 	Meta() Metadata
 	Merge(Media) error
 	String() string
+	Identity() string
 	TypeMovie() (Movie, bool)
 	TypeEpisode() (Episode, bool)
 	TypeSubtitle() (Subtitle, bool)

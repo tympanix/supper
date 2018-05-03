@@ -83,6 +83,12 @@ func (m *Movie) Meta() types.Metadata {
 	return m.Metadata
 }
 
+// Identity returns an identity string for the movie which can be used for
+// hasing, caching ect.
+func (m *Movie) Identity() string {
+	return fmt.Sprintf("%s:%v", parse.Identity(m.MovieName()), m.Year())
+}
+
 // TypeMovie returns true, since a movie is a movie
 func (m *Movie) TypeMovie() (types.Movie, bool) {
 	return m, true

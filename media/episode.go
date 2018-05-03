@@ -77,6 +77,12 @@ func (e *Episode) String() string {
 	return fmt.Sprintf("%s S%02dE%02d", e.TVShow(), e.Season(), e.Episode())
 }
 
+// Identity returns the identity string of the episode which can be used for
+// hashing, caching ect.
+func (e *Episode) Identity() string {
+	return fmt.Sprintf("%s:%v:%v", parse.Identity(e.TVShow()), e.Season(), e.Episode())
+}
+
 // TVShow is the name of the TV show
 func (e *Episode) TVShow() string {
 	return e.NameX

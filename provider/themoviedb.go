@@ -17,7 +17,9 @@ const tmdbHost = "https://api.themoviedb.org/3/"
 
 const tmdbTimeFormat = "2006-01-02"
 
-var tmdbClient = NewAPIClient(35)
+var tmdbClient = NewAPIClient("TheMovieDB", 35)
+
+var tmdbCache = make(map[string]types.Media)
 
 // TheMovieDB is a scraper for themoviedb.org
 func TheMovieDB(token string) types.Scraper {
@@ -32,16 +34,24 @@ type tmdb struct {
 	token  string
 }
 
-func (t *tmdb) Scrape(m types.Media) (types.Media, error) {
+func (t *tmdb) Scrape(m types.Media) (src types.Media, err error) {
 	if m == nil {
 		return nil, errors.New("tmdb: can't scrape nil media")
 	}
-	if movie, ok := m.TypeMovie(); ok {
-		return t.searchMovie(movie)
-	} else if sub, ok := m.TypeSubtitle(); ok {
-		return t.Scrape(sub.ForMedia())
+	if cache, ok := tmdbCache[m.Identity()]; ok {
+		return cache, nil
 	}
-	return nil, mediaNotSupported("tmdb")
+	if movie, ok := m.TypeMovie(); ok {
+		src, err = t.searchMovie(movie)
+	} else if sub, ok := m.TypeSubtitle(); ok {
+		src, err = t.Scrape(sub.ForMedia())
+	} else {
+		return nil, mediaNotSupported("tmdb")
+	}
+	if err == nil {
+		tmdbCache[m.Identity()] = src
+	}
+	return
 }
 
 func (t *tmdb) url(p string) (*url.URL, error) {
