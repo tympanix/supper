@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/tympanix/supper/media"
-	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 )
 
@@ -21,7 +20,7 @@ func (z *ZipArchive) Next() (types.MediaReadCloser, error) {
 	for i := z.idx; i < len(z.File); i++ {
 		z.idx = i + 1
 		file := z.File[i]
-		med, err := media.NewFromString(parse.Filename(file.Name))
+		med, err := media.NewFromFilename(file.Name)
 		if err != nil {
 			continue
 		}

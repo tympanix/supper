@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/text/language"
 )
 
 func TestZipArchive(t *testing.T) {
@@ -22,6 +24,13 @@ func TestZipArchive(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "Blade Runner 2049", movie.MovieName())
 	assert.Equal(t, 2017, movie.Year())
+
+	med, err = media.Next()
+	assert.NoError(t, err)
+
+	sub, ok := med.TypeSubtitle()
+	require.True(t, ok)
+	assert.Equal(t, language.English, sub.Language())
 
 	med, err = media.Next()
 	assert.Equal(t, io.EOF, err)
@@ -42,6 +51,13 @@ func TestRarArchive(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "Fight Club", movie.MovieName())
 	assert.Equal(t, 1999, movie.Year())
+
+	med, err = media.Next()
+	assert.NoError(t, err)
+
+	s, ok := med.TypeSubtitle()
+	require.True(t, ok)
+	assert.Equal(t, language.English, s.Language())
 
 	med, err = media.Next()
 	assert.Equal(t, io.EOF, err)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/nwaples/rardecode"
 	"github.com/tympanix/supper/media"
-	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
 )
 
@@ -48,7 +47,7 @@ func (r *RarArchive) Next() (types.MediaReadCloser, error) {
 		return nil, err
 	}
 
-	med, err := media.NewFromString(parse.Filename(file.Name))
+	med, err := media.NewFromFilename(file.Name)
 
 	if err != nil {
 		return r.Next()
