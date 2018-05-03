@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/tympanix/supper/api"
@@ -102,6 +103,9 @@ func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 				return errors.New("invalid file path")
 			}
 			if f.IsDir() {
+				return nil
+			}
+			if strings.HasPrefix(f.Name(), ".") {
 				return nil
 			}
 			med, err := media.NewLocalFile(filepath)
