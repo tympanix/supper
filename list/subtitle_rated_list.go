@@ -49,7 +49,7 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 		s.Language(),
 		s.Link(),
 		s.score,
-		s.IsHI(),
+		s.HearingImpaired(),
 		s.ForMedia().Meta(),
 	})
 }
@@ -142,7 +142,7 @@ func (s *ratedSubtitles) FilterScore(score float32) types.SubtitleList {
 func (s *ratedSubtitles) HearingImpaired(hi bool) types.SubtitleList {
 	_subs := make([]subtitleEntry, 0)
 	for _, sub := range s.subs {
-		if sub.IsHI() == hi {
+		if sub.HearingImpaired() == hi {
 			_subs = append(_subs, sub)
 		}
 	}

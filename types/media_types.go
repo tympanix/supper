@@ -112,7 +112,7 @@ type Linker interface {
 type Subtitle interface {
 	ForMedia() Media
 	Language() language.Tag
-	IsHI() bool
+	HearingImpaired() bool
 }
 
 // LocalSubtitle is an subtitle which is stored on disk

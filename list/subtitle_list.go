@@ -50,7 +50,7 @@ func (s *subtitleList) FilterScore(score float32) types.SubtitleList {
 func (s *subtitleList) HearingImpaired(hi bool) types.SubtitleList {
 	_subs := make([]types.Subtitle, 0)
 	for _, sub := range *s {
-		if sub.IsHI() == hi {
+		if sub.HearingImpaired() == hi {
 			_subs = append(_subs, sub)
 		}
 	}

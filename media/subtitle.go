@@ -49,8 +49,8 @@ func NewSubtitle(str string) (*Subtitle, error) {
 	}, nil
 }
 
-// IsHI returns false since this information in unparseable from a simple filename
-func (l *Subtitle) IsHI() bool {
+// HearingImpaired returns false since this information in unparseable from a simple filename
+func (l *Subtitle) HearingImpaired() bool {
 	return false
 }
 

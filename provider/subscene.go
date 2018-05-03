@@ -23,6 +23,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 )
 
 // subsceneHost is the URL for subscene
@@ -306,7 +307,7 @@ type subsceneSubtitle struct {
 }
 
 func (b *subsceneSubtitle) String() string {
-	return fmt.Sprintf("%-15s %-s", b.lang, b.Media)
+	return display.English.Languages().Name(b.Language())
 }
 
 func (b *subsceneSubtitle) ForMedia() types.Media {
@@ -317,10 +318,6 @@ func (b *subsceneSubtitle) Language() language.Tag {
 	return b.lang
 }
 
-func (b *subsceneSubtitle) IsLang(tag language.Tag) bool {
-	return b.lang == tag
-}
-
-func (b *subsceneSubtitle) IsHI() bool {
+func (b *subsceneSubtitle) HearingImpaired() bool {
 	return b.hi
 }
