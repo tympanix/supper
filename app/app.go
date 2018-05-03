@@ -104,17 +104,14 @@ func (a *Application) FindMedia(roots ...string) (types.LocalMediaList, error) {
 			if f.IsDir() {
 				return nil
 			}
-			if !fileIsMedia(f) {
-				return nil
-			}
-			_media, err := media.NewLocalFile(filepath)
+			med, err := media.NewLocalFile(filepath)
 			if err != nil {
 				return nil
 			}
-			if media.IsSample(_media) {
+			if media.IsSample(med) {
 				return nil
 			}
-			medialist = append(medialist, _media)
+			medialist = append(medialist, med)
 			return nil
 		})
 

@@ -14,6 +14,7 @@ import (
 // Movie represents a movie file
 type Movie struct {
 	Metadata
+	TypeNone
 	NameX string
 	YearX int
 	tags  string
@@ -80,16 +81,6 @@ func (m *Movie) Merge(other types.Media) error {
 // Meta returnes the metadata interface for a movie
 func (m *Movie) Meta() types.Metadata {
 	return m.Metadata
-}
-
-// TypeEpisode returns false, since a movie is not an episode
-func (m *Movie) TypeEpisode() (types.Episode, bool) {
-	return nil, false
-}
-
-// TypeSubtitle returns false, since a movie is not a subtitle
-func (m *Movie) TypeSubtitle() (types.Subtitle, bool) {
-	return nil, false
 }
 
 // TypeMovie returns true, since a movie is a movie

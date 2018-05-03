@@ -16,6 +16,7 @@ var episodeRegexp = regexp.MustCompile(`^(.*?[\w)]+)[\W_]+?[Ss]?(\d{1,2})[Eex](\
 // Episode represents an episode from a TV show
 type Episode struct {
 	Metadata
+	TypeNone
 	NameX        string
 	EpisodeNameX string
 	EpisodeX     int
@@ -105,16 +106,6 @@ func (e *Episode) Meta() types.Metadata {
 // TypeEpisode returns true since an episode is an episode
 func (e *Episode) TypeEpisode() (types.Episode, bool) {
 	return e, true
-}
-
-// TypeSubtitle returns false, since an episode is not a subtitle
-func (e *Episode) TypeSubtitle() (types.Subtitle, bool) {
-	return nil, false
-}
-
-// TypeMovie returns false since an episode is not a movie
-func (e *Episode) TypeMovie() (types.Movie, bool) {
-	return nil, false
 }
 
 // EpisodeName is the name of the episode

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/spf13/viper"
@@ -181,13 +182,13 @@ func (a *Application) scrapeAndRenameMedia(info os.FileInfo, m types.Media) (str
 
 func (a *Application) renameMedia(info os.FileInfo, m types.Media) (dest string, err error) {
 	if movie, ok := m.TypeMovie(); ok {
-		dest, err = a.renameMovie(info, movie)
+		return a.renameMovie(info, movie)
 	} else if episode, ok := m.TypeEpisode(); ok {
-		dest, err = a.renameEpisode(info, episode)
-	} else {
-		return "", media.NewUnknownErr()
+		return a.renameEpisode(info, episode)
+	} else if sub, ok := m.TypeSubtitle(); ok {
+		return a.renameSubtitle(info, sub)
 	}
-	return dest, err
+	return "", media.NewUnknownErr()
 }
 
 func (a *Application) scrapeMedia(m types.Media) (types.Media, error) {
@@ -259,4 +260,18 @@ func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, 
 	}
 	filename := truncateSpaces(buf.String() + filepath.Ext(info.Name()))
 	return filepath.Join(a.Config().TVShows().Directory(), filename), nil
+}
+
+func (a *Application) renameSubtitle(info os.FileInfo, s types.Subtitle) (string, error) {
+	dest, err := a.renameMedia(info, s.ForMedia())
+
+	if err != nil {
+		return "", err
+	}
+
+	ext := filepath.Ext(dest)
+	base := strings.TrimSuffix(dest, ext)
+	dest = base + "." + fmt.Sprintf("%v", s.Language()) + ext
+
+	return dest, err
 }
