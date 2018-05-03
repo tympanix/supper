@@ -34,7 +34,7 @@ func (s *subtitleList) Add(sub ...types.Subtitle) {
 func (s *subtitleList) FilterLanguage(lang language.Tag) types.SubtitleList {
 	_subs := make([]types.Subtitle, 0)
 	for _, sub := range *s {
-		if sub.IsLang(lang) {
+		if sub.Language() == lang {
 			_subs = append(_subs, sub)
 		}
 	}

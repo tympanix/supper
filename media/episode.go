@@ -107,6 +107,11 @@ func (e *Episode) TypeEpisode() (types.Episode, bool) {
 	return e, true
 }
 
+// TypeSubtitle returns false, since an episode is not a subtitle
+func (e *Episode) TypeSubtitle() (types.Subtitle, bool) {
+	return nil, false
+}
+
 // TypeMovie returns false since an episode is not a movie
 func (e *Episode) TypeMovie() (types.Movie, bool) {
 	return nil, false

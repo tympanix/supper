@@ -1,126 +1,49 @@
 package media
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
-	"golang.org/x/text/language"
 )
 
-// File represents a local media file on disk
-type File struct {
-	os.FileInfo
-	types.Media
-	FilePath
+// videoExt contains the list of recognizable video extensions
+var videoExt = []string{
+	".avi", ".mkv", ".mp4", ".m4v", ".flv", ".mov", ".wmv", ".webm", ".mpg", ".mpeg",
 }
 
-// MarshalJSON returns the JSON represnetation of a media file
-func (f *File) MarshalJSON() (b []byte, err error) {
-	if js, ok := f.Media.Meta().(json.Marshaler); ok {
-		return js.MarshalJSON()
-	}
-	return nil, errors.New("media could not be json encoded")
+// subExt contains the list of recognizable subtitle extensions
+var subExt = []string{
+	".srt",
 }
 
-// String returns a string representation of the media in the file
-func (f *File) String() string {
-	return f.Media.String()
-}
-
-// ExistingSubtitles returns a list of existing subtitles for the media
-func (f *File) ExistingSubtitles() (types.SubtitleList, error) {
-	folder := filepath.Dir(f.Path())
-	name := parse.Filename(f.Path())
-
-	files, err := ioutil.ReadDir(folder)
-
-	if err != nil {
-		return nil, err
-	}
-
-	subtitles := make([]types.Subtitle, 0)
-	for _, file := range files {
-		if file.IsDir() {
-			continue
+func fileIsVideo(name string) bool {
+	for _, ext := range videoExt {
+		if ext == filepath.Ext(name) {
+			return true
 		}
-		if !strings.HasPrefix(file.Name(), name) {
-			continue
-		}
-		sub, err := NewLocalSubtitle(file)
-		if err != nil {
-			continue
-		}
-		subtitles = append(subtitles, sub)
 	}
-	return list.Subtitles(subtitles...), nil
+	return false
 }
 
-// SaveSubtitle saves the subtitle for the given media to disk
-func (f *File) SaveSubtitle(s types.Downloadable, lang language.Tag) (types.LocalSubtitle, error) {
-	if s == nil {
-		return nil, errors.New("invalid subtitle nil")
+func fileIsSubtitle(name string) bool {
+	for _, ext := range subExt {
+		if ext == filepath.Ext(name) {
+			return true
+		}
 	}
-
-	srt, err := s.Download()
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	defer srt.Close()
-
-	name := fmt.Sprintf("%s.%s.%s", parse.Filename(f.Path()), lang, "srt")
-	folder := filepath.Dir(f.Path())
-	srtpath := filepath.Join(folder, name)
-
-	file, err := os.Create(srtpath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-	_, err = io.Copy(file, srt)
-
-	if err != nil {
-		return nil, err
-	}
-
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	sub := struct {
-		FilePath
-		os.FileInfo
-		types.Subtitle
-	}{
-		FilePath(srtpath),
-		info,
-		s.(types.Subtitle),
-	}
-
-	return sub, nil
+	return false
 }
 
-// NewFromPath parses a filepath into a media object. The path may be an
+// NewLocalFile parses a filepath into a local media object. The path may be an
 // absolute or relative path. The filename of the media must contain
-// appropriate informations to describe the media file.
-func NewFromPath(path string) (types.LocalMedia, error) {
+// appropriate information to describe the media file.
+func NewLocalFile(path string) (types.LocalMedia, error) {
 	filename := filepath.Base(path)
-	basename := strings.TrimSuffix(filename, filepath.Ext(filename))
-	media, err := NewFromString(basename)
+	media, err := NewFromFilename(filename)
 
 	if err != nil {
 		return nil, err
@@ -139,8 +62,22 @@ func NewFromPath(path string) (types.LocalMedia, error) {
 	}, nil
 }
 
+// NewFromFilename parses the filename and returns a media object. The filename
+// (with extenstion) may describe either some video material (.avi, .mkv, .mp4)
+// or a subtitle (.srt).
+func NewFromFilename(name string) (types.Media, error) {
+	filename := parse.Filename(name)
+	if fileIsVideo(name) {
+		return NewFromString(filename)
+	} else if fileIsSubtitle(name) {
+		return NewSubtitle(filename)
+	}
+	return nil, errors.New("could not parse filename into media")
+}
+
 // NewFromString returns a media object parsed from a string describing the
-// media. This could be the name of a file (without extension)
+// media. This could be the name of a file (without extension). It is assumed
+// the string describes some video material (movie or episode)
 func NewFromString(str string) (types.Media, error) {
 	if episodeRegexp.MatchString(str) {
 		return NewEpisode(str)
@@ -156,6 +93,7 @@ func (p FilePath) Path() string {
 	return string(p)
 }
 
+// Open opens the file and returns a readcloser
 func (p FilePath) Open() (io.ReadCloser, error) {
 	return os.Open(string(p))
 }

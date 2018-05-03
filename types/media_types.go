@@ -38,6 +38,7 @@ type Media interface {
 	String() string
 	TypeMovie() (Movie, bool)
 	TypeEpisode() (Episode, bool)
+	TypeSubtitle() (Subtitle, bool)
 }
 
 // Metadata is an interface metadata information
@@ -111,7 +112,6 @@ type Linker interface {
 type Subtitle interface {
 	Media
 	Language() language.Tag
-	IsLang(language.Tag) bool
 	IsHI() bool
 }
 
