@@ -26,10 +26,10 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 
 	info := []string{
 		s.Link(),
-		s.Meta().Codec().String(),
-		s.Meta().Group(),
-		s.Meta().Quality().String(),
-		s.Meta().Source().String(),
+		s.ForMedia().Meta().Codec().String(),
+		s.ForMedia().Meta().Group(),
+		s.ForMedia().Meta().Quality().String(),
+		s.ForMedia().Meta().Source().String(),
 	}
 
 	hash.Write([]byte(strings.Join(info, "")))
@@ -50,7 +50,7 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 		s.Link(),
 		s.score,
 		s.IsHI(),
-		s.Meta(),
+		s.ForMedia().Meta(),
 	})
 }
 
@@ -105,7 +105,7 @@ func (s *ratedSubtitles) Add(subs ...types.Subtitle) {
 		if !ok {
 			panic("rated subtitle list only supports online subtitles")
 		}
-		score := s.Evaluate(s.media, sub)
+		score := s.Evaluate(s.media, sub.ForMedia())
 		if score > 0 {
 			s.subs = append(s.subs, subtitleEntry{
 				OnlineSubtitle: sub,

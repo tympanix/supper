@@ -21,7 +21,7 @@ type Subtitle struct {
 
 // NewSubtitle returns subtitle information by parsing the string. The string
 // should describe some video material sufficiently (without extension)
-func NewSubtitle(str string) (types.Subtitle, error) {
+func NewSubtitle(str string) (*Subtitle, error) {
 	parts := strings.Split(str, ".")
 
 	if len(parts) < 2 {
@@ -89,6 +89,11 @@ func (l *Subtitle) TypeEpisode() (types.Episode, bool) {
 	return nil, false
 }
 
+// ForMedia returns the media the subtitle is matched against
+func (l *Subtitle) ForMedia() types.Media {
+	return l.forMedia
+}
+
 // NewLocalSubtitle returns a new local subtitle
 func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
 	if filepath.Ext(file.Name()) != ".srt" {
@@ -110,7 +115,7 @@ func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
 // LocalSubtitle represents a subtitle stored on disk
 type LocalSubtitle struct {
 	os.FileInfo
-	types.Subtitle
+	*Subtitle
 }
 
 // MarshalJSON returns a JSON representation of the subtitle
@@ -122,6 +127,6 @@ func (l *LocalSubtitle) MarshalJSON() (b []byte, err error) {
 	}{
 		l.Name(),
 		l.Language(),
-		l.String(),
+		l.Subtitle.String(),
 	})
 }

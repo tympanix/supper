@@ -309,6 +309,10 @@ func (b *subsceneSubtitle) String() string {
 	return fmt.Sprintf("%-15s %-s", b.lang, b.Media)
 }
 
+func (b *subsceneSubtitle) ForMedia() types.Media {
+	return b
+}
+
 func (b *subsceneSubtitle) Language() language.Tag {
 	return b.lang
 }

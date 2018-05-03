@@ -33,8 +33,13 @@ type thetvdb struct {
 }
 
 func (t *thetvdb) Scrape(m types.Media) (types.Media, error) {
+	if m == nil {
+		return nil, errors.New("thetvdb: can't scrape nil media")
+	}
 	if e, ok := m.TypeEpisode(); ok {
 		return t.searchTV(e)
+	} else if sub, ok := m.TypeSubtitle(); ok {
+		return t.Scrape(sub.ForMedia())
 	}
 	return nil, mediaNotSupported("thetvdb")
 }

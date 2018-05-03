@@ -110,7 +110,7 @@ type Linker interface {
 
 // Subtitle can be downloaded
 type Subtitle interface {
-	Media
+	ForMedia() Media
 	Language() language.Tag
 	IsHI() bool
 }
