@@ -88,6 +88,11 @@ func (e *Episode) TVShow() string {
 	return e.NameX
 }
 
+// IsVideo returns true since an TV episode is also a video
+func (e *Episode) IsVideo() bool {
+	return true
+}
+
 // Merge merges metadata from another episode
 func (e *Episode) Merge(other types.Media) error {
 	if episode, ok := other.TypeEpisode(); ok {

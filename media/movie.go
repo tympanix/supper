@@ -94,6 +94,11 @@ func (m *Movie) TypeMovie() (types.Movie, bool) {
 	return m, true
 }
 
+// IsVideo returns true, since a movie is also a video
+func (m *Movie) IsVideo() bool {
+	return true
+}
+
 // MovieName is the name of the movie
 func (m *Movie) MovieName() string {
 	return m.NameX

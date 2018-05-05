@@ -10,6 +10,11 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
+// Subtitlable is an dummy interface for media which supports subtitles
+type Subtitlable interface {
+	IsVideo() bool
+}
+
 // videoExt contains the list of recognizable video extensions
 var videoExt = []string{
 	".avi", ".mkv", ".mp4", ".m4v", ".flv", ".mov", ".wmv", ".webm", ".mpg", ".mpeg",
@@ -49,25 +54,23 @@ func NewLocalFile(path string) (types.LocalMedia, error) {
 		return nil, err
 	}
 
-	file, err := os.Stat(path)
+	f, err := os.Stat(path)
 
 	if err != nil {
 		return nil, err
 	}
 
-	mediafile := &File{
-		FileInfo: file,
+	file := &File{
+		FileInfo: f,
 		Media:    media,
 		FilePath: FilePath(path),
 	}
 
-	if _, ok := mediafile.TypeMovie(); ok {
-		return NewVideo(mediafile), nil
-	} else if _, ok := mediafile.TypeEpisode(); ok {
-		return NewVideo(mediafile), nil
-	} else {
-		return mediafile, nil
+	if v, ok := file.Media.(Subtitlable); ok && v.IsVideo() {
+		return NewVideo(file), nil
 	}
+
+	return file, nil
 }
 
 // NewFromFilename parses the filename and returns a media object. The filename
