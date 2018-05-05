@@ -67,7 +67,7 @@ func (l *Subtitle) Identity() string {
 	return l.ForMedia().Identity()
 }
 
-// Merge is not supported for subtitles
+// Merge merges the media belonging to the subtitle
 func (l *Subtitle) Merge(other types.Media) error {
 	return l.ForMedia().Merge(other)
 }
