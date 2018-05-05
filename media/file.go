@@ -17,7 +17,7 @@ type File struct {
 
 // MarshalJSON returns the JSON represnetation of a media file
 func (f *File) MarshalJSON() (b []byte, err error) {
-	if js, ok := f.Media.Meta().(json.Marshaler); ok {
+	if js, ok := f.Media.(json.Marshaler); ok {
 		return js.MarshalJSON()
 	}
 	return nil, errors.New("media could not be json encoded")
