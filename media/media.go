@@ -55,11 +55,19 @@ func NewLocalFile(path string) (types.LocalMedia, error) {
 		return nil, err
 	}
 
-	return &File{
+	mediafile := &File{
 		FileInfo: file,
 		Media:    media,
 		FilePath: FilePath(path),
-	}, nil
+	}
+
+	if _, ok := mediafile.TypeMovie(); ok {
+		return NewVideo(mediafile), nil
+	} else if _, ok := mediafile.TypeEpisode(); ok {
+		return NewVideo(mediafile), nil
+	} else {
+		return mediafile, nil
+	}
 }
 
 // NewFromFilename parses the filename and returns a media object. The filename
