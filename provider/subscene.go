@@ -311,7 +311,7 @@ func (b *subsceneSubtitle) String() string {
 }
 
 func (b *subsceneSubtitle) ForMedia() types.Media {
-	return b
+	return b.Media
 }
 
 func (b *subsceneSubtitle) Language() language.Tag {

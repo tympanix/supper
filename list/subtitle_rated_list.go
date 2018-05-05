@@ -38,19 +38,19 @@ func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
 	hex.Encode(infohash, hashval)
 
 	return json.Marshal(struct {
-		Hash  string         `json:"hash"`
-		Lang  language.Tag   `json:"language"`
-		Link  string         `json:"link"`
-		Score float32        `json:"score"`
-		HI    bool           `json:"hi"`
-		Media types.Metadata `json:"media"`
+		Hash  string       `json:"hash"`
+		Lang  language.Tag `json:"language"`
+		Link  string       `json:"link"`
+		Score float32      `json:"score"`
+		HI    bool         `json:"hi"`
+		Media types.Media  `json:"media"`
 	}{
 		string(infohash),
 		s.Language(),
 		s.Link(),
 		s.score,
 		s.HearingImpaired(),
-		s.ForMedia().Meta(),
+		s.ForMedia(),
 	})
 }
 
