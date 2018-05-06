@@ -217,12 +217,14 @@ func (a *Application) renameMovie(info os.FileInfo, m types.Movie) (string, erro
 		Year    int
 		Quality string
 		Codec   string
+		Source  string
 		Group   string
 	}{
 		Movie:   cleanString(m.MovieName()),
 		Year:    m.Year(),
 		Quality: m.Quality().String(),
 		Codec:   m.Codec().String(),
+		Source:  m.Source().String(),
 		Group:   cleanString(m.Group()),
 	}
 	if err := template.Execute(&buf, &data); err != nil {
@@ -245,6 +247,7 @@ func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, 
 		Season  int
 		Quality string
 		Codec   string
+		Source  string
 		Group   string
 	}{
 		TVShow:  cleanString(e.TVShow()),
@@ -253,6 +256,7 @@ func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, 
 		Season:  e.Season(),
 		Quality: e.Quality().String(),
 		Codec:   e.Codec().String(),
+		Source:  e.Source().String(),
 		Group:   cleanString(e.Group()),
 	}
 	if err := template.Execute(&buf, &data); err != nil {
