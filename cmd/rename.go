@@ -53,8 +53,19 @@ func validateRenameFlags(cmd *cobra.Command, args []string) {
 		log.Fatalf("Invalid action flag %v", viper.GetString("action"))
 	}
 
-	if viper.GetBool("movies") && viper.GetBool("tvshows") {
-		log.Fatal("renaming only movies and tv shows are mutually exclusive")
+	var selected int
+	for _, b := range []bool{
+		viper.GetBool("movies"),
+		viper.GetBool("tvshows"),
+		viper.GetBool("subtitles"),
+	} {
+		if b {
+			selected++
+		}
+	}
+
+	if selected > 1 {
+		log.Fatal("renaming movies, tvshows and subtitles are mutually exclusive")
 	}
 
 	if viper.GetBool("singular") && viper.GetBool("upgrades") {
