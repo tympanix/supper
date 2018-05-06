@@ -35,6 +35,9 @@ type tmdb struct {
 }
 
 func (t *tmdb) Scrape(m types.Media) (src types.Media, err error) {
+	if t.token == "" {
+		return nil, errors.New("tmdb: missing API token")
+	}
 	if m == nil {
 		return nil, errors.New("tmdb: can't scrape nil media")
 	}

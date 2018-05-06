@@ -35,6 +35,9 @@ type thetvdb struct {
 }
 
 func (t *thetvdb) Scrape(m types.Media) (src types.Media, err error) {
+	if t.key == "" {
+		return nil, errors.New("thetvdb: missing API key")
+	}
 	if m == nil {
 		return nil, errors.New("thetvdb: can't scrape nil media")
 	}
