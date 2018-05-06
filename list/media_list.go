@@ -34,6 +34,17 @@ func (l *LocalMedia) List() []types.LocalMedia {
 	return l.media
 }
 
+// Filter return the list of local media which satisfies some predicate
+func (l *LocalMedia) Filter(p types.MediaFilter) types.LocalMediaList {
+	filtered := make([]types.LocalMedia, 0)
+	for _, media := range l.List() {
+		if p(media) {
+			filtered = append(filtered, media)
+		}
+	}
+	return NewLocalMedia(filtered...)
+}
+
 // FilterModified returns only media which has been modified since some duration
 func (l *LocalMedia) FilterModified(d time.Duration) types.LocalMediaList {
 	t := time.Now().Local().Add(-1 * d)

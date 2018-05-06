@@ -41,6 +41,7 @@ type Config interface {
 	APIKeys() APIKeys
 	Movies() MediaConfig
 	TVShows() MediaConfig
+	MediaFilter() MediaFilter
 }
 
 // APIKeys is the interface for configuration of 3rd party APIs

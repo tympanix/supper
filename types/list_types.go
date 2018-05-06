@@ -30,12 +30,16 @@ type LocalMediaList interface {
 	List
 	Add(LocalMedia)
 	List() []LocalMedia
+	Filter(MediaFilter) LocalMediaList
 	FilterModified(time.Duration) LocalMediaList
 	FilterVideo() VideoList
 	FilterMovies() LocalMediaList
 	FilterEpisodes() LocalMediaList
 	FilterSubtitles() LocalMediaList
 }
+
+// MediaFilter is used to filter out local media
+type MediaFilter func(Media) bool
 
 // VideoList is a list of video
 type VideoList interface {

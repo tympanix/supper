@@ -30,9 +30,9 @@ func init() {
 
 	viper.BindPFlag("action", flags.Lookup("action"))
 	viper.BindPFlag("extract", flags.Lookup("extract"))
-	viper.BindPFlag("movies", flags.Lookup("movies"))
-	viper.BindPFlag("tvshows", flags.Lookup("tvshows"))
-	viper.BindPFlag("subtitles", flags.Lookup("subtitles"))
+	viper.BindPFlag("filter-movies", flags.Lookup("movies"))
+	viper.BindPFlag("filter-tvshows", flags.Lookup("tvshows"))
+	viper.BindPFlag("filter-subtitles", flags.Lookup("subtitles"))
 	viper.BindPFlag("singular", flags.Lookup("singular"))
 	viper.BindPFlag("upgrades", flags.Lookup("upgrades"))
 
@@ -53,21 +53,6 @@ func validateRenameFlags(cmd *cobra.Command, args []string) {
 		log.Fatalf("Invalid action flag %v", viper.GetString("action"))
 	}
 
-	var selected int
-	for _, b := range []bool{
-		viper.GetBool("movies"),
-		viper.GetBool("tvshows"),
-		viper.GetBool("subtitles"),
-	} {
-		if b {
-			selected++
-		}
-	}
-
-	if selected > 1 {
-		log.Fatal("renaming movies, tvshows and subtitles are mutually exclusive")
-	}
-
 	if viper.GetBool("singular") && viper.GetBool("upgrades") {
 		log.Fatal("flags singular and upgrades are mutually exclusive")
 	}
@@ -82,16 +67,8 @@ func renameMedia(cmd *cobra.Command, args []string) {
 		log.WithError(err).Fatal("Could not find media in path")
 	}
 
-	if viper.GetBool("movies") {
-		medialist = medialist.FilterMovies()
-	}
-
-	if viper.GetBool("tvshows") {
-		medialist = medialist.FilterEpisodes()
-	}
-
-	if viper.GetBool("subtitles") {
-		medialist = medialist.FilterSubtitles()
+	if app.Config().MediaFilter() != nil {
+		medialist = medialist.Filter(app.Config().MediaFilter())
 	}
 
 	if err := app.RenameMedia(medialist); err != nil {

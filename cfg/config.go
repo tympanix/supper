@@ -89,6 +89,7 @@ type viperConfig struct {
 	apikeys   map[string]string
 	movies    types.MediaConfig
 	tvshows   types.MediaConfig
+	filters   int
 }
 
 // Initialize construct the default configuration object using viper.
@@ -147,6 +148,17 @@ func Initialize() {
 		*v = *media.Interface()
 	}
 
+	var filters int
+	for _, b := range []bool{
+		viper.GetBool("filter-movies"),
+		viper.GetBool("filter-tvshows"),
+		viper.GetBool("filter-subtitles"),
+	} {
+		if b {
+			filters++
+		}
+	}
+
 	Default = viperConfig{
 		languages: lang,
 		modified:  modified,
@@ -155,6 +167,29 @@ func Initialize() {
 		apikeys:   viper.GetStringMapString("apikeys"),
 		movies:    media["movies"],
 		tvshows:   media["tvshows"],
+		filters:   filters,
+	}
+}
+
+func (v viperConfig) MediaFilter() types.MediaFilter {
+	if v.filters == 0 {
+		return nil
+	}
+
+	return func(m types.Media) bool {
+		if _, ok := m.TypeMovie(); ok && viper.GetBool("filter-movies") {
+			return true
+		}
+
+		if _, ok := m.TypeEpisode(); ok && viper.GetBool("filter-tvshows") {
+			return true
+		}
+
+		if _, ok := m.TypeSubtitle(); ok && viper.GetBool("filter-subtitles") {
+			return true
+		}
+
+		return false
 	}
 }
 
