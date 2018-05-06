@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/apex/log"
+	"github.com/spf13/viper"
 	"github.com/tympanix/supper/extract"
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/types"
@@ -50,6 +51,14 @@ func (a *Application) FindArchives(roots ...string) ([]types.MediaArchive, error
 // its new destination
 func (a *Application) ExtractMedia(m types.MediaReadCloser) error {
 	ctx := log.WithField("media", m).WithField("action", "extract")
+
+	if _, ok := m.TypeMovie(); !ok && viper.GetBool("movies") {
+		return nil
+	}
+
+	if _, ok := m.TypeEpisode(); !ok && viper.GetBool("tvshows") {
+		return nil
+	}
 
 	dest, err := a.scrapeAndRenameMedia(m, m)
 

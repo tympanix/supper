@@ -50,6 +50,28 @@ func (l *LocalMedia) FilterVideo() types.VideoList {
 	return NewVideo(video...)
 }
 
+// FilterMovies return only media which is of type movie
+func (l *LocalMedia) FilterMovies() types.LocalMediaList {
+	movies := make([]types.LocalMedia, 0)
+	for _, media := range l.List() {
+		if _, ok := media.TypeMovie(); ok {
+			movies = append(movies, media)
+		}
+	}
+	return NewLocalMedia(movies...)
+}
+
+// FilterEpisodes returns only media which is of type episode
+func (l *LocalMedia) FilterEpisodes() types.LocalMediaList {
+	episodes := make([]types.LocalMedia, 0)
+	for _, media := range l.List() {
+		if _, ok := media.TypeEpisode(); ok {
+			episodes = append(episodes, media)
+		}
+	}
+	return NewLocalMedia(episodes...)
+}
+
 func (l *LocalMedia) MarshalJSON() (b []byte, err error) {
 	return json.Marshal(l.List())
 }

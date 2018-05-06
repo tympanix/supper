@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
@@ -20,11 +19,15 @@ func init() {
 
 	flags := renameCmd.Flags()
 
-	flags.StringP("action", "a", "hardlink", fmt.Sprintf("renaming action %v", strings.Join(actions, "|")))
+	flags.StringP("action", "a", "hardlink", strings.Join(actions, "|"))
 	flags.BoolP("extract", "x", false, "extract media from archives")
+	flags.BoolP("movies", "m", false, "rename only movies")
+	flags.BoolP("tvshows", "t", false, "rename only tv shows")
 
 	viper.BindPFlag("action", flags.Lookup("action"))
 	viper.BindPFlag("extract", flags.Lookup("extract"))
+	viper.BindPFlag("movies", flags.Lookup("movies"))
+	viper.BindPFlag("tvshows", flags.Lookup("tvshows"))
 
 	rootCmd.AddCommand(renameCmd)
 }
@@ -42,6 +45,10 @@ func validateRenameFlags(cmd *cobra.Command, args []string) {
 	if _, ok := app.Renamers[viper.GetString("action")]; !ok {
 		log.Fatalf("Invalid action flag %v", viper.GetString("action"))
 	}
+
+	if viper.GetBool("movies") && viper.GetBool("tvshows") {
+		log.Fatal("renaming only movies and tv shows are mutually exclusive")
+	}
 }
 
 func renameMedia(cmd *cobra.Command, args []string) {
@@ -51,6 +58,14 @@ func renameMedia(cmd *cobra.Command, args []string) {
 
 	if err != nil {
 		log.WithError(err).Fatal("Could not find media in path")
+	}
+
+	if viper.GetBool("movies") {
+		medialist = medialist.FilterMovies()
+	}
+
+	if viper.GetBool("tvshows") {
+		medialist = medialist.FilterEpisodes()
 	}
 
 	if err := app.RenameMedia(medialist); err != nil {

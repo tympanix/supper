@@ -32,6 +32,8 @@ type LocalMediaList interface {
 	List() []LocalMedia
 	FilterModified(time.Duration) LocalMediaList
 	FilterVideo() VideoList
+	FilterMovies() LocalMediaList
+	FilterEpisodes() LocalMediaList
 }
 
 // VideoList is a list of video
