@@ -60,6 +60,10 @@ func (a *Application) ExtractMedia(m types.MediaReadCloser) error {
 		return nil
 	}
 
+	if _, ok := m.TypeSubtitle(); !ok && viper.GetBool("subtitles") {
+		return nil
+	}
+
 	dest, err := a.scrapeAndRenameMedia(m, m)
 
 	if err != nil {

@@ -34,6 +34,7 @@ type LocalMediaList interface {
 	FilterVideo() VideoList
 	FilterMovies() LocalMediaList
 	FilterEpisodes() LocalMediaList
+	FilterSubtitles() LocalMediaList
 }
 
 // VideoList is a list of video

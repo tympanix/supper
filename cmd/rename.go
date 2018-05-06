@@ -23,11 +23,18 @@ func init() {
 	flags.BoolP("extract", "x", false, "extract media from archives")
 	flags.BoolP("movies", "m", false, "rename only movies")
 	flags.BoolP("tvshows", "t", false, "rename only tv shows")
+	flags.BoolP("subtitles", "s", false, "rename only subtitles")
+	flags.BoolP("singular", "i", false, "disallow duplicates of same media")
+	flags.BoolP("upgrades", "u", false, "allow duplicate of media when of better quality")
+
 
 	viper.BindPFlag("action", flags.Lookup("action"))
 	viper.BindPFlag("extract", flags.Lookup("extract"))
 	viper.BindPFlag("movies", flags.Lookup("movies"))
 	viper.BindPFlag("tvshows", flags.Lookup("tvshows"))
+	viper.BindPFlag("subtitles", flags.Lookup("subtitles"))
+	viper.BindPFlag("singular", flags.Lookup("singular"))
+	viper.BindPFlag("upgrades", flags.Lookup("upgrades"))
 
 	rootCmd.AddCommand(renameCmd)
 }
@@ -49,6 +56,10 @@ func validateRenameFlags(cmd *cobra.Command, args []string) {
 	if viper.GetBool("movies") && viper.GetBool("tvshows") {
 		log.Fatal("renaming only movies and tv shows are mutually exclusive")
 	}
+
+	if viper.GetBool("singular") && viper.GetBool("upgrades") {
+		log.Fatal("flags singular and upgrades are mutually exclusive")
+	}
 }
 
 func renameMedia(cmd *cobra.Command, args []string) {
@@ -66,6 +77,10 @@ func renameMedia(cmd *cobra.Command, args []string) {
 
 	if viper.GetBool("tvshows") {
 		medialist = medialist.FilterEpisodes()
+	}
+
+	if viper.GetBool("subtitles") {
+		medialist = medialist.FilterSubtitles()
 	}
 
 	if err := app.RenameMedia(medialist); err != nil {
