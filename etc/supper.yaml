@@ -1,6 +1,6 @@
 # Supper configuration file
 
-# The languages to use with the application
+# Satisfy the following languages when downloading subtitles
 languages:
   - en
   - es
@@ -18,11 +18,25 @@ port: 5670
 # Location of web root for static resources
 static: /var/lib/supper
 
-# Localtion of movie library
-movies: /media/movies
+# Movie collection configuration
+movies:
+  # Directory to store movie collection
+  directory: /media/movies
 
-# Localtion of tv shows library
-shows: /media/shows
+  # Template to use for renaming movies
+  template: >
+    {{ .Movie }} ({{ .Year }})/
+    {{ .Movie }} ({{ .Year }}) {{ .Quality }}
+
+# TV show collection configuration
+tvshows:
+  # Directory to store TV shows
+  directory: /media/tvshows
+
+  # Template to use for renaming TV shows
+  template: >
+    {{ .TVShow }}/Season {{ .Season | pad }}/
+    {{ .TVShow }} - S{{ .Season | pad }}E{{ .Episode | pad }} - {{ .Name }}
 
 # Plugins supply additional functionality
 plugins:
