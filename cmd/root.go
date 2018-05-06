@@ -88,6 +88,12 @@ func init() {
 	viper.SetDefault("license", "GNUv3.0")
 }
 
+func abortOnConfigErr(err error) {
+	if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		log.WithField("file", viper.ConfigFileUsed()).WithError(err).Fatal("Invalid config")
+	}
+}
+
 func readConfigFiles() {
 	// Parse and set global configuration reference
 	cfg.Initialize()
@@ -111,7 +117,9 @@ func readConfigFiles() {
 		// Use default configuration
 		viper.SetConfigName(strings.ToLower(AppName()))
 		viper.AddConfigPath(cfg.DefaultPath(AppName()))
-		if err := viper.ReadInConfig(); err == nil {
+		if err := viper.ReadInConfig(); err != nil {
+			abortOnConfigErr(err)
+		} else {
 			log.WithField("file", viper.ConfigFileUsed()).
 				Debug("Loaded default configuration")
 		}
@@ -122,10 +130,14 @@ func readConfigFiles() {
 		viper.AddConfigPath(".")
 
 		if err := viper.MergeInConfig(); err != nil {
+			abortOnConfigErr(err)
+
 			// If no local configuration, use global configuration
 			viper.SetConfigName(strings.ToLower(AppName()))
 			viper.AddConfigPath(cfg.GlobalPath(AppName()))
 			if err := viper.MergeInConfig(); err != nil {
+				abortOnConfigErr(err)
+
 				log.WithField("file", "None").
 					Debug("No configuration file loaded")
 			} else {
