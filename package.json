@@ -1,7 +1,7 @@
 {
   "name": "supper",
-  "version": "0.2.3",
-  "description": "",
+  "description": "A blazingly fast multimedia manager",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --open --config webpack.dev.js",
