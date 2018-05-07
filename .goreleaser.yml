@@ -11,6 +11,9 @@ builds:
       -X github.com/tympanix/supper/cmd.appVersion={{.Version}}
       -X github.com/tympanix/supper/cmd.appCommit={{.Commit}}
       -X github.com/tympanix/supper/cmd.appDate={{.Date}}
+
+      -X github.com/tympanix/supper/provider.tmdbToken={{.Env.TMDB_TOKEN}}
+      -X github.com/tympanix/supper/provider.thetvdbToken={{.Env.THETVDB_TOKEN}}
 archive:
   files:
     - web/*

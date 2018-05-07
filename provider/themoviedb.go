@@ -19,10 +19,16 @@ const tmdbTimeFormat = "2006-01-02"
 
 var tmdbClient = NewAPIClient("TheMovieDB", 35)
 
+var tmdbToken string
+
 var tmdbCache = make(map[string]types.Media)
 
 // TheMovieDB is a scraper for themoviedb.org
 func TheMovieDB(token string) types.Scraper {
+	if token == "" {
+		token = tmdbToken
+	}
+
 	return &tmdb{
 		client: tmdbClient,
 		token:  token,

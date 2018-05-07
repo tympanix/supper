@@ -20,8 +20,14 @@ var thetvdbClient = NewAPIClient("TheTVDB", 35)
 
 var thetvdbCache = make(map[string]types.Media)
 
+var thetvdbToken string
+
 // TheTVDB is a scraper for thetvdb.com
 func TheTVDB(key string) types.Scraper {
+	if key == "" {
+		key = thetvdbToken
+	}
+
 	return &thetvdb{
 		client: thetvdbClient,
 		key:    key,
