@@ -26,12 +26,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/boltdb/bolt"
-  packages = ["."]
-  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
-  version = "v1.3.1"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -248,6 +242,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cbdb8ea10265eb674643bcc3e1e3c035b01c3b99b2fcd7a7fdba11598096e68f"
+  inputs-digest = "1c67fd0ba91b8cec48a7c05eade946909f2735aa697b773b8953731e9e0163f3"
   solver-name = "gps-cdcl"
   solver-version = 1
