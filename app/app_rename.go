@@ -111,11 +111,15 @@ func cleanString(str string) string {
 	return pathRegex.ReplaceAllString(str, "")
 }
 
-var spaceRegex = regexp.MustCompile(`\s\s+`)
+var multispaceRegex = regexp.MustCompile(`\s\s+`)
+var illegalPostfixRegex = regexp.MustCompile(`[^\p{L}\)]+$`)
 
-// truncateSpaces replaces all consecutive space characters with a single space
+// truncateSpaces replaces all consecutive space characters with a single space.
+// Trailing non-characters (i.e. spaces, symbols ect.) are removed
 func truncateSpaces(str string) string {
-	return spaceRegex.ReplaceAllString(str, " ")
+	str = multispaceRegex.ReplaceAllString(str, " ")
+	str = illegalPostfixRegex.ReplaceAllString(str, "")
+	return str
 }
 
 // RenameMedia traverses the local media list and renames the media
@@ -230,7 +234,7 @@ func (a *Application) renameMovie(info os.FileInfo, m types.Movie) (string, erro
 	if err := template.Execute(&buf, &data); err != nil {
 		return "", err
 	}
-	filename := truncateSpaces(buf.String() + filepath.Ext(info.Name()))
+	filename := truncateSpaces(buf.String()) + filepath.Ext(info.Name())
 	return filepath.Join(a.Config().Movies().Directory(), filename), nil
 }
 
@@ -262,7 +266,7 @@ func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, 
 	if err := template.Execute(&buf, &data); err != nil {
 		return "", err
 	}
-	filename := truncateSpaces(buf.String() + filepath.Ext(info.Name()))
+	filename := truncateSpaces(buf.String()) + filepath.Ext(info.Name())
 	return filepath.Join(a.Config().TVShows().Directory(), filename), nil
 }
 
