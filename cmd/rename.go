@@ -24,17 +24,12 @@ func init() {
 	flags.BoolP("movies", "m", false, "rename only movies")
 	flags.BoolP("tvshows", "t", false, "rename only tv shows")
 	flags.BoolP("subtitles", "s", false, "rename only subtitles")
-	flags.BoolP("singular", "i", false, "disallow duplicates of same media")
-	flags.BoolP("upgrades", "u", false, "allow duplicate of media when of better quality")
-
 
 	viper.BindPFlag("action", flags.Lookup("action"))
 	viper.BindPFlag("extract", flags.Lookup("extract"))
 	viper.BindPFlag("filter-movies", flags.Lookup("movies"))
 	viper.BindPFlag("filter-tvshows", flags.Lookup("tvshows"))
 	viper.BindPFlag("filter-subtitles", flags.Lookup("subtitles"))
-	viper.BindPFlag("singular", flags.Lookup("singular"))
-	viper.BindPFlag("upgrades", flags.Lookup("upgrades"))
 
 	rootCmd.AddCommand(renameCmd)
 }
