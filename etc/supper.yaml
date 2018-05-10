@@ -38,6 +38,8 @@ tvshows:
     {{ .TVShow }}/Season {{ .Season | pad }}/
     {{ .TVShow }} - S{{ .Season | pad }}E{{ .Episode | pad }} - {{ .Name }}
 
-# Plugins supply additional functionality
+# Plugins are run after downloading a subtitle. The plugin is a simple shell
+# command which is given the .srt file path as it's only argument
 plugins:
-  -
+  # name: my-plugin-name
+  # exec: echo "Hello, world!"

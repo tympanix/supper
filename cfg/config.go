@@ -128,6 +128,9 @@ func Initialize() {
 
 	plugins := make([]types.Plugin, 0)
 	for _, p := range _plugins {
+		if p.PluginName == "" || p.Exec == "" {
+			log.Fatal("Invalid plugin definitions, missing name and/or exec")
+		}
 		plugins = append(plugins, &p)
 	}
 
