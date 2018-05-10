@@ -39,7 +39,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 	for i, item := range video.List() {
 		ctx := log.WithFields(log.Fields{
 			"media": item,
-			"item":  fmt.Sprintf("%v/%v", i+1, media.Len()),
+			"item":  fmt.Sprintf("%v/%v", i+1, video.Len()),
 		})
 
 		cursubs, err := item.ExistingSubtitles()
