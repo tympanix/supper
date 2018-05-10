@@ -5,10 +5,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/tympanix/supper/meta/codec"
 	"github.com/tympanix/supper/meta/quality"
 	"github.com/tympanix/supper/meta/source"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 type regexMatcher map[*regexp.Regexp]interface{}
@@ -55,12 +58,24 @@ func CleanName(name string) string {
 	return strings.TrimSpace(name)
 }
 
-var allowedIdentity = regexp.MustCompile(`[^A-Za-z0-9]`)
+var illegalIdentity = regexp.MustCompile(`[^\p{L}0-9]`)
+
+func isMn(r rune) bool {
+	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
+}
 
 // Identity returns a string where special characters are removed. The returned
 // string is suitable for use in an identity string
 func Identity(str string) string {
-	return allowedIdentity.ReplaceAllString(str, "")
+	var err error
+	var ident string
+	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	ident, _, err = transform.String(t, str)
+	if err != nil {
+		ident = str
+	}
+	ident = illegalIdentity.ReplaceAllString(ident, "")
+	return ident
 }
 
 // Source parses the source from a filename
