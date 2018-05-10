@@ -3,17 +3,13 @@ package parse
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDuration(t *testing.T) {
 	d, err := Duration("2h3m")
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	res := 2*time.Hour + 3*time.Minute
-	if d != res {
-		t.Fatal("unexpected duration value")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, d, 2*time.Hour+3*time.Minute)
 }
