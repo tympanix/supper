@@ -22,6 +22,7 @@ import (
 	"github.com/xrash/smetrics"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/apex/log"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 )
@@ -85,7 +86,7 @@ func (s *subscene) cleanSearchTerm(search string) string {
 }
 
 // FindMediaURL retrieves the subscene.com URL for the given media item
-func (s *subscene) FindMediaURL(media types.Media) (string, error) {
+func (s *subscene) FindMediaURL(media types.Media, retries int) (string, error) {
 	url, err := url.Parse("https://subscene.com/subtitles/title")
 
 	if err != nil {
@@ -103,7 +104,26 @@ func (s *subscene) FindMediaURL(media types.Media) (string, error) {
 	url.RawQuery = query.Encode()
 
 	lockSubscene()
-	doc, err := goquery.NewDocument(url.String())
+	res, err := http.Get(url.String())
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == 409 && retries > 0 {
+		// Busy, try again in two seconds
+		log.WithField("media", media).WithField("status", 409).
+			WithField("retries", retries).
+			Debug("Retrying subscene.com")
+		time.Sleep(1500 * time.Millisecond)
+		return s.FindMediaURL(media, retries-1)
+	}
+
+	if res.StatusCode != 200 {
+		return "", fmt.Errorf("subscene.com returned status code %v", res.StatusCode)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 
 	if err != nil {
 		return "", err
@@ -138,7 +158,7 @@ func (s *subscene) FindMediaURL(media types.Media) (string, error) {
 
 // SearchSubtitles searches subscene.com for subtitles
 func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineSubtitle, err error) {
-	url, err := s.FindMediaURL(local)
+	url, err := s.FindMediaURL(local, 3)
 
 	if err != nil {
 		return
@@ -229,7 +249,7 @@ func (t *zipReader) Close() error {
 	t.zip.Close()
 	t.file.Close()
 	if err := os.Remove(t.file.Name()); err != nil {
-		fmt.Println(err)
+		log.WithError(err).Error("Could not cleaup temporary zip file")
 		return err
 	}
 	return nil
