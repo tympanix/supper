@@ -49,6 +49,7 @@ var rootCmd = &cobra.Command{
 	Use:   strings.ToLower(AppName()),
 	Short: AppDesc(),
 	Args:  validateArgs,
+	Run:   rootRun,
 }
 
 // Execute executes the CLI application
@@ -178,5 +179,9 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 		os.Exit(0)
 	}
 
-	return nil
+	return cmd.Help()
+}
+
+func rootRun(cmd *cobra.Command, args []string) {
+	// no op
 }
