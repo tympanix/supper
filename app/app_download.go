@@ -57,9 +57,14 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		subs := list.RatedSubtitles(item)
 
 		if !a.Config().Dry() {
-			search, err := a.SearchSubtitles(item)
+			var search []types.OnlineSubtitle
+			search, err = a.SearchSubtitles(item)
 			if err != nil {
-				return -1, err
+				ctx.WithError(err).Error("Subtitle failed")
+				if a.Config().Strict() {
+					return -1, err
+				}
+				continue
 			}
 			for _, s := range search {
 				subs.Add(s)
@@ -85,7 +90,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			langsubs := subs.FilterLanguage(l)
 
 			if langsubs.Len() == 0 && !a.Config().Dry() {
-				ctx.Warn("Subtitle not available")
+				ctx.Warn("No subtitle available")
 				continue
 			}
 
