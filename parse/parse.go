@@ -41,19 +41,20 @@ func Filename(filename string) string {
 	return strings.TrimSuffix(f, filepath.Ext(f))
 }
 
-var abbreviationRegexp = regexp.MustCompile(`[A-Z](\s)[A-Z]`)
+var abbreviationRegexp = regexp.MustCompile(`[A-Z]\s[A-Z](\s[A-Z])*`)
 var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)-]`)
 
-// CleanName returns the movie name cleaned from punctuation
+// CleanName returns the media name cleaned from punctuation
 func CleanName(name string) string {
-	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
-		return strings.Replace(match, ".", "", -1)
-	})
-
 	name = strings.Replace(name, ". ", " ", -1)
 	name = strings.Replace(name, ".", " ", -1)
 	name = strings.Replace(name, "_", " ", -1)
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
+
+	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
+		fmt.Println(match)
+		return strings.Replace(match, " ", "", -1)
+	})
 
 	return strings.TrimSpace(name)
 }
