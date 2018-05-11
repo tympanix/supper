@@ -52,7 +52,6 @@ func CleanName(name string) string {
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
 
 	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
-		fmt.Println(match)
 		return strings.Replace(match, " ", "", -1)
 	})
 
