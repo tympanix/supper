@@ -69,6 +69,8 @@ var langs = map[string]language.Tag{
 
 var langRegex = regexp.MustCompile(`[^A-Za-z]+`)
 
+// Language returns a language taken when given the english word for a language
+// (e.g. english). If the string is not a known language an error is returned
 func Language(lang string) (language.Tag, error) {
 	lang = strings.ToLower(lang)
 	words := langRegex.Split(lang, -1)
