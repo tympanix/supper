@@ -43,12 +43,11 @@ func Filename(filename string) string {
 
 var abbreviationRegexp = regexp.MustCompile(`[A-Z]\s[A-Z](\s[A-Z])*`)
 var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)-]`)
+var spaceReplaceRegexp = regexp.MustCompile(`[\.\s_]+`)
 
 // CleanName returns the media name cleaned from punctuation
 func CleanName(name string) string {
-	name = strings.Replace(name, ". ", " ", -1)
-	name = strings.Replace(name, ".", " ", -1)
-	name = strings.Replace(name, "_", " ", -1)
+	name = spaceReplaceRegexp.ReplaceAllString(name, " ")
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
 
 	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {

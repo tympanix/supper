@@ -19,3 +19,7 @@ func TestCleanName(t *testing.T) {
 	assert.Equal(t, "abc ABC abc", CleanName("abc.A.B.C.abc"))
 	assert.Equal(t, "abc ABC abc", CleanName("abc A B C abc"))
 }
+
+func TestFileName(t *testing.T) {
+	assert.Equal(t, "filename", Filename("/path/to/filename.extension"))
+}
