@@ -35,6 +35,18 @@ func (r regexMatcher) FindTag(str string) interface{} {
 	return nil
 }
 
+// FindAll returns a list of all matched tags
+func (r regexMatcher) FindAll(str string) []interface{} {
+	var tags []interface{}
+	lower := strings.ToLower(str)
+	for reg, tag := range r {
+		if reg.MatchString(lower) {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
+}
+
 // Filename returns the filename of the file without extension
 func Filename(filename string) string {
 	f := filepath.Base(filename)

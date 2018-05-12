@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/misc"
 	"github.com/tympanix/supper/meta/quality"
 	"github.com/tympanix/supper/meta/source"
 	"github.com/tympanix/supper/parse"
@@ -16,6 +17,7 @@ type Metadata struct {
 	codec   codec.Tag
 	quality quality.Tag
 	source  source.Tag
+	misc    misc.List
 	tags    []string
 }
 
@@ -27,6 +29,7 @@ func ParseMetadata(tags string) Metadata {
 		quality: parse.Quality(tags),
 		source:  parse.Source(tags),
 		tags:    parse.Tags(tags),
+		misc:    parse.Miscellaneous(tags),
 	}
 }
 
@@ -78,4 +81,9 @@ func (m Metadata) Source() source.Tag {
 // AllTags returns all metadata as a list of tags
 func (m Metadata) AllTags() []string {
 	return m.tags
+}
+
+// Misc returns miscellaneous media tags for the media
+func (m Metadata) Misc() misc.List {
+	return m.misc
 }

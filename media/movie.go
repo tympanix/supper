@@ -57,8 +57,8 @@ func NewMovie(filename string) (*Movie, error) {
 	return &Movie{
 		Metadata: ParseMetadata(tags),
 		NameX:    parse.CleanName(name),
-		tags:     tags,
 		YearX:    year,
+		tags:     tags,
 	}, nil
 }
 
