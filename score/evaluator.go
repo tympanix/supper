@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/misc"
 	"github.com/tympanix/supper/meta/quality"
 	"github.com/tympanix/supper/meta/source"
 	"github.com/tympanix/supper/types"
@@ -28,6 +29,9 @@ type DefaultEvaluator struct{}
 // Evaluate determines how well the subtitle matches
 func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 	if s == nil || s.Meta() == nil {
+		return 0.0
+	}
+	if !f.Meta().Misc().Has(misc.Video3D) && s.Meta().Misc().Has(misc.Video3D) {
 		return 0.0
 	}
 	if _m, ok := f.TypeMovie(); ok {
