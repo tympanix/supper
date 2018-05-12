@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/misc"
 	"github.com/tympanix/supper/meta/quality"
 	"github.com/tympanix/supper/meta/source"
 	"golang.org/x/text/language"
@@ -48,6 +49,7 @@ type Metadata interface {
 	Codec() codec.Tag
 	Quality() quality.Tag
 	Source() source.Tag
+	Misc() misc.List
 	AllTags() []string
 }
 

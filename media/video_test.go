@@ -1,8 +1,6 @@
 package media
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,8 +32,6 @@ func TestNoVideo(t *testing.T) {
 
 	_, ok := f.TypeSubtitle()
 	assert.True(t, ok)
-
-	fmt.Printf("%v", reflect.TypeOf(f))
 
 	_, ok = f.(types.Video)
 	assert.False(t, ok)

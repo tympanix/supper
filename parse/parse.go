@@ -35,25 +35,36 @@ func (r regexMatcher) FindTag(str string) interface{} {
 	return nil
 }
 
+// FindAll returns a list of all matched tags
+func (r regexMatcher) FindAll(str string) []interface{} {
+	var tags []interface{}
+	lower := strings.ToLower(str)
+	for reg, tag := range r {
+		if reg.MatchString(lower) {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
+}
+
 // Filename returns the filename of the file without extension
 func Filename(filename string) string {
 	f := filepath.Base(filename)
 	return strings.TrimSuffix(f, filepath.Ext(f))
 }
 
-var abbreviationRegexp = regexp.MustCompile(`[A-Z](\s)[A-Z]`)
+var abbreviationRegexp = regexp.MustCompile(`[A-Z]\s[A-Z](\s[A-Z])*`)
 var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)-]`)
+var spaceReplaceRegexp = regexp.MustCompile(`[\.\s_]+`)
 
-// CleanName returns the movie name cleaned from punctuation
+// CleanName returns the media name cleaned from punctuation
 func CleanName(name string) string {
-	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
-		return strings.Replace(match, ".", "", -1)
-	})
-
-	name = strings.Replace(name, ". ", " ", -1)
-	name = strings.Replace(name, ".", " ", -1)
-	name = strings.Replace(name, "_", " ", -1)
+	name = spaceReplaceRegexp.ReplaceAllString(name, " ")
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
+
+	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
+		return strings.Replace(match, " ", "", -1)
+	})
 
 	return strings.TrimSpace(name)
 }

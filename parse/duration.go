@@ -27,6 +27,9 @@ func removeEmptyString(xls []string) []string {
 	return ls
 }
 
+// Duration takes a textual representation of a duration (e.g. 2h38m) and
+// returns the parsed duration from the time package. An error is returned if
+// the input was invalid (i.e. could not be parsed into a duration)
 func Duration(str string) (time.Duration, error) {
 	t := time.Duration(0)
 	vals := removeEmptyString(letterRegexp.Split(str, -1))
@@ -36,7 +39,7 @@ func Duration(str string) (time.Duration, error) {
 		return 0, fmt.Errorf("could not parse time format")
 	}
 
-	for i, _ := range vals {
+	for i := range vals {
 		num, err := strconv.Atoi(vals[i])
 		if err != nil {
 			return 0, fmt.Errorf("could not parse time format")

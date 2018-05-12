@@ -5,6 +5,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/meta/misc"
+	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/meta/source"
 )
 
 func TestForeignMovie(t *testing.T) {
@@ -27,4 +31,16 @@ func TestForeignMovie(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "海底总动员", m.MovieName())
 	assert.Equal(t, 2003, m.Year())
+}
+
+func TestMovie(t *testing.T) {
+	m, err := NewMovie("Inception.2010.BluRay.1080p.x264.3D-GROUP")
+	require.NoError(t, err)
+	assert.Equal(t, "Inception", m.MovieName())
+	assert.Equal(t, 2010, m.Year())
+	assert.Equal(t, quality.HD1080p, m.Quality())
+	assert.Equal(t, source.BluRay, m.Source())
+	assert.Equal(t, "GROUP", m.Group())
+	assert.Equal(t, codec.X264, m.Codec())
+	assert.True(t, m.Misc().Has(misc.Video3D))
 }
