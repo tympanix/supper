@@ -105,7 +105,7 @@ func Codec(name string) codec.Tag {
 	return codec.None
 }
 
-var tagsRegexp = regexp.MustCompile(`[\W_]+`)
+var tagsRegexp = regexp.MustCompile(`[^\p{L}0-9]+`)
 
 // Tags returns a string as tags split by non-word characters
 func Tags(name string) []string {
