@@ -1,6 +1,7 @@
 package media
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,6 +26,27 @@ func TestEpisode(t *testing.T) {
 func TestEpisodeError(t *testing.T) {
 	_, err := NewEpisode("blablatestest")
 	assert.Error(t, err)
+}
+
+func TestEpisodeJSON(t *testing.T) {
+	e, err := NewEpisode("Silicon.Valley.S02E05.720p.x264")
+	require.NoError(t, err)
+
+	j := struct {
+		Name    string `json:"name"`
+		Episode int    `json:"episode"`
+		Season  int    `json:"season"`
+	}{}
+
+	data, err := json.Marshal(e)
+	require.NoError(t, err)
+
+	err = json.Unmarshal(data, &j)
+	require.NoError(t, err)
+
+	assert.Equal(t, "Silicon Valley", j.Name)
+	assert.Equal(t, 2, j.Season)
+	assert.Equal(t, 5, j.Episode)
 }
 
 func TestEpisodeMerge(t *testing.T) {
