@@ -4,7 +4,7 @@ package media
 type ErrUnknown struct{}
 
 func (e *ErrUnknown) Error() string {
-	return "media is now of a known format"
+	return "media is of an unknown format"
 }
 
 // IsUnknown returns true if the error is of type *ErrUnknownMedia

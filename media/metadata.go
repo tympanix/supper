@@ -55,7 +55,7 @@ func (m Metadata) String() string {
 		m.Codec().String(),
 		m.Quality().String(),
 		m.Source().String(),
-	}, ",")
+	}, ", ")
 }
 
 // Group returns the release group
