@@ -86,6 +86,7 @@ func Identity(str string) string {
 		ident = str
 	}
 	ident = illegalIdentity.ReplaceAllString(ident, "")
+	ident = strings.ToLower(ident)
 	return ident
 }
 
