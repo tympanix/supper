@@ -2,7 +2,6 @@ package media
 
 import (
 	"encoding/json"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,18 +31,13 @@ func TestSubtitles(t *testing.T) {
 }
 
 func TestLocalSubtitleError(t *testing.T) {
-	f, err := os.Stat("test/Test.en.srt")
-	require.NoError(t, err)
-
-	s, err := NewLocalSubtitle(f)
+	s, err := NewLocalSubtitle("test/Test.en.srt")
 	assert.Error(t, err)
 	assert.Nil(t, s)
 }
 
 func TestLocalSubtitleJSON(t *testing.T) {
-	f, err := os.Stat("test/Inception 2010 720p.en.srt")
-	require.NoError(t, err)
-	s, err := NewLocalSubtitle(f)
+	s, err := NewLocalSubtitle("test/Inception 2010 720p.en.srt")
 	require.NoError(t, err)
 
 	data, err := json.Marshal(s)

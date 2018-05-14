@@ -107,7 +107,15 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				if !ok {
 					ctx.Fatal("Subtitle could not be cast to online subtitle")
 				}
-				saved, err := item.SaveSubtitle(onl, onl.Language())
+				srt, err := onl.Download()
+				if err != nil {
+					ctx.WithError(err).Error("Could not download subtitle")
+					if a.Config().Strict() {
+						os.Exit(1)
+					}
+				}
+				defer srt.Close()
+				saved, err := item.SaveSubtitle(srt, onl.Language())
 				if err != nil {
 					ctx.WithError(err).Error("Subtitle error")
 					if a.Config().Strict() {

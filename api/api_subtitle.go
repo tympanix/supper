@@ -90,7 +90,12 @@ func (a *API) singleSubtitle(w http.ResponseWriter, r *http.Request) interface{}
 	if !ok {
 		return errors.New("media is not video")
 	}
-	_, err = video.SaveSubtitle(sub, tag)
+	srt, err := sub.Download()
+	if err != nil {
+		return err
+	}
+	defer srt.Close()
+	_, err = video.SaveSubtitle(srt, tag)
 	if err != nil {
 		return err
 	}

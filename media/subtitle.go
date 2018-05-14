@@ -93,12 +93,18 @@ func (l *Subtitle) ForMedia() types.Media {
 }
 
 // NewLocalSubtitle returns a new local subtitle
-func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
-	if filepath.Ext(file.Name()) != ".srt" {
+func NewLocalSubtitle(path string) (types.LocalSubtitle, error) {
+	if filepath.Ext(path) != ".srt" {
 		return nil, errors.New("parsing non subtitle file as subtitle")
 	}
 
-	sub, err := NewSubtitle(parse.Filename(file.Name()))
+	sub, err := NewSubtitle(parse.Filename(path))
+
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := os.Stat(path)
 
 	if err != nil {
 		return nil, err
@@ -106,6 +112,7 @@ func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
 
 	return &LocalSubtitle{
 		FileInfo: file,
+		Pather:   FilePath(path),
 		Subtitle: sub,
 	}, nil
 }
@@ -113,6 +120,7 @@ func NewLocalSubtitle(file os.FileInfo) (types.Subtitle, error) {
 // LocalSubtitle represents a subtitle stored on disk
 type LocalSubtitle struct {
 	os.FileInfo
+	types.Pather
 	*Subtitle
 }
 

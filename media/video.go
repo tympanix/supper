@@ -44,7 +44,8 @@ func (f *Video) ExistingSubtitles() (types.SubtitleList, error) {
 		if !strings.HasPrefix(file.Name(), name) {
 			continue
 		}
-		sub, err := NewLocalSubtitle(file)
+		path := filepath.Join(folder, file.Name())
+		sub, err := NewLocalSubtitle(path)
 		if err != nil {
 			continue
 		}
@@ -54,19 +55,10 @@ func (f *Video) ExistingSubtitles() (types.SubtitleList, error) {
 }
 
 // SaveSubtitle saves the subtitle for the given media to disk
-func (f *Video) SaveSubtitle(s types.Downloadable, lang language.Tag) (types.LocalSubtitle, error) {
-	if s == nil {
+func (f *Video) SaveSubtitle(r io.Reader, lang language.Tag) (types.LocalSubtitle, error) {
+	if r == nil {
 		return nil, errors.New("invalid subtitle nil")
 	}
-
-	srt, err := s.Download()
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	defer srt.Close()
 
 	name := fmt.Sprintf("%s.%s.%s", parse.Filename(f.Path()), lang, "srt")
 	folder := filepath.Dir(f.Path())
@@ -79,7 +71,7 @@ func (f *Video) SaveSubtitle(s types.Downloadable, lang language.Tag) (types.Loc
 	}
 
 	defer file.Close()
-	_, err = io.Copy(file, srt)
+	_, err = io.Copy(file, r)
 
 	if err != nil {
 		return nil, err
@@ -90,14 +82,13 @@ func (f *Video) SaveSubtitle(s types.Downloadable, lang language.Tag) (types.Loc
 		return nil, err
 	}
 
-	sub := struct {
-		FilePath
-		os.FileInfo
-		types.Subtitle
-	}{
-		FilePath(srtpath),
-		info,
-		s.(types.Subtitle),
+	sub := &LocalSubtitle{
+		FileInfo: info,
+		Subtitle: &Subtitle{
+			forMedia: f,
+			lang:     lang,
+		},
+		Pather: FilePath(srtpath),
 	}
 
 	return sub, nil

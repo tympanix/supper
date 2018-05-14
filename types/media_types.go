@@ -87,7 +87,7 @@ type LocalMedia interface {
 type Video interface {
 	LocalMedia
 	ExistingSubtitles() (SubtitleList, error)
-	SaveSubtitle(Downloadable, language.Tag) (LocalSubtitle, error)
+	SaveSubtitle(io.Reader, language.Tag) (LocalSubtitle, error)
 }
 
 // Movie interface is for movie type media material
