@@ -1,27 +1,25 @@
-REPO := github.com/tympanix/supper
+TAG := $(shell git tag -l --points-at @)
 
-LOCAL := $(shell git rev-parse @)
-REMOTE := $(shell git rev-parse @{u})
-
-deploy:
-ifeq ($(LOCAL), $(REMOTE))
-	@echo "No updates since last deploy"
-else
-	make update
-	make build
-endif
-
-update:
-ifdef TOKEN
-	@/usr/bin/env git pull https://$(TOKEN)@$(REPO)
-else
-	@/usr/bin/env git pull
-endif
+setup:
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	go get -u golang.org/x/tools/cmd/cover
+	npm install
+	dep ensure
 
 build:
-	npm install
 	npm run build
 
-dist:
-	goreleaser release --rm-dist --skip-publish --skip-validate
-.PHONY: dist
+test:
+	go test -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
+
+release:
+ifdef TAG
+	curl -sL http://git.io/goreleaser | bash
+else
+	@echo "Skip publish..."
+endif
+
+codecov:
+	bash <(curl -s https://codecov.io/bash)
+
+ci: setup build test codecov release
