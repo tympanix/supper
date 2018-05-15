@@ -3,6 +3,7 @@ package extract
 import (
 	"io"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -46,6 +47,11 @@ func TestRarArchive(t *testing.T) {
 
 	med, err := media.Next()
 	assert.NoError(t, err)
+
+	assert.Equal(t, "Fight Club (1999) 720p x264.mp4", med.Name())
+	assert.False(t, med.IsDir())
+	assert.Nil(t, med.Sys())
+	assert.True(t, med.ModTime().Before(time.Now()))
 
 	movie, ok := med.TypeMovie()
 	assert.True(t, ok)

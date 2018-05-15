@@ -31,7 +31,7 @@ func (r *rarInfo) Name() string {
 }
 
 func (r *rarInfo) Size() int64 {
-	return r.FileHeader.UnPackedSize
+	return r.FileHeader.PackedSize
 }
 
 func (r *rarInfo) Sys() interface{} {
