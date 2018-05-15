@@ -16,3 +16,4 @@ supper*
 !/etc/*
 web/static
 web/js/mock
+coverage.txt
