@@ -2,6 +2,7 @@
 **A blazingly fast multimedia manager**
 
 [![Build Status](https://semaphoreci.com/api/v1/tympanix/supper/branches/master/shields_badge.svg)](https://semaphoreci.com/tympanix/supper)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tympanix/supper)](https://goreportcard.com/report/github.com/tympanix/supper)
 [![codecov](https://codecov.io/gh/tympanix/supper/branch/master/graph/badge.svg)](https://codecov.io/gh/tympanix/supper)
 
 ## Features
