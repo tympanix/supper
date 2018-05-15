@@ -1,5 +1,8 @@
-# Supper
+# Supper 
 **A blazingly fast multimedia manager**
+
+[![Build Status](https://semaphoreci.com/api/v1/tympanix/supper/branches/master/shields_badge.svg)](https://semaphoreci.com/tympanix/supper)
+[![codecov](https://codecov.io/gh/tympanix/supper/branch/master/graph/badge.svg)](https://codecov.io/gh/tympanix/supper)
 
 ## Features
  - [x] Download subtitles for movies & TV shows
