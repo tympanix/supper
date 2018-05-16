@@ -20,6 +20,6 @@ else
 endif
 
 codecov:
-	bash <(curl -s https://codecov.io/bash)
+	curl -sL https://codecov.io/bash | bash
 
-ci: setup build test codecov release
+ci: build test codecov release
