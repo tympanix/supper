@@ -1,8 +1,8 @@
 package plugin
 
 import (
-	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/tympanix/supper/types"
@@ -34,11 +34,9 @@ type Plugin struct {
 
 // Run executes the plugin
 func (p *Plugin) Run(s types.LocalSubtitle) error {
-	path, ok := s.(types.Pather)
-	if !ok {
-		return errors.New("could not run plugin")
-	}
-	cmd := exec.Command(shell[0], shell[1], escape(p.Exec, path.Path()))
+	cmd := exec.Command(shell[0], shell[1], p.Exec)
+	cmd.Env = append(os.Environ(),
+		fmt.Sprintf("SUBTITLE=%s", s.Path()))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.WithError(err).WithField("plugin", p.Name()).
