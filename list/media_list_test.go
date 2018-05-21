@@ -2,6 +2,7 @@ package list
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"testing"
@@ -16,6 +17,8 @@ import (
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 )
+
+var errMock = errors.New("unsupported for mocked object")
 
 func quote(s string) []byte {
 	return []byte("\"" + s + "\"")
@@ -52,19 +55,22 @@ func (m metadata) String() string       { return "" }
 func (m metadata) Misc() misc.List      { return nil }
 
 type fakevideo struct {
-	types.LocalMedia
+	fakelocal
 }
 
-func (fakevideo) ExistingSubtitles() (types.SubtitleList, error)                    { return nil, nil }
-func (fakevideo) SaveSubtitle(io.Reader, language.Tag) (types.LocalSubtitle, error) { return nil, nil }
-func (v fakevideo) MarshalJSON() ([]byte, error)                                    { return json.Marshal(v.LocalMedia) }
+func (fakevideo) ExistingSubtitles() (types.SubtitleList, error) {
+	return nil, errMock
+}
+func (fakevideo) SaveSubtitle(io.Reader, language.Tag) (types.LocalSubtitle, error) {
+	return nil, errMock
+}
+func (v fakevideo) MarshalJSON() ([]byte, error) { return json.Marshal(v.fakelocal) }
 
 type movie struct {
 	name string
 	year int
 	metadata
 	fakemedia
-	fakevideo
 }
 
 func (m movie) MovieName() string              { return m.name }
@@ -79,7 +85,6 @@ type episode struct {
 	season  int
 	metadata
 	fakemedia
-	fakevideo
 }
 
 func (e episode) TVShow() string                     { return e.show }
@@ -117,15 +122,15 @@ var arrow = episode{show: "Arrow", season: 2, episode: 7}
 var westworld = episode{show: "Westworld", season: 1, episode: 5}
 
 var movies = []types.LocalMedia{
-	fakevideo{inception},
-	fakevideo{fightclub},
-	fakevideo{batmanbegins},
+	fakevideo{fakelocal{inception}},
+	fakevideo{fakelocal{fightclub}},
+	fakevideo{fakelocal{batmanbegins}},
 }
 
 var episodes = []types.LocalMedia{
-	fakevideo{theoffice},
-	fakevideo{arrow},
-	fakevideo{westworld},
+	fakevideo{fakelocal{theoffice}},
+	fakevideo{fakelocal{arrow}},
+	fakevideo{fakelocal{westworld}},
 }
 
 var videos = append(movies, episodes...)
@@ -167,10 +172,18 @@ func TestLocalMedia(t *testing.T) {
 	assert.Equal(t, 3, epi.Len())
 	assert.Subset(t, epi.List(), episodes)
 
-	p := func(m types.Media) bool { return m == fakevideo{inception} }
+	// test modified in past media
+	mod := list.FilterModified(1 * time.Millisecond)
+	assert.Equal(t, 12, mod.Len())
+
+	// test modified in future media
+	none := list.FilterModified(-1 * time.Millisecond)
+	assert.Equal(t, 0, none.Len())
+
+	p := func(m types.Media) bool { return m == fakevideo{fakelocal{inception}} }
 	fil := list.Filter(p)
 	assert.Equal(t, 1, fil.Len())
-	assert.Contains(t, fil.List(), fakevideo{inception})
+	assert.Contains(t, fil.List(), fakevideo{fakelocal{inception}})
 }
 
 func TestMediaJSON(t *testing.T) {
