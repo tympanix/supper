@@ -97,11 +97,14 @@ func (e episode) MarshalJSON() ([]byte, error)       { return quote(e.show), nil
 
 type subtitle struct {
 	types.Media
+	lang language.Tag
+	hi   bool
 }
 
+func (s subtitle) String() string                       { return "Subtitle: " + s.Media.String() }
 func (s subtitle) ForMedia() types.Media                { return s.Media }
-func (s subtitle) HearingImpaired() bool                { return false }
-func (s subtitle) Language() language.Tag               { return language.Und }
+func (s subtitle) HearingImpaired() bool                { return s.hi }
+func (s subtitle) Language() language.Tag               { return s.lang }
 func (s subtitle) TypeSubtitle() (types.Subtitle, bool) { return s, true }
 func (s subtitle) TypeEpisode() (types.Episode, bool)   { return nil, false }
 func (s subtitle) TypeMovie() (types.Movie, bool)       { return nil, false }
@@ -136,13 +139,13 @@ var episodes = []types.LocalMedia{
 var videos = append(movies, episodes...)
 
 var subtitles = []types.LocalMedia{
-	fakelocal{subtitle{inception}},
-	fakelocal{subtitle{fightclub}},
-	fakelocal{subtitle{batmanbegins}},
+	fakelocal{subtitle{inception, language.English, false}},
+	fakelocal{subtitle{fightclub, language.German, false}},
+	fakelocal{subtitle{batmanbegins, language.French, false}},
 
-	fakelocal{subtitle{theoffice}},
-	fakelocal{subtitle{arrow}},
-	fakelocal{subtitle{westworld}},
+	fakelocal{subtitle{theoffice, language.Spanish, false}},
+	fakelocal{subtitle{arrow, language.Italian, false}},
+	fakelocal{subtitle{westworld, language.Chinese, false}},
 }
 
 var list = NewLocalMedia(

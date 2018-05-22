@@ -46,7 +46,7 @@ func (s *subtitleList) FilterScore(score float32) types.SubtitleList {
 	panic("unrated subtitle list does not support filtering by score")
 }
 
-// HearingImpaired returnes a new subtitle collection where hearing impared subtitles has been filtered
+// HearingImpaired returns a new subtitle collection where hearing impared subtitles has been filtered
 func (s *subtitleList) HearingImpaired(hi bool) types.SubtitleList {
 	_subs := make([]types.Subtitle, 0)
 	for _, sub := range *s {
