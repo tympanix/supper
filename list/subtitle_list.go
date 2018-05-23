@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/fatih/set"
+	"github.com/tympanix/supper/score"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 )
@@ -96,7 +97,7 @@ func (s *subtitleList) HearingImpaired(hi bool) types.SubtitleList {
 // RateByMedia returns a rated subtitle list, where every subtitle has been
 // given a score according to how well it matches the argument media
 func (s *subtitleList) RateByMedia(m types.Media) types.RatedSubtitleList {
-	return NewRatedSubtitles(m, (*s)...)
+	return NewRatedSubtitles(m, new(score.DefaultEvaluator), (*s)...)
 }
 
 func (s *subtitleList) LanguageSet() set.Interface {
