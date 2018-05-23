@@ -17,12 +17,19 @@ type List interface {
 type SubtitleList interface {
 	List
 	Add(...Subtitle)
-	Best() (Subtitle, float32)
 	List() []Subtitle
 	LanguageSet() set.Interface
 	FilterLanguage(language.Tag) SubtitleList
-	FilterScore(float32) SubtitleList
 	HearingImpaired(bool) SubtitleList
+	RateByMedia(Media) RatedSubtitleList
+}
+
+// RatedSubtitleList is a collection of subtitle ordered by rating
+type RatedSubtitleList interface {
+	List
+	List() []RatedSubtitle
+	Best() RatedSubtitle
+	FilterScore(float32) RatedSubtitleList
 }
 
 // LocalMediaList is a list of media which can be manipulated

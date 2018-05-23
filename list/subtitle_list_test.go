@@ -76,3 +76,28 @@ func TestSubtitleList(t *testing.T) {
 	}
 
 }
+
+func TestSubtitlesFromInterface(t *testing.T) {
+	list, err := NewSubtitlesFromInterface(languages)
+	require.NoError(t, err)
+	assert.Equal(t, len(languages), list.Len())
+	for _, s := range languages {
+		assert.Contains(t, list.List(), s)
+	}
+}
+
+func TestSubtitlesFromInterfaceError(t *testing.T) {
+	list, err := NewSubtitlesFromInterface(42)
+	assert.Error(t, err)
+	assert.Nil(t, list)
+}
+
+func TestSubtitleRateByMedia(t *testing.T) {
+	list := Subtitles(languages...)
+	rated := list.RateByMedia(inception)
+	for _, s := range rated.List() {
+		assert.Equal(t, inception, s.ForMedia())
+		assert.True(t, s.Score() > 0.0)
+		assert.True(t, s.Score() <= 1.1)
+	}
+}

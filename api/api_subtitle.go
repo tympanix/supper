@@ -117,14 +117,14 @@ func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} 
 		return err
 	}
 	search, err := a.SearchSubtitles(item)
-	subs := list.RatedSubtitles(item)
-	for _, s := range search {
-		subs.Add(s)
-	}
 	if err != nil {
 		return err
 	}
-	return subs
+	sublist, err := list.NewSubtitlesFromInterface(search)
+	if err != nil {
+		return err
+	}
+	return sublist.RateByMedia(item)
 }
 
 func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interface{} {

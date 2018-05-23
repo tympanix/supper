@@ -124,8 +124,21 @@ type LocalSubtitle interface {
 	Subtitle
 }
 
-// OnlineSubtitle is a subtitle obtained from the internet
-// and can be downloaded and stored on disk
+// Rateable is a interface for types which has been rated by some metric
+type Rateable interface {
+	Score() float32
+}
+
+// RatedSubtitle is a subtitle which has been rated by how well it matches
+// another media type (i.e. how similar it is so another media item). Subtitles
+// with a high score has a high probability of being synchronized with the media
+type RatedSubtitle interface {
+	Rateable
+	Subtitle
+}
+
+// OnlineSubtitle is a subtitle obtained from the internet and can be
+// downloaded and stored on disk
 type OnlineSubtitle interface {
 	Linker
 	Downloadable

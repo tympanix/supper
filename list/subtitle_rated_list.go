@@ -2,88 +2,92 @@ package list
 
 import (
 	"bytes"
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 
-	"golang.org/x/text/language"
-
-	"github.com/fatih/set"
 	"github.com/tympanix/supper/score"
 	"github.com/tympanix/supper/types"
 )
 
 type subtitleEntry struct {
-	types.OnlineSubtitle
+	types.Subtitle
 	score float32
 }
 
-func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
-	hash := sha1.New()
-
-	info := []string{
-		s.Link(),
-		s.ForMedia().Meta().Codec().String(),
-		s.ForMedia().Meta().Group(),
-		s.ForMedia().Meta().Quality().String(),
-		s.ForMedia().Meta().Source().String(),
-	}
-
-	hash.Write([]byte(strings.Join(info, "")))
-	hashval := hash.Sum(nil)
-	infohash := make([]byte, hex.EncodedLen(len(hashval)))
-	hex.Encode(infohash, hashval)
-
-	return json.Marshal(struct {
-		Hash  string       `json:"hash"`
-		Lang  language.Tag `json:"language"`
-		Link  string       `json:"link"`
-		Score float32      `json:"score"`
-		HI    bool         `json:"hi"`
-		Media types.Media  `json:"media"`
-	}{
-		string(infohash),
-		s.Language(),
-		s.Link(),
-		s.score,
-		s.HearingImpaired(),
-		s.ForMedia(),
-	})
+// Score returns the score of the rated subtitle
+func (s subtitleEntry) Score() float32 {
+	return s.score
 }
 
-// RatedSubtitles returns a new subtitles collection
-func RatedSubtitles(media types.LocalMedia) types.SubtitleList {
-	return &ratedSubtitles{
+// func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
+// 	hash := sha1.New()
+//
+// 	info := []string{
+// 		s.Link(),
+// 		s.ForMedia().Meta().Codec().String(),
+// 		s.ForMedia().Meta().Group(),
+// 		s.ForMedia().Meta().Quality().String(),
+// 		s.ForMedia().Meta().Source().String(),
+// 	}
+//
+// 	hash.Write([]byte(strings.Join(info, "")))
+// 	hashval := hash.Sum(nil)
+// 	infohash := make([]byte, hex.EncodedLen(len(hashval)))
+// 	hex.Encode(infohash, hashval)
+//
+// 	return json.Marshal(struct {
+// 		Hash  string       `json:"hash"`
+// 		Lang  language.Tag `json:"language"`
+// 		Link  string       `json:"link"`
+// 		Score float32      `json:"score"`
+// 		HI    bool         `json:"hi"`
+// 		Media types.Media  `json:"media"`
+// 	}{
+// 		string(infohash),
+// 		s.Language(),
+// 		s.Link(),
+// 		s.score,
+// 		s.HearingImpaired(),
+// 		s.ForMedia(),
+// 	})
+// }
+
+// NewRatedSubtitles returns a new subtitles collection
+func NewRatedSubtitles(media types.Media, subs ...types.Subtitle) types.RatedSubtitleList {
+	list := &RatedSubtitles{
 		Evaluator: new(score.DefaultEvaluator),
 		media:     media,
-		subs:      make([]subtitleEntry, 0),
 	}
+
+	var rated []types.RatedSubtitle
+	for _, s := range subs {
+		score := list.Evaluate(media, s.ForMedia())
+		if score > 0.0 {
+			rated = append(rated, subtitleEntry{s, score})
+		}
+	}
+
+	list.subs = rated
+	sort.Sort(sort.Reverse(list))
+	return list
 }
 
-type ratedSubtitles struct {
+// RatedSubtitles is a subtitle which is rated by some score
+type RatedSubtitles struct {
 	types.Evaluator
-	media types.LocalMedia
-	subs  []subtitleEntry
+	media types.Media
+	subs  []types.RatedSubtitle
 }
 
-func (s *ratedSubtitles) MarshalJSON() (b []byte, err error) {
+// MarshalJSON returns a JSON representation of the rated subtitle list
+func (s *RatedSubtitles) MarshalJSON() (b []byte, err error) {
 	return json.Marshal(s.List())
 }
 
-func (s *ratedSubtitles) clone(list []subtitleEntry) types.SubtitleList {
-	return &ratedSubtitles{
-		Evaluator: s.Evaluator,
-		media:     s.media,
-		subs:      list,
-	}
-}
-
 // List returns the list of subtitles as a slice
-func (s *ratedSubtitles) List() []types.Subtitle {
-	subs := make([]types.Subtitle, len(s.subs))
+func (s *RatedSubtitles) List() []types.RatedSubtitle {
+	subs := make([]types.RatedSubtitle, len(s.subs))
 	for i, v := range s.subs {
 		subs[i] = v
 	}
@@ -91,89 +95,45 @@ func (s *ratedSubtitles) List() []types.Subtitle {
 }
 
 // Best returns the best matching subtitle
-func (s *ratedSubtitles) Best() (types.Subtitle, float32) {
+func (s *RatedSubtitles) Best() types.RatedSubtitle {
 	if len(s.subs) > 0 {
-		return s.subs[0], s.subs[0].score
+		return s.subs[0]
 	}
-	return nil, -1
-}
-
-// Add a subtitle to the collection
-func (s *ratedSubtitles) Add(subs ...types.Subtitle) {
-	for _, sub := range subs {
-		sub, ok := sub.(types.OnlineSubtitle)
-		if !ok {
-			panic("rated subtitle list only supports online subtitles")
-		}
-		score := s.Evaluate(s.media, sub.ForMedia())
-		if score > 0 {
-			s.subs = append(s.subs, subtitleEntry{
-				OnlineSubtitle: sub,
-				score:          score,
-			})
-		}
-	}
-	sort.Sort(sort.Reverse(s))
-}
-
-// FilterLanguage returns a new subtitle collection including only the argument language
-func (s *ratedSubtitles) FilterLanguage(lang language.Tag) types.SubtitleList {
-	_subs := make([]subtitleEntry, 0)
-	for _, sub := range s.subs {
-		if sub.Language() == lang {
-			_subs = append(_subs, sub)
-		}
-	}
-	return s.clone(_subs)
+	return nil
 }
 
 // FilterScore return all subtitles with score greater than or equal to some value
-func (s *ratedSubtitles) FilterScore(score float32) types.SubtitleList {
-	_subs := make([]subtitleEntry, 0)
+func (s *RatedSubtitles) FilterScore(score float32) types.RatedSubtitleList {
+	_subs := make([]types.RatedSubtitle, 0)
 	for _, sub := range s.subs {
-		if sub.score >= score {
+		if sub.Score() >= score {
 			_subs = append(_subs, sub)
 		}
 	}
-	return s.clone(_subs)
-}
-
-// HearingImpaired returnes a new subtitle collection where hearing impared subtitles has been filtered
-func (s *ratedSubtitles) HearingImpaired(hi bool) types.SubtitleList {
-	_subs := make([]subtitleEntry, 0)
-	for _, sub := range s.subs {
-		if sub.HearingImpaired() == hi {
-			_subs = append(_subs, sub)
-		}
+	return &RatedSubtitles{
+		Evaluator: s.Evaluator,
+		media:     s.media,
+		subs:      _subs,
 	}
-	return s.clone(_subs)
 }
 
-func (s *ratedSubtitles) LanguageSet() set.Interface {
-	langs := set.New()
-	for _, sub := range s.subs {
-		langs.Add(sub.Language())
-	}
-	return langs
-}
-
-func (s *ratedSubtitles) Len() int {
+func (s *RatedSubtitles) Len() int {
 	return len(s.subs)
 }
 
-func (s *ratedSubtitles) Swap(i, j int) {
+func (s *RatedSubtitles) Swap(i, j int) {
 	s.subs[i], s.subs[j] = s.subs[j], s.subs[i]
 }
 
-func (s *ratedSubtitles) Less(i, j int) bool {
-	return s.subs[i].score < s.subs[j].score
+func (s *RatedSubtitles) Less(i, j int) bool {
+	return s.subs[i].Score() < s.subs[j].Score()
 }
 
-func (s *ratedSubtitles) String() string {
+func (s *RatedSubtitles) String() string {
 	var buffer bytes.Buffer
 
 	for _, sub := range s.subs {
-		buffer.WriteString(fmt.Sprintf("%-8.2f%v\n", sub.score, sub.OnlineSubtitle))
+		buffer.WriteString(fmt.Sprintf("%-8.2f%v\n", sub.Score(), sub))
 	}
 
 	return buffer.String()

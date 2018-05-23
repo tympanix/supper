@@ -17,7 +17,7 @@ import (
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
 // langauge in the language set
 func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) (int, error) {
-	numsubs := 0
+	var numsubs int
 
 	if media == nil {
 		return -1, errors.New("no media supplied for subtitles")
@@ -54,7 +54,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			continue
 		}
 
-		subs := list.RatedSubtitles(item)
+		var subs = list.Subtitles()
 
 		if !a.Config().Dry() {
 			var search []types.OnlineSubtitle
@@ -66,12 +66,13 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				}
 				continue
 			}
-			for _, s := range search {
-				subs.Add(s)
+			subs, err = list.NewSubtitlesFromInterface(search)
+			if err != nil {
+				ctx.WithError(err).Fatal("Subtitle error")
 			}
 		}
 
-		subs = subs.HearingImpaired(a.Config().Dry())
+		subs = subs.HearingImpaired(a.Config().Impaired())
 
 		// Download subtitle for each language
 		for _, l := range missingLangs.List() {
@@ -94,57 +95,10 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 				continue
 			}
 
-			var best float32
-
 			if !a.Config().Dry() {
-				var sub types.Subtitle
-				sub, best = langsubs.Best()
-				if best < (float32(a.Config().Score()) / 100.0) {
-					ctx.Warnf("Score too low %.0f%%", best*100.0)
-					continue
+				if _, ok := a.downloadBestSubtitle(ctx, item, subs); ok {
+					numsubs++
 				}
-				onl, ok := sub.(types.OnlineSubtitle)
-				if !ok {
-					ctx.Fatal("Subtitle could not be cast to online subtitle")
-				}
-				srt, err := onl.Download()
-				if err != nil {
-					ctx.WithError(err).Error("Could not download subtitle")
-					if a.Config().Strict() {
-						os.Exit(1)
-					}
-				}
-				defer srt.Close()
-				saved, err := item.SaveSubtitle(srt, onl.Language())
-				if err != nil {
-					ctx.WithError(err).Error("Subtitle error")
-					if a.Config().Strict() {
-						os.Exit(1)
-					}
-					continue
-				}
-
-				var strscore string
-				if best == 0.0 {
-					strscore = "N/A"
-				} else {
-					strscore = fmt.Sprintf("%.0f%%", best*100.0)
-				}
-
-				ctx.WithField("score", strscore).Info("Subtitle downloaded")
-
-				for _, plugin := range a.Config().Plugins() {
-					err := plugin.Run(saved)
-					if err != nil {
-						ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
-						if a.Config().Strict() {
-							os.Exit(1)
-						}
-					} else {
-						ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
-					}
-				}
-				numsubs++
 			} else {
 				numsubs++
 				ctx.WithField("reason", "dry-run").Info("Skip download")
@@ -152,4 +106,60 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		}
 	}
 	return numsubs, nil
+}
+
+func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, bool) {
+	rated := l.RateByMedia(m)
+	sub := rated.Best()
+	if sub.Score() < (float32(a.Config().Score()) / 100.0) {
+		ctx.Warnf("Score too low %.0f%%", sub.Score()*100.0)
+		return nil, false
+	}
+	onl, ok := sub.(types.OnlineSubtitle)
+	if !ok {
+		ctx.Fatal("Subtitle could not be cast to online subtitle")
+	}
+	srt, err := onl.Download()
+	if err != nil {
+		ctx.WithError(err).Error("Could not download subtitle")
+		if a.Config().Strict() {
+			os.Exit(1)
+		}
+	}
+	defer srt.Close()
+	saved, err := m.SaveSubtitle(srt, onl.Language())
+	if err != nil {
+		ctx.WithError(err).Error("Subtitle error")
+		if a.Config().Strict() {
+			os.Exit(1)
+		}
+		return nil, false
+	}
+
+	var strscore string
+	if sub.Score() == 0.0 {
+		strscore = "N/A"
+	} else {
+		strscore = fmt.Sprintf("%.0f%%", sub.Score()*100.0)
+	}
+
+	ctx.WithField("score", strscore).Info("Subtitle downloaded")
+
+	a.execPluginsOnSubtitle(ctx, saved)
+	return saved, true
+}
+
+func (a *Application) execPluginsOnSubtitle(ctx log.Interface, s types.LocalSubtitle) error {
+	for _, plugin := range a.Config().Plugins() {
+		err := plugin.Run(s)
+		if err != nil {
+			ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
+			if a.Config().Strict() {
+				os.Exit(1)
+			}
+		} else {
+			ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
+		}
+	}
+	return nil
 }

@@ -1,6 +1,9 @@
 package list
 
 import (
+	"fmt"
+	"reflect"
+
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
@@ -10,6 +13,38 @@ import (
 func Subtitles(subs ...types.Subtitle) types.SubtitleList {
 	list := subtitleList(subs)
 	return &list
+}
+
+// NewSubtitlesFromInterface construct a subtitle list from interface values
+func NewSubtitlesFromInterface(subs ...interface{}) (l types.SubtitleList, err error) {
+	var list []types.Subtitle
+	defer func() {
+		if r := recover(); r != nil {
+			l, err = nil, fmt.Errorf("%v", r)
+		}
+	}()
+	for _, v := range subs {
+		list = append(list, extractSubtitles(v)...)
+	}
+	lx := subtitleList(list)
+	return &lx, nil
+}
+
+func extractSubtitles(e interface{}) []types.Subtitle {
+	if s, ok := e.(types.Subtitle); ok {
+		return []types.Subtitle{s}
+	}
+	t := reflect.TypeOf(e).Kind()
+	if t == reflect.Slice || t == reflect.Array {
+		var subs []types.Subtitle
+		v := reflect.ValueOf(e)
+		for j := 0; j < v.Len(); j++ {
+			subs = append(subs, extractSubtitles(v.Index(j).Interface())...)
+		}
+		return subs
+	}
+
+	panic(fmt.Sprintf("Unknown subtitle format %v", reflect.TypeOf(e)))
 }
 
 type subtitleList []types.Subtitle
@@ -56,6 +91,12 @@ func (s *subtitleList) HearingImpaired(hi bool) types.SubtitleList {
 	}
 	list := subtitleList(_subs)
 	return &list
+}
+
+// RateByMedia returns a rated subtitle list, where every subtitle has been
+// given a score according to how well it matches the argument media
+func (s *subtitleList) RateByMedia(m types.Media) types.RatedSubtitleList {
+	return NewRatedSubtitles(m, (*s)...)
 }
 
 func (s *subtitleList) LanguageSet() set.Interface {
