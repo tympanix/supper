@@ -24,19 +24,6 @@ func (s fakeRatedSubtitle) String() string {
 	return fmt.Sprintf("%v", s.score)
 }
 
-var ratedSubtitles = []types.Subtitle{
-	fakeRatedSubtitle{score: 1.0},
-	fakeRatedSubtitle{score: 0.9},
-	fakeRatedSubtitle{score: 0.8},
-	fakeRatedSubtitle{score: 0.7},
-	fakeRatedSubtitle{score: 0.6},
-	fakeRatedSubtitle{score: 0.5},
-	fakeRatedSubtitle{score: 0.4},
-	fakeRatedSubtitle{score: 0.3},
-	fakeRatedSubtitle{score: 0.2},
-	fakeRatedSubtitle{score: 0.1},
-}
-
 type fakeEvaluator struct{ *testing.T }
 
 func (t fakeEvaluator) Evaluate(m types.Media, n types.Media) float32 {
