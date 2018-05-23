@@ -20,39 +20,6 @@ func (s subtitleEntry) Score() float32 {
 	return s.score
 }
 
-// func (s subtitleEntry) MarshalJSON() (b []byte, err error) {
-// 	hash := sha1.New()
-//
-// 	info := []string{
-// 		s.Link(),
-// 		s.ForMedia().Meta().Codec().String(),
-// 		s.ForMedia().Meta().Group(),
-// 		s.ForMedia().Meta().Quality().String(),
-// 		s.ForMedia().Meta().Source().String(),
-// 	}
-//
-// 	hash.Write([]byte(strings.Join(info, "")))
-// 	hashval := hash.Sum(nil)
-// 	infohash := make([]byte, hex.EncodedLen(len(hashval)))
-// 	hex.Encode(infohash, hashval)
-//
-// 	return json.Marshal(struct {
-// 		Hash  string       `json:"hash"`
-// 		Lang  language.Tag `json:"language"`
-// 		Link  string       `json:"link"`
-// 		Score float32      `json:"score"`
-// 		HI    bool         `json:"hi"`
-// 		Media types.Media  `json:"media"`
-// 	}{
-// 		string(infohash),
-// 		s.Language(),
-// 		s.Link(),
-// 		s.score,
-// 		s.HearingImpaired(),
-// 		s.ForMedia(),
-// 	})
-// }
-
 // NewRatedSubtitles returns a new subtitles collection
 func NewRatedSubtitles(media types.Media, subs ...types.Subtitle) types.RatedSubtitleList {
 	list := &RatedSubtitles{

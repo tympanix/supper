@@ -1,10 +1,13 @@
 package api
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -18,6 +21,18 @@ var busyFolders = new(sync.Map)
 type jsonMedia struct {
 	jsonFolder
 	Filepath string `json:"filepath"`
+}
+
+func (m jsonMedia) getPath(a types.App) (path string, err error) {
+	folder, err := m.jsonFolder.getPath(a)
+	if err != nil {
+		return
+	}
+	path = filepath.Join(folder, m.Filepath)
+	if !filepath.HasPrefix(path, folder) {
+		return "", errors.New("Illegal media path")
+	}
+	return
 }
 
 func (m jsonMedia) MediaFile(a types.App) (types.LocalMedia, error) {
@@ -45,18 +60,56 @@ func (s jsonSubtitle) Link() string {
 	return s.URL
 }
 
-type jsonSubtitleList []types.OnlineSubtitle
+type jsonRatedSubtitle struct {
+	types.RatedSubtitle
+}
 
-func (m jsonMedia) getPath(a types.App) (path string, err error) {
-	folder, err := m.jsonFolder.getPath(a)
-	if err != nil {
-		return
+func (s jsonRatedSubtitle) MarshalJSON() ([]byte, error) {
+	hash := sha1.New()
+
+	dl, ok := s.RatedSubtitle.(types.OnlineSubtitle)
+	if !ok {
+		return nil, errors.New("Could not marshal subtitle which is not online")
 	}
-	path = filepath.Join(folder, m.Filepath)
-	if !filepath.HasPrefix(path, folder) {
-		return "", errors.New("Illegal media path")
+
+	info := []string{
+		dl.Link(),
+		s.ForMedia().Meta().Codec().String(),
+		s.ForMedia().Meta().Group(),
+		s.ForMedia().Meta().Quality().String(),
+		s.ForMedia().Meta().Source().String(),
 	}
-	return
+
+	hash.Write([]byte(strings.Join(info, "")))
+	hashval := hash.Sum(nil)
+	infohash := make([]byte, hex.EncodedLen(len(hashval)))
+	hex.Encode(infohash, hashval)
+
+	return json.Marshal(struct {
+		Hash  string       `json:"hash"`
+		Lang  language.Tag `json:"language"`
+		Link  string       `json:"link"`
+		Score float32      `json:"score"`
+		HI    bool         `json:"hi"`
+		Media types.Media  `json:"media"`
+	}{
+		string(infohash),
+		s.Language(),
+		dl.Link(),
+		s.Score(),
+		s.HearingImpaired(),
+		s.ForMedia(),
+	})
+}
+
+type jsonSubtitleList []types.RatedSubtitle
+
+func (l jsonSubtitleList) MarshalJSON() ([]byte, error) {
+	var subs []jsonRatedSubtitle
+	for _, s := range l {
+		subs = append(subs, jsonRatedSubtitle{s})
+	}
+	return json.Marshal(subs)
 }
 
 func (a *API) subtitleRouter(mux *mux.Router) {
@@ -124,7 +177,8 @@ func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} 
 	if err != nil {
 		return err
 	}
-	return sublist.RateByMedia(item)
+	rated := sublist.RateByMedia(item)
+	return jsonSubtitleList(rated.List())
 }
 
 func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
@@ -136,7 +190,7 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 
 	var folder jsonFolder
 	dec := json.NewDecoder(r.Body)
-	if err := dec.Decode(&folder); err != nil {
+	if err = dec.Decode(&folder); err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
 	path, err := folder.getPath(a)
