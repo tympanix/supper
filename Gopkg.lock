@@ -86,12 +86,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/kballard/go-shellquote"
-  packages = ["."]
-  revision = "cd60e84ee657ff3dc51de0b4f55dd299a3e136f2"
-
-[[projects]]
-  branch = "master"
   name = "github.com/kr/logfmt"
   packages = ["."]
   revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
@@ -242,6 +236,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b47787aff7f93f2b8d4ab9ec7b126848f95f0cf7e9bd835330136ca4867101a5"
+  inputs-digest = "ab648f0160283819b509166afca48db202dcb649ba4318d2b90190ac8089def0"
   solver-name = "gps-cdcl"
   solver-version = 1
