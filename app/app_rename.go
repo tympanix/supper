@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/spf13/viper"
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
@@ -112,7 +111,7 @@ func cleanString(str string) string {
 }
 
 var multispaceRegex = regexp.MustCompile(`\s\s+`)
-var illegalPostfixRegex = regexp.MustCompile(`[^\p{L}\)]+$`)
+var illegalPostfixRegex = regexp.MustCompile(`[^\p{L}\)0-9]+$`)
 
 // truncateSpaces replaces all consecutive space characters with a single space.
 // Trailing non-characters (i.e. spaces, symbols ect.) are removed
@@ -125,14 +124,14 @@ func truncateSpaces(str string) string {
 // RenameMedia traverses the local media list and renames the media
 func (a *Application) RenameMedia(list types.LocalMediaList) error {
 
-	renamer, ok := Renamers[viper.GetString("action")]
+	renamer, ok := Renamers[a.Config().RenameAction()]
 
 	if !ok {
-		return fmt.Errorf("%s: unknown action", viper.GetString("action"))
+		return fmt.Errorf("%s: unknown action", a.Config().RenameAction())
 	}
 
 	for _, m := range list.List() {
-		ctx := log.WithField("media", m).WithField("action", viper.GetString("action"))
+		ctx := log.WithField("media", m).WithField("action", a.Config().RenameAction())
 
 		dest, err := a.scrapeAndRenameMedia(m, m)
 
@@ -152,6 +151,9 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 				ctx.WithField("reason", "media already exists").Warn("Rename skipped")
 			} else {
 				ctx.WithError(err).Error("Rename failed")
+				if a.Config().Strict() {
+					os.Exit(1)
+				}
 			}
 		} else {
 			ctx.Info("Media renamed")

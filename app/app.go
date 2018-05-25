@@ -12,7 +12,6 @@ import (
 	"github.com/tympanix/supper/cfg"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
-	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
 )
 
@@ -31,13 +30,10 @@ type Application struct {
 // New returns a new application from the cli context
 func New(cfg types.Config) types.App {
 	app := &Application{
-		Provider: provider.Subscene(),
+		Provider: cfg.Providers()[0],
 		cfg:      cfg,
 		ServeMux: http.NewServeMux(),
-		scrapers: []types.Scraper{
-			provider.TheMovieDB(cfg.APIKeys().TheMovieDB()),
-			provider.TheTVDB(cfg.APIKeys().TheTVDB()),
-		},
+		scrapers: cfg.Scrapers(),
 	}
 
 	static := viper.GetString("static")

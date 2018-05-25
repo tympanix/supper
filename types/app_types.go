@@ -25,6 +25,8 @@ type App interface {
 
 // Config is the interface for application configuration
 type Config interface {
+	Providers() []Provider
+	Scrapers() []Scraper
 	Languages() set.Interface
 	Impaired() bool
 	Limit() int
@@ -42,6 +44,7 @@ type Config interface {
 	Movies() MediaConfig
 	TVShows() MediaConfig
 	MediaFilter() MediaFilter
+	RenameAction() string
 }
 
 // APIKeys is the interface for configuration of 3rd party APIs

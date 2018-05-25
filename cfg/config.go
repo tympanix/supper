@@ -10,6 +10,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/plugin"
+	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/types"
 
 	"github.com/apex/log"
@@ -90,6 +91,8 @@ type viperConfig struct {
 	movies    types.MediaConfig
 	tvshows   types.MediaConfig
 	filters   int
+	providers []types.Provider
+	scrapers  []types.Scraper
 }
 
 // Initialize construct the default configuration object using viper.
@@ -162,15 +165,24 @@ func Initialize() {
 		}
 	}
 
+	apikeys := viper.GetStringMapString("apikeys")
+
 	Default = viperConfig{
 		languages: lang,
 		modified:  modified,
 		delay:     delay,
 		plugins:   plugins,
-		apikeys:   viper.GetStringMapString("apikeys"),
+		apikeys:   apikeys,
 		movies:    media["movies"],
 		tvshows:   media["tvshows"],
 		filters:   filters,
+		providers: []types.Provider{
+			provider.Subscene(),
+		},
+		scrapers: []types.Scraper{
+			provider.TheMovieDB(apikeys["themoviedb"]),
+			provider.TheTVDB(apikeys["thetvdb"]),
+		},
 	}
 }
 
@@ -266,4 +278,16 @@ func (v viperConfig) Movies() types.MediaConfig {
 
 func (v viperConfig) TVShows() types.MediaConfig {
 	return v.tvshows
+}
+
+func (v viperConfig) Providers() []types.Provider {
+	return v.providers
+}
+
+func (v viperConfig) Scrapers() []types.Scraper {
+	return v.scrapers
+}
+
+func (v viperConfig) RenameAction() string {
+	return viper.GetString("action")
 }
