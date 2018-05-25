@@ -3,7 +3,6 @@ package app
 import (
 	"html/template"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -105,7 +104,6 @@ var res = map[string]string{
 }
 
 type renameTester interface {
-	Skip() bool
 	Pre(*testing.T)
 	Input() string
 	Output() string
@@ -113,51 +111,46 @@ type renameTester interface {
 }
 
 func TestRenameMedia(t *testing.T) {
-	for action, test := range map[string]renameTester{
+	testCases := map[string]renameTester{
 		"copy":     copyTester{},
 		"move":     moveTester{},
 		"hardlink": copyTester{},
 		"symlink":  symlinkTester{},
-	} {
-		config := genTestConfig(action, test.Output())
-		app := New(config)
-
-		if test.Skip() {
-			continue
-		}
-
-		test.Pre(t)
-
-		l, err := app.FindMedia(test.Input())
-		require.NoError(t, err)
-		assert.Equal(t, len(res), l.Len())
-
-		err = app.RenameMedia(l)
-		require.NoError(t, err)
-
-		files, err := ioutil.ReadDir(test.Output())
-		require.NoError(t, err)
-		assert.Equal(t, len(res), len(files))
-
-		for _, f := range files {
-			org, ok := res[f.Name()]
-			assert.True(t, ok, f.Name())
-			src := filepath.Join(test.Input(), org)
-			dst := filepath.Join(test.Output(), f.Name())
-			test.Test(t, src, dst)
-		}
-
-		err = os.RemoveAll("test/out")
-		require.NoError(t, err)
 	}
 
+	for action, test := range testCases {
+		t.Run(action, func(t *testing.T) {
+			config := genTestConfig(action, test.Output())
+			app := New(config)
+
+			test.Pre(t)
+
+			l, err := app.FindMedia(test.Input())
+			require.NoError(t, err)
+			assert.Equal(t, len(res), l.Len())
+
+			err = app.RenameMedia(l)
+			require.NoError(t, err)
+
+			files, err := ioutil.ReadDir(test.Output())
+			require.NoError(t, err)
+			assert.Equal(t, len(res), len(files))
+
+			for _, f := range files {
+				org, ok := res[f.Name()]
+				assert.True(t, ok, f.Name())
+				src := filepath.Join(test.Input(), org)
+				dst := filepath.Join(test.Output(), f.Name())
+				test.Test(t, src, dst)
+			}
+
+			err = os.RemoveAll("test/out")
+			require.NoError(t, err)
+		})
+	}
 }
 
 type copyTester struct{}
-
-func (copyTester) Skip() bool {
-	return false
-}
 
 func (copyTester) Pre(t *testing.T) {}
 
@@ -180,10 +173,6 @@ func (copyTester) Test(t *testing.T, src, dst string) {
 }
 
 type moveTester struct{}
-
-func (moveTester) Skip() bool {
-	return false
-}
 
 func (moveTester) Pre(t *testing.T) {
 	files, err := ioutil.ReadDir("test")
@@ -220,15 +209,11 @@ func (moveTester) Test(t *testing.T, src, dst string) {
 
 type symlinkTester struct{}
 
-func (symlinkTester) Skip() bool {
+func (symlinkTester) Pre(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		log.Println("skipping symlink test on windows (requires admin rights)")
-		return true
+		t.Skip("skipping symlink test on windows (requires admin rights)")
 	}
-	return false
 }
-
-func (symlinkTester) Pre(t *testing.T) {}
 
 func (symlinkTester) Input() string {
 	return "test"
