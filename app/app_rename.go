@@ -155,9 +155,9 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 				ctx.WithField("reason", "media already exists").Warn("Rename skipped")
 			} else {
 				ctx.WithError(err).Error("Rename failed")
-				if a.Config().Strict() {
-					os.Exit(1)
-				}
+			}
+			if a.Config().Strict() {
+				return err
 			}
 		} else {
 			ctx.Info("Media renamed")

@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tympanix/supper/media"
+
 	"github.com/fatih/set"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,11 +27,9 @@ func (f fakeProvider) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitl
 }
 
 type fakeConfig struct {
-	action   string
-	scraper  types.Scraper
-	provider types.Provider
-	movies   types.MediaConfig
-	tvshows  types.MediaConfig
+	action string
+	strict bool
+	force  bool
 }
 
 func (c fakeConfig) Languages() set.Interface       { return nil }
@@ -37,21 +37,37 @@ func (c fakeConfig) APIKeys() types.APIKeys         { return fakeAPIKeys{} }
 func (c fakeConfig) Config() string                 { return "" }
 func (c fakeConfig) Delay() time.Duration           { return 0 }
 func (c fakeConfig) Dry() bool                      { return false }
-func (c fakeConfig) Force() bool                    { return false }
+func (c fakeConfig) Force() bool                    { return c.force }
 func (c fakeConfig) Impaired() bool                 { return false }
 func (c fakeConfig) Limit() int                     { return -1 }
 func (c fakeConfig) Logfile() string                { return "" }
 func (c fakeConfig) MediaFilter() types.MediaFilter { return nil }
 func (c fakeConfig) Modified() time.Duration        { return 0 }
-func (c fakeConfig) Movies() types.MediaConfig      { return c.movies }
 func (c fakeConfig) Plugins() []types.Plugin        { return nil }
 func (c fakeConfig) Score() int                     { return 0 }
-func (c fakeConfig) Strict() bool                   { return true }
-func (c fakeConfig) TVShows() types.MediaConfig     { return c.tvshows }
+func (c fakeConfig) Strict() bool                   { return c.strict }
 func (c fakeConfig) Verbose() bool                  { return false }
-func (c fakeConfig) Providers() []types.Provider    { return []types.Provider{c.provider} }
-func (c fakeConfig) Scrapers() []types.Scraper      { return []types.Scraper{c.scraper} }
+func (c fakeConfig) Providers() []types.Provider    { return []types.Provider{fakeProvider{}} }
+func (c fakeConfig) Scrapers() []types.Scraper      { return []types.Scraper{fakeScraper{}} }
 func (c fakeConfig) RenameAction() string           { return c.action }
+
+type fakeTemplates struct {
+	output string
+}
+
+func (c fakeTemplates) Movies() types.MediaConfig {
+	return fakeMediaConfig{
+		directory: c.output,
+		template:  "{{ .Movie }} ({{ .Year }}) {{ .Quality }}",
+	}
+}
+
+func (c fakeTemplates) TVShows() types.MediaConfig {
+	return fakeMediaConfig{
+		directory: c.output,
+		template:  "{{ .TVShow }} S{{ .Season }}E{{ .Episode }}",
+	}
+}
 
 type fakeAPIKeys struct{}
 
@@ -81,21 +97,6 @@ func (s fakeScraper) Scrape(m types.Media) (types.Media, error) {
 	return m, nil
 }
 
-func genTestConfig(action string, output string) types.Config {
-	return fakeConfig{
-		action:  action,
-		scraper: fakeScraper{},
-		movies: fakeMediaConfig{
-			directory: output,
-			template:  "{{ .Movie }} ({{ .Year }}) {{ .Quality }}",
-		},
-		tvshows: fakeMediaConfig{
-			directory: output,
-			template:  "{{ .TVShow }} S{{ .Season }}E{{ .Episode }}",
-		},
-	}
-}
-
 var res = map[string]string{
 	"Inception (2010) 720p.mkv":    "Inception.2010.720p.x264.mkv",
 	"Inception (2010) 720p.en.srt": "Inception.2010.720p.x264.en.srt",
@@ -120,34 +121,98 @@ func TestRenameMedia(t *testing.T) {
 
 	for action, test := range testCases {
 		t.Run(action, func(t *testing.T) {
-			config := genTestConfig(action, test.Output())
-			app := New(config)
-
-			test.Pre(t)
-
-			l, err := app.FindMedia(test.Input())
-			require.NoError(t, err)
-			assert.Equal(t, len(res), l.Len())
-
-			err = app.RenameMedia(l)
-			require.NoError(t, err)
-
-			files, err := ioutil.ReadDir(test.Output())
-			require.NoError(t, err)
-			assert.Equal(t, len(res), len(files))
-
-			for _, f := range files {
-				org, ok := res[f.Name()]
-				assert.True(t, ok, f.Name())
-				src := filepath.Join(test.Input(), org)
-				dst := filepath.Join(test.Output(), f.Name())
-				test.Test(t, src, dst)
+			config := struct {
+				fakeConfig
+				fakeTemplates
+			}{
+				fakeConfig{
+					action: action,
+					strict: true,
+				},
+				fakeTemplates{
+					output: test.Output(),
+				},
 			}
 
-			err = os.RemoveAll("test/out")
-			require.NoError(t, err)
+			assert.NoError(t, performRenameTest(t, test, config))
+
+			cleanRenameTest(t)
 		})
 	}
+}
+
+func TestRenameMediaOverride(t *testing.T) {
+	var err error
+
+	config := struct {
+		fakeConfig
+		fakeTemplates
+	}{
+		fakeConfig{
+			action: "copy",
+			strict: false,
+		},
+		fakeTemplates{
+			output: "out",
+		},
+	}
+
+	// first run, rename media sucessfully
+	err = performRenameTest(t, copyTester{}, config)
+	require.NoError(t, err)
+
+	// second run, skip all media (strict=false)
+	err = performRenameTest(t, copyTester{}, config)
+	require.NoError(t, err, "should skip all conflicts (non-strict mode)")
+
+	config.strict = true
+
+	// third run, return error (strict=true)
+	err = performRenameTest(t, copyTester{}, config)
+	require.Error(t, err, "should error on conflict (strict mode)")
+	assert.True(t, media.IsExistsErr(err))
+
+	config.force = true
+
+	// forth run, overwrite with success (force=true)
+	err = performRenameTest(t, copyTester{}, config)
+	require.NoError(t, err, "should overwrite media (force mode)")
+
+	cleanRenameTest(t)
+}
+
+func performRenameTest(t *testing.T, test renameTester, cfg types.Config) error {
+	app := New(cfg)
+
+	test.Pre(t)
+
+	l, err := app.FindMedia(test.Input())
+	require.NoError(t, err)
+	assert.Equal(t, len(res), l.Len())
+
+	err = app.RenameMedia(l)
+	if err != nil {
+		return err
+	}
+
+	files, err := ioutil.ReadDir(test.Output())
+	require.NoError(t, err)
+	assert.Equal(t, len(res), len(files))
+
+	for _, f := range files {
+		org, ok := res[f.Name()]
+		assert.True(t, ok, f.Name())
+		src := filepath.Join(test.Input(), org)
+		dst := filepath.Join(test.Output(), f.Name())
+		test.Test(t, src, dst)
+	}
+
+	return nil
+}
+
+func cleanRenameTest(t *testing.T) {
+	err := os.RemoveAll("out")
+	require.NoError(t, err)
 }
 
 type copyTester struct{}
@@ -159,7 +224,7 @@ func (copyTester) Input() string {
 }
 
 func (copyTester) Output() string {
-	return "test/out"
+	return "out"
 }
 
 func (copyTester) Test(t *testing.T, src, dst string) {
@@ -178,23 +243,23 @@ func (moveTester) Pre(t *testing.T) {
 	files, err := ioutil.ReadDir("test")
 	require.NoError(t, err)
 	assert.Equal(t, len(res), len(files))
-	err = os.MkdirAll("test/out/from", os.ModePerm)
+	err = os.MkdirAll("out/from", os.ModePerm)
 	require.NoError(t, err)
 	for _, f := range files {
 		require.False(t, f.IsDir())
 		require.NotEmpty(t, f.Name())
-		fi, err := os.Create(filepath.Join("test", "out", "from", f.Name()))
+		fi, err := os.Create(filepath.Join("out", "from", f.Name()))
 		defer fi.Close()
 		require.NoError(t, err)
 	}
 }
 
 func (moveTester) Input() string {
-	return "test/out/from"
+	return "out/from"
 }
 
 func (moveTester) Output() string {
-	return "test/out/to"
+	return "out/to"
 }
 
 func (moveTester) Test(t *testing.T, src, dst string) {
@@ -220,7 +285,7 @@ func (symlinkTester) Input() string {
 }
 
 func (symlinkTester) Output() string {
-	return "test/out"
+	return "out"
 }
 
 func (symlinkTester) Test(t *testing.T, src, dst string) {
