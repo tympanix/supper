@@ -37,7 +37,7 @@ func ensurePath(dest string, force bool) error {
 		}
 		log.WithField("path", dest).Debug("Removed existing media")
 	}
-	if err := os.MkdirAll(filepath.Dir(dest), os.ModeDir); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dest), os.ModePerm); err != nil {
 		return err
 	}
 	return nil
@@ -78,7 +78,11 @@ func moveRenamer(local types.Local, dest string) error {
 }
 
 func symlinkRenamer(local types.Local, dest string) error {
-	if err := os.Symlink(local.Path(), dest); err != nil {
+	abs, err := filepath.Abs(local.Path())
+	if err != nil {
+		return err
+	}
+	if err := os.Symlink(abs, dest); err != nil {
 		return err
 	}
 	log.WithField("path", dest).Debug("Media symlinked")

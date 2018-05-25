@@ -101,7 +101,7 @@ var res = map[string]string{
 	"Inception (2010) 720p.mkv":    "Inception.2010.720p.x264.mkv",
 	"Inception (2010) 720p.en.srt": "Inception.2010.720p.x264.en.srt",
 	"Game of Thrones S1E2.mp4":     "Game.of.Thrones.s01e02.mp4",
-	"Game of Thrones S1E2.en.srt":  "Game.of.Thrones.s01e02.eng.srt",
+	"Game of Thrones S1E2.en.srt":  "Game.of.Thrones.s01e02.en.srt",
 }
 
 type renameTester interface {
@@ -174,6 +174,9 @@ func (copyTester) Test(t *testing.T, src, dst string) {
 	assert.NoError(t, err)
 	assert.Zero(t, f.Mode()&os.ModeSymlink)
 	assert.True(t, f.Mode().IsRegular())
+	o, err := os.Stat(src)
+	assert.NoError(t, err)
+	assert.Equal(t, f.Mode(), o.Mode())
 }
 
 type moveTester struct{}
@@ -186,7 +189,7 @@ func (moveTester) Pre(t *testing.T) {
 	files, err := ioutil.ReadDir("test")
 	require.NoError(t, err)
 	assert.Equal(t, len(res), len(files))
-	err = os.MkdirAll("test/out/from", os.ModeDir)
+	err = os.MkdirAll("test/out/from", os.ModePerm)
 	require.NoError(t, err)
 	for _, f := range files {
 		require.False(t, f.IsDir())
@@ -212,7 +215,7 @@ func (moveTester) Test(t *testing.T, src, dst string) {
 	assert.True(t, f.Mode().IsRegular())
 
 	_, err = os.Lstat(src)
-	assert.True(t, os.IsNotExist(err))
+	assert.True(t, os.IsNotExist(err), "should not exist: %s", src)
 }
 
 type symlinkTester struct{}
@@ -241,8 +244,8 @@ func (symlinkTester) Test(t *testing.T, src, dst string) {
 	assert.NotZero(t, f.Mode()&os.ModeSymlink)
 	link, err := os.Readlink(dst)
 	require.NoError(t, err)
-	ok, err := filepath.Match(src, link)
+	abssrc, err := filepath.Abs(src)
 	assert.NoError(t, err)
-	assert.True(t, ok)
-	assert.True(t, f.Mode().IsRegular())
+	assert.Equal(t, abssrc, link)
+	assert.False(t, f.Mode().IsRegular())
 }
