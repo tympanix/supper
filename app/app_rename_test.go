@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -10,12 +11,25 @@ import (
 	"time"
 
 	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/provider"
 
 	"github.com/fatih/set"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tympanix/supper/types"
 )
+
+var defaultConfig = struct {
+	fakeConfig
+	fakeTemplates
+}{
+	fakeConfig{
+		action: "copy",
+	},
+	fakeTemplates{
+		output: "out",
+	},
+}
 
 type fakeProvider struct{}
 
@@ -27,16 +41,18 @@ func (f fakeProvider) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitl
 }
 
 type fakeConfig struct {
-	action string
-	strict bool
-	force  bool
+	action   string
+	strict   bool
+	force    bool
+	dry      bool
+	scrapers []types.Scraper
 }
 
 func (c fakeConfig) Languages() set.Interface       { return nil }
 func (c fakeConfig) APIKeys() types.APIKeys         { return fakeAPIKeys{} }
 func (c fakeConfig) Config() string                 { return "" }
 func (c fakeConfig) Delay() time.Duration           { return 0 }
-func (c fakeConfig) Dry() bool                      { return false }
+func (c fakeConfig) Dry() bool                      { return c.dry }
 func (c fakeConfig) Force() bool                    { return c.force }
 func (c fakeConfig) Impaired() bool                 { return false }
 func (c fakeConfig) Limit() int                     { return -1 }
@@ -48,7 +64,7 @@ func (c fakeConfig) Score() int                     { return 0 }
 func (c fakeConfig) Strict() bool                   { return c.strict }
 func (c fakeConfig) Verbose() bool                  { return false }
 func (c fakeConfig) Providers() []types.Provider    { return []types.Provider{fakeProvider{}} }
-func (c fakeConfig) Scrapers() []types.Scraper      { return []types.Scraper{fakeScraper{}} }
+func (c fakeConfig) Scrapers() []types.Scraper      { return c.scrapers }
 func (c fakeConfig) RenameAction() string           { return c.action }
 
 type fakeTemplates struct {
@@ -109,6 +125,7 @@ type renameTester interface {
 	Input() string
 	Output() string
 	Test(*testing.T, string, string)
+	Post(*testing.T, []os.FileInfo)
 }
 
 func TestRenameMedia(t *testing.T) {
@@ -126,8 +143,9 @@ func TestRenameMedia(t *testing.T) {
 				fakeTemplates
 			}{
 				fakeConfig{
-					action: action,
-					strict: true,
+					action:   action,
+					strict:   true,
+					scrapers: []types.Scraper{fakeScraper{}},
 				},
 				fakeTemplates{
 					output: test.Output(),
@@ -149,8 +167,9 @@ func TestRenameMediaOverride(t *testing.T) {
 		fakeTemplates
 	}{
 		fakeConfig{
-			action: "copy",
-			strict: false,
+			action:   "copy",
+			strict:   false,
+			scrapers: []types.Scraper{fakeScraper{}},
 		},
 		fakeTemplates{
 			output: "out",
@@ -181,6 +200,135 @@ func TestRenameMediaOverride(t *testing.T) {
 	cleanRenameTest(t)
 }
 
+func TestRenameActionError(t *testing.T) {
+	config := struct {
+		fakeConfig
+		fakeTemplates
+	}{
+		fakeConfig{
+			action:   "invalid_test_action",
+			scrapers: []types.Scraper{fakeScraper{}},
+		},
+		fakeTemplates{},
+	}
+
+	err := performRenameTest(t, copyTester{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid_test_action")
+}
+
+func TestRenameDryRun(t *testing.T) {
+	config := struct {
+		fakeConfig
+		fakeTemplates
+	}{
+		fakeConfig{
+			action:   "copy",
+			dry:      true,
+			scrapers: []types.Scraper{fakeScraper{}},
+		},
+		fakeTemplates{
+			output: "out",
+		},
+	}
+
+	assert.NoError(t, os.Mkdir("out", os.ModePerm))
+
+	err := performRenameTest(t, dryTester{}, config)
+	assert.NoError(t, err)
+
+	cleanRenameTest(t)
+}
+
+type fakeUnsupportedScraper struct{}
+
+func (fakeUnsupportedScraper) Scrape(m types.Media) (types.Media, error) {
+	return nil, provider.ErrMediaNotSupported{}
+}
+
+func TestRenameUnsupportedScrapers(t *testing.T) {
+	config := struct {
+		fakeConfig
+		fakeTemplates
+	}{
+		fakeConfig{
+			action: "copy",
+			scrapers: []types.Scraper{
+				fakeUnsupportedScraper{},
+				fakeUnsupportedScraper{},
+				fakeUnsupportedScraper{},
+				fakeScraper{},
+				fakeUnsupportedScraper{},
+			},
+		},
+		fakeTemplates{
+			output: "out",
+		},
+	}
+
+	err := performRenameTest(t, copyTester{}, config)
+	assert.NoError(t, err)
+
+	cleanRenameTest(t)
+}
+
+type fakeErrorScraper struct{}
+
+func (fakeErrorScraper) Scrape(m types.Media) (types.Media, error) {
+	return nil, errors.New("mocked error")
+}
+
+func TestRenameScrapeError(t *testing.T) {
+	config := struct {
+		fakeConfig
+		fakeTemplates
+	}{
+		fakeConfig{
+			action: "copy",
+			scrapers: []types.Scraper{
+				fakeUnsupportedScraper{},
+				fakeErrorScraper{},
+				fakeScraper{},
+				fakeUnsupportedScraper{},
+			},
+		},
+		fakeTemplates{
+			output: "out",
+		},
+	}
+
+	err := performRenameTest(t, copyTester{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "mocked error")
+
+	cleanRenameTest(t)
+}
+
+func TestRenameNoScrapers(t *testing.T) {
+	config := struct {
+		fakeConfig
+		fakeTemplates
+	}{
+		fakeConfig{
+			action: "copy",
+			scrapers: []types.Scraper{
+				fakeUnsupportedScraper{},
+				fakeUnsupportedScraper{},
+				fakeUnsupportedScraper{},
+			},
+		},
+		fakeTemplates{
+			output: "out",
+		},
+	}
+
+	err := performRenameTest(t, copyTester{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no scrapers")
+
+	cleanRenameTest(t)
+}
+
 func performRenameTest(t *testing.T, test renameTester, cfg types.Config) error {
 	app := New(cfg)
 
@@ -197,7 +345,6 @@ func performRenameTest(t *testing.T, test renameTester, cfg types.Config) error 
 
 	files, err := ioutil.ReadDir(test.Output())
 	require.NoError(t, err)
-	assert.Equal(t, len(res), len(files))
 
 	for _, f := range files {
 		org, ok := res[f.Name()]
@@ -206,6 +353,8 @@ func performRenameTest(t *testing.T, test renameTester, cfg types.Config) error 
 		dst := filepath.Join(test.Output(), f.Name())
 		test.Test(t, src, dst)
 	}
+
+	test.Post(t, files)
 
 	return nil
 }
@@ -235,6 +384,10 @@ func (copyTester) Test(t *testing.T, src, dst string) {
 	o, err := os.Stat(src)
 	assert.NoError(t, err)
 	assert.Equal(t, f.Mode(), o.Mode())
+}
+
+func (copyTester) Post(t *testing.T, files []os.FileInfo) {
+	assert.Equal(t, len(res), len(files))
 }
 
 type moveTester struct{}
@@ -272,6 +425,10 @@ func (moveTester) Test(t *testing.T, src, dst string) {
 	assert.True(t, os.IsNotExist(err), "should not exist: %s", src)
 }
 
+func (moveTester) Post(t *testing.T, files []os.FileInfo) {
+	assert.Equal(t, len(res), len(files))
+}
+
 type symlinkTester struct{}
 
 func (symlinkTester) Pre(t *testing.T) {
@@ -298,4 +455,28 @@ func (symlinkTester) Test(t *testing.T, src, dst string) {
 	assert.NoError(t, err)
 	assert.Equal(t, abssrc, link)
 	assert.False(t, f.Mode().IsRegular())
+}
+
+func (symlinkTester) Post(t *testing.T, files []os.FileInfo) {
+	assert.Equal(t, len(res), len(files))
+}
+
+type dryTester struct{}
+
+func (dryTester) Pre(t *testing.T) {}
+
+func (dryTester) Input() string {
+	return "test"
+}
+
+func (dryTester) Output() string {
+	return "out"
+}
+
+func (dryTester) Test(t *testing.T, src, dst string) {
+	assert.Fail(t, "dry run should not rename files")
+}
+
+func (dryTester) Post(t *testing.T, files []os.FileInfo) {
+	assert.Equal(t, 0, len(files))
 }

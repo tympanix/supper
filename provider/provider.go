@@ -11,12 +11,13 @@ import (
 	"go.uber.org/ratelimit"
 )
 
-type errMediaNotSupported struct {
+// ErrMediaNotSupported is an error for unsupported media
+type ErrMediaNotSupported struct {
 	error
 }
 
-func mediaNotSupported(api string) errMediaNotSupported {
-	return errMediaNotSupported{
+func mediaNotSupported(api string) ErrMediaNotSupported {
+	return ErrMediaNotSupported{
 		fmt.Errorf("media not supported %v", api),
 	}
 }
@@ -27,7 +28,7 @@ func IsErrMediaNotSupported(err error) bool {
 	if err == nil {
 		return false
 	}
-	if _, ok := err.(errMediaNotSupported); ok {
+	if _, ok := err.(ErrMediaNotSupported); ok {
 		return true
 	}
 	return false

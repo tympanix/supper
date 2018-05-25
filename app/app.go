@@ -28,7 +28,7 @@ type Application struct {
 }
 
 // New returns a new application from the cli context
-func New(cfg types.Config) types.App {
+func New(cfg types.Config) *Application {
 	app := &Application{
 		Provider: cfg.Providers()[0],
 		cfg:      cfg,
