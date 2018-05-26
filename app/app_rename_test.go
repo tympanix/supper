@@ -24,7 +24,8 @@ var defaultConfig = struct {
 	fakeTemplates
 }{
 	fakeConfig{
-		action: "copy",
+		action:   "copy",
+		scrapers: []types.Scraper{fakeScraper{}},
 	},
 	fakeTemplates{
 		output: "out",
@@ -138,19 +139,11 @@ func TestRenameMedia(t *testing.T) {
 
 	for action, test := range testCases {
 		t.Run(action, func(t *testing.T) {
-			config := struct {
-				fakeConfig
-				fakeTemplates
-			}{
-				fakeConfig{
-					action:   action,
-					strict:   true,
-					scrapers: []types.Scraper{fakeScraper{}},
-				},
-				fakeTemplates{
-					output: test.Output(),
-				},
-			}
+			config := defaultConfig
+
+			config.strict = true
+			config.action = action
+			config.output = test.Output()
 
 			assert.NoError(t, performRenameTest(t, test, config))
 
@@ -161,20 +154,7 @@ func TestRenameMedia(t *testing.T) {
 
 func TestRenameMediaOverride(t *testing.T) {
 	var err error
-
-	config := struct {
-		fakeConfig
-		fakeTemplates
-	}{
-		fakeConfig{
-			action:   "copy",
-			strict:   false,
-			scrapers: []types.Scraper{fakeScraper{}},
-		},
-		fakeTemplates{
-			output: "out",
-		},
-	}
+	config := defaultConfig
 
 	// first run, rename media sucessfully
 	err = performRenameTest(t, copyTester{}, config)
@@ -201,16 +181,8 @@ func TestRenameMediaOverride(t *testing.T) {
 }
 
 func TestRenameActionError(t *testing.T) {
-	config := struct {
-		fakeConfig
-		fakeTemplates
-	}{
-		fakeConfig{
-			action:   "invalid_test_action",
-			scrapers: []types.Scraper{fakeScraper{}},
-		},
-		fakeTemplates{},
-	}
+	config := defaultConfig
+	config.action = "invalid_test_action"
 
 	err := performRenameTest(t, copyTester{}, config)
 	assert.Error(t, err)
@@ -218,19 +190,8 @@ func TestRenameActionError(t *testing.T) {
 }
 
 func TestRenameDryRun(t *testing.T) {
-	config := struct {
-		fakeConfig
-		fakeTemplates
-	}{
-		fakeConfig{
-			action:   "copy",
-			dry:      true,
-			scrapers: []types.Scraper{fakeScraper{}},
-		},
-		fakeTemplates{
-			output: "out",
-		},
-	}
+	config := defaultConfig
+	config.dry = true
 
 	assert.NoError(t, os.Mkdir("out", os.ModePerm))
 
@@ -247,23 +208,13 @@ func (fakeUnsupportedScraper) Scrape(m types.Media) (types.Media, error) {
 }
 
 func TestRenameUnsupportedScrapers(t *testing.T) {
-	config := struct {
-		fakeConfig
-		fakeTemplates
-	}{
-		fakeConfig{
-			action: "copy",
-			scrapers: []types.Scraper{
-				fakeUnsupportedScraper{},
-				fakeUnsupportedScraper{},
-				fakeUnsupportedScraper{},
-				fakeScraper{},
-				fakeUnsupportedScraper{},
-			},
-		},
-		fakeTemplates{
-			output: "out",
-		},
+	config := defaultConfig
+	config.scrapers = []types.Scraper{
+		fakeUnsupportedScraper{},
+		fakeUnsupportedScraper{},
+		fakeUnsupportedScraper{},
+		fakeScraper{},
+		fakeUnsupportedScraper{},
 	}
 
 	err := performRenameTest(t, copyTester{}, config)
@@ -279,22 +230,12 @@ func (fakeErrorScraper) Scrape(m types.Media) (types.Media, error) {
 }
 
 func TestRenameScrapeError(t *testing.T) {
-	config := struct {
-		fakeConfig
-		fakeTemplates
-	}{
-		fakeConfig{
-			action: "copy",
-			scrapers: []types.Scraper{
-				fakeUnsupportedScraper{},
-				fakeErrorScraper{},
-				fakeScraper{},
-				fakeUnsupportedScraper{},
-			},
-		},
-		fakeTemplates{
-			output: "out",
-		},
+	config := defaultConfig
+	config.scrapers = []types.Scraper{
+		fakeUnsupportedScraper{},
+		fakeErrorScraper{},
+		fakeScraper{},
+		fakeUnsupportedScraper{},
 	}
 
 	err := performRenameTest(t, copyTester{}, config)
@@ -305,21 +246,11 @@ func TestRenameScrapeError(t *testing.T) {
 }
 
 func TestRenameNoScrapers(t *testing.T) {
-	config := struct {
-		fakeConfig
-		fakeTemplates
-	}{
-		fakeConfig{
-			action: "copy",
-			scrapers: []types.Scraper{
-				fakeUnsupportedScraper{},
-				fakeUnsupportedScraper{},
-				fakeUnsupportedScraper{},
-			},
-		},
-		fakeTemplates{
-			output: "out",
-		},
+	config := defaultConfig
+	config.scrapers = []types.Scraper{
+		fakeUnsupportedScraper{},
+		fakeUnsupportedScraper{},
+		fakeUnsupportedScraper{},
 	}
 
 	err := performRenameTest(t, copyTester{}, config)
@@ -364,6 +295,7 @@ func cleanRenameTest(t *testing.T) {
 	require.NoError(t, err)
 }
 
+// copyTester is used for testing copying of files
 type copyTester struct{}
 
 func (copyTester) Pre(t *testing.T) {}
@@ -390,6 +322,7 @@ func (copyTester) Post(t *testing.T, files []os.FileInfo) {
 	assert.Equal(t, len(res), len(files))
 }
 
+// moveTester is used to test moving of files
 type moveTester struct{}
 
 func (moveTester) Pre(t *testing.T) {
@@ -429,6 +362,7 @@ func (moveTester) Post(t *testing.T, files []os.FileInfo) {
 	assert.Equal(t, len(res), len(files))
 }
 
+// symlinkTester is used to test symlinking of files
 type symlinkTester struct{}
 
 func (symlinkTester) Pre(t *testing.T) {
@@ -461,6 +395,7 @@ func (symlinkTester) Post(t *testing.T, files []os.FileInfo) {
 	assert.Equal(t, len(res), len(files))
 }
 
+// dryTester is used to test no-op renaming of files with dry flag
 type dryTester struct{}
 
 func (dryTester) Pre(t *testing.T) {}
