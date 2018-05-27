@@ -240,6 +240,9 @@ func (a *Application) renameMovie(info os.FileInfo, m types.Movie) (string, erro
 	if err := template.Execute(&buf, &data); err != nil {
 		return "", err
 	}
+	if buf.String() == "" {
+		return "", errors.New("empty movie template")
+	}
 	filename := truncateSpaces(buf.String()) + filepath.Ext(info.Name())
 	return filepath.Join(a.Config().Movies().Directory(), filename), nil
 }
@@ -271,6 +274,9 @@ func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, 
 	}
 	if err := template.Execute(&buf, &data); err != nil {
 		return "", err
+	}
+	if buf.String() == "" {
+		return "", errors.New("empty episode template")
 	}
 	filename := truncateSpaces(buf.String()) + filepath.Ext(info.Name())
 	return filepath.Join(a.Config().TVShows().Directory(), filename), nil

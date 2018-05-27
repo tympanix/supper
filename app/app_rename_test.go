@@ -19,6 +19,16 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
+const (
+	defaultMovieStr  = "{{ .Movie }} ({{ .Year }}) {{ .Quality }}"
+	defaultTVShowStr = "{{ .TVShow }} S{{ .Season }}E{{ .Episode }}"
+)
+
+var (
+	fakeDefaultMovieTemplate   = template.Must(template.New("movie").Parse(defaultMovieStr))
+	fakeDefaultTVShowsTemplate = template.Must(template.New("tv").Parse(defaultTVShowStr))
+)
+
 var defaultConfig = struct {
 	fakeConfig
 	fakeTemplates
@@ -28,7 +38,9 @@ var defaultConfig = struct {
 		scrapers: []types.Scraper{fakeScraper{}},
 	},
 	fakeTemplates{
-		output: "out",
+		output:         "out",
+		movieTemplate:  fakeDefaultMovieTemplate,
+		tvshowTemplate: fakeDefaultTVShowsTemplate,
 	},
 }
 
@@ -69,20 +81,22 @@ func (c fakeConfig) Scrapers() []types.Scraper      { return c.scrapers }
 func (c fakeConfig) RenameAction() string           { return c.action }
 
 type fakeTemplates struct {
-	output string
+	output         string
+	movieTemplate  *template.Template
+	tvshowTemplate *template.Template
 }
 
 func (c fakeTemplates) Movies() types.MediaConfig {
 	return fakeMediaConfig{
 		directory: c.output,
-		template:  "{{ .Movie }} ({{ .Year }}) {{ .Quality }}",
+		template:  c.movieTemplate,
 	}
 }
 
 func (c fakeTemplates) TVShows() types.MediaConfig {
 	return fakeMediaConfig{
 		directory: c.output,
-		template:  "{{ .TVShow }} S{{ .Season }}E{{ .Episode }}",
+		template:  c.tvshowTemplate,
 	}
 }
 
@@ -93,17 +107,11 @@ func (k fakeAPIKeys) TheTVDB() string    { return "" }
 
 type fakeMediaConfig struct {
 	directory string
-	template  string
+	template  *template.Template
 }
 
-func (m fakeMediaConfig) Directory() string { return m.directory }
-func (m fakeMediaConfig) Template() *template.Template {
-	t, err := template.New("test").Parse(m.template)
-	if err != nil {
-		panic(err.Error())
-	}
-	return t
-}
+func (m fakeMediaConfig) Directory() string            { return m.directory }
+func (m fakeMediaConfig) Template() *template.Template { return m.template }
 
 type fakeScraper []types.Media
 
@@ -199,6 +207,67 @@ func TestRenameDryRun(t *testing.T) {
 	assert.NoError(t, err)
 
 	cleanRenameTest(t)
+}
+
+func TestRenameTemplateEmpty(t *testing.T) {
+	config := defaultConfig
+
+	for _, sp := range []**template.Template{
+		&config.movieTemplate,
+		&config.tvshowTemplate,
+	} {
+		tmp := *sp
+		*sp = template.Must(template.New("test").Parse(""))
+
+		err := performRenameTest(t, copyTester{}, config)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "empty")
+		assert.Contains(t, err.Error(), "template")
+
+		cleanRenameTest(t)
+
+		*sp = tmp
+	}
+}
+
+func TestRenameTemplateError(t *testing.T) {
+	config := defaultConfig
+
+	for sp, templ := range map[**template.Template]string{
+		&config.movieTemplate:  "{{ .Movie }} {{ .InvalidTestField }}",
+		&config.tvshowTemplate: "{{ .TVShow }} {{ .InvalidTestField }}",
+	} {
+		tmp := *sp
+		*sp = template.Must(template.New("test").Parse(templ))
+
+		err := performRenameTest(t, copyTester{}, config)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "InvalidTestField")
+
+		cleanRenameTest(t)
+
+		*sp = tmp
+	}
+}
+
+func TestRenameTemplateNil(t *testing.T) {
+	config := defaultConfig
+
+	for _, tp := range []**template.Template{
+		&config.movieTemplate,
+		&config.tvshowTemplate,
+	} {
+		tmp := *tp
+		*tp = nil
+
+		err := performRenameTest(t, copyTester{}, config)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "missing template")
+
+		cleanRenameTest(t)
+
+		*tp = tmp
+	}
 }
 
 type fakeUnsupportedScraper struct{}
