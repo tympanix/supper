@@ -16,27 +16,27 @@ import (
 
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
 // langauge in the language set
-func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) (int, error) {
-	var numsubs int
+func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) ([]types.LocalSubtitle, error) {
+	var result []types.LocalSubtitle
 
 	if media == nil {
-		return -1, errors.New("no media supplied for subtitles")
+		return nil, errors.New("no media supplied for subtitles")
 	}
 
 	if lang == nil {
-		return -1, errors.New("no languages supplied for subtitles")
+		return nil, errors.New("no languages supplied for subtitles")
 	}
 
 	video := media.FilterVideo()
 
 	if video.Len() == 0 {
-		return -1, errors.New("no media found in path")
+		return nil, errors.New("no media found in path")
 	}
 
 	video, err := video.FilterMissingSubs(lang)
 
 	if err != nil {
-		return -1, nil
+		return nil, err
 	}
 
 	// Iterate all media files in the list
@@ -49,7 +49,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		cursubs, err := item.ExistingSubtitles()
 
 		if err != nil {
-			return -1, err
+			return nil, err
 		}
 
 		missingLangs := set.Difference(lang, cursubs.LanguageSet())
@@ -66,7 +66,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			if err != nil {
 				ctx.WithError(err).Error("Subtitle failed")
 				if a.Config().Strict() {
-					return -1, err
+					return nil, err
 				}
 				continue
 			}
@@ -89,7 +89,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			l, ok := l.(language.Tag)
 
 			if !ok {
-				return -1, err
+				return nil, err
 			}
 
 			langsubs := subs.FilterLanguage(l)
@@ -100,16 +100,15 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			}
 
 			if !a.Config().Dry() {
-				if _, ok := a.downloadBestSubtitle(ctx, item, subs); ok {
-					numsubs++
+				if sub, ok := a.downloadBestSubtitle(ctx, item, subs); ok {
+					result = append(result, sub)
 				}
 			} else {
-				numsubs++
 				ctx.WithField("reason", "dry-run").Info("Skip download")
 			}
 		}
 	}
-	return numsubs, nil
+	return result, nil
 }
 
 func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, bool) {

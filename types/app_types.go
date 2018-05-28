@@ -17,7 +17,7 @@ type App interface {
 	Config() Config
 	Scrapers() []Scraper
 	FindMedia(...string) (LocalMediaList, error)
-	DownloadSubtitles(LocalMediaList, set.Interface) (int, error)
+	DownloadSubtitles(LocalMediaList, set.Interface) ([]LocalSubtitle, error)
 	RenameMedia(LocalMediaList) error
 	FindArchives(...string) ([]MediaArchive, error)
 	ExtractMedia(MediaReadCloser) error

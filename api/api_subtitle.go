@@ -206,11 +206,11 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	num, err := a.DownloadSubtitles(media, langs)
+	subs, err := a.DownloadSubtitles(media, langs)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
-	if num <= 0 {
+	if len(subs) <= 0 {
 		return Error(errors.New("no subtitles found"), http.StatusNoContent)
 	}
 	files, err := a.fileList(folder)
