@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -48,11 +49,28 @@ type subtitleTester interface {
 	Pre(*testing.T)
 	Input() string
 	Test(*testing.T, types.LocalSubtitle)
-	Post(*testing.T)
+	Post(*testing.T, []types.LocalSubtitle)
 }
 
-var inception, _ = media.NewLocalFile("test/Inception.2010.720p.x264.mkv")
-var gameofthrones, _ = media.NewLocalFile("test/Game.of.Thrones.s01e02.mp4")
+type fakeplugin func(types.LocalSubtitle) error
+
+func (p fakeplugin) Run(s types.LocalSubtitle) error {
+	return p(s)
+}
+
+func (p fakeplugin) Name() string {
+	return "fakeplugin"
+}
+
+func must(m types.LocalMedia, err error) types.LocalMedia {
+	if err != nil {
+		panic(err)
+	}
+	return m
+}
+
+var inception = must(media.NewLocalFile("test/Inception.2010.720p.x264.mkv"))
+var gameofthrones = must(media.NewLocalFile("test/Game.of.Thrones.s01e02.mp4"))
 
 var subtitles = []types.OnlineSubtitle{
 	online{subtitle{inception, language.German, false}, []byte("online_inception")},
@@ -72,6 +90,57 @@ func TestDownloadSubtitles(t *testing.T) {
 
 	err := performSubtitleTest(t, successTester{}, config)
 	assert.NoError(t, err)
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitlePlugins(t *testing.T) {
+	config := defaultConfig
+
+	var results []types.LocalSubtitle
+
+	config.plugins = []types.Plugin{
+		fakeplugin(func(s types.LocalSubtitle) error {
+			results = append(results, s)
+			return nil
+		}),
+	}
+
+	config.providers = []types.Provider{
+		fakeProvider{
+			subtitles,
+		},
+	}
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, pluginTester{&results}, config)
+	assert.NoError(t, err)
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitlePluginError(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	config.plugins = []types.Plugin{
+		fakeplugin(func(s types.LocalSubtitle) error {
+			return errors.New("test plugin error")
+		}),
+	}
+
+	config.providers = []types.Provider{
+		fakeProvider{
+			subtitles,
+		},
+	}
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, successTester{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "test plugin error")
 
 	cleanRenameTest(t)
 }
@@ -118,12 +187,16 @@ func performSubtitleTest(t *testing.T, test subtitleTester, config types.Config)
 
 	test.Pre(t)
 
-	_, err = app.DownloadSubtitles(media, config.Languages())
+	list, err := app.DownloadSubtitles(media, config.Languages())
 	if err != nil {
 		return err
 	}
 
-	test.Post(t)
+	for _, s := range list {
+		test.Test(t, s)
+	}
+
+	test.Post(t, list)
 
 	return nil
 }
@@ -141,6 +214,25 @@ func (successTester) Test(t *testing.T, s types.LocalSubtitle) {
 
 }
 
-func (successTester) Post(t *testing.T) {
+func (successTester) Post(t *testing.T, l []types.LocalSubtitle) {
+	assert.Equal(t, len(subtitles), len(l))
+}
 
+type pluginTester struct {
+	runs *[]types.LocalSubtitle
+}
+
+func (p pluginTester) Pre(t *testing.T) {
+}
+
+func (p pluginTester) Input() string {
+	return "test"
+}
+
+func (p pluginTester) Test(t *testing.T, s types.LocalSubtitle) {
+	assert.Contains(t, *p.runs, s)
+}
+
+func (p pluginTester) Post(t *testing.T, l []types.LocalSubtitle) {
+	assert.Equal(t, len(subtitles), len(l))
 }

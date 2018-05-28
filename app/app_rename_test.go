@@ -70,6 +70,7 @@ type fakeConfig struct {
 	scrapers  []types.Scraper
 	providers []types.Provider
 	languages set.Interface
+	plugins   []types.Plugin
 }
 
 func (c fakeConfig) Languages() set.Interface       { return c.languages }
@@ -83,7 +84,7 @@ func (c fakeConfig) Limit() int                     { return -1 }
 func (c fakeConfig) Logfile() string                { return "" }
 func (c fakeConfig) MediaFilter() types.MediaFilter { return nil }
 func (c fakeConfig) Modified() time.Duration        { return 0 }
-func (c fakeConfig) Plugins() []types.Plugin        { return nil }
+func (c fakeConfig) Plugins() []types.Plugin        { return c.plugins }
 func (c fakeConfig) Score() int                     { return 0 }
 func (c fakeConfig) Strict() bool                   { return c.strict }
 func (c fakeConfig) Verbose() bool                  { return false }

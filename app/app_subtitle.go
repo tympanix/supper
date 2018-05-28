@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/apex/log"
@@ -100,9 +99,14 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			}
 
 			if !a.Config().Dry() {
-				if sub, ok := a.downloadBestSubtitle(ctx, item, subs); ok {
-					result = append(result, sub)
+				sub, err := a.downloadBestSubtitle(ctx, item, subs)
+				if err != nil {
+					if a.Config().Strict() {
+						return nil, err
+					}
+					continue
 				}
+				result = append(result, sub)
 			} else {
 				ctx.WithField("reason", "dry-run").Info("Skip download")
 			}
@@ -111,12 +115,13 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 	return result, nil
 }
 
-func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, bool) {
+func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, error) {
 	rated := l.RateByMedia(m)
 	sub := rated.Best()
 	if sub.Score() < (float32(a.Config().Score()) / 100.0) {
-		ctx.Warnf("Score too low %.0f%%", sub.Score()*100.0)
-		return nil, false
+		m := fmt.Sprintf("Score too low %.0f%%", sub.Score()*100.0)
+		ctx.Warnf(m)
+		return nil, errors.New(m)
 	}
 	onl, ok := sub.Subtitle().(types.OnlineSubtitle)
 	if !ok {
@@ -125,18 +130,13 @@ func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l t
 	srt, err := onl.Download()
 	if err != nil {
 		ctx.WithError(err).Error("Could not download subtitle")
-		if a.Config().Strict() {
-			os.Exit(1)
-		}
+		return nil, errors.New("could not download subtitle")
 	}
 	defer srt.Close()
 	saved, err := m.SaveSubtitle(srt, onl.Language())
 	if err != nil {
 		ctx.WithError(err).Error("Subtitle error")
-		if a.Config().Strict() {
-			os.Exit(1)
-		}
-		return nil, false
+		return nil, err
 	}
 
 	var strscore string
@@ -148,8 +148,10 @@ func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l t
 
 	ctx.WithField("score", strscore).Info("Subtitle downloaded")
 
-	a.execPluginsOnSubtitle(ctx, saved)
-	return saved, true
+	if err := a.execPluginsOnSubtitle(ctx, saved); err != nil {
+		return nil, err
+	}
+	return saved, nil
 }
 
 func (a *Application) execPluginsOnSubtitle(ctx log.Interface, s types.LocalSubtitle) error {
@@ -157,12 +159,9 @@ func (a *Application) execPluginsOnSubtitle(ctx log.Interface, s types.LocalSubt
 		err := plugin.Run(s)
 		if err != nil {
 			ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
-			if a.Config().Strict() {
-				os.Exit(1)
-			}
-		} else {
-			ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
+			return err
 		}
+		ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
 	}
 	return nil
 }
