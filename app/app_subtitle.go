@@ -29,7 +29,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 	video := media.FilterVideo()
 
 	if video.Len() == 0 {
-		return nil, errors.New("no media found in path")
+		return nil, errors.New("no video media found in path")
 	}
 
 	video, err := video.FilterMissingSubs(lang)

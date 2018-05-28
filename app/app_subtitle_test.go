@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/media"
 
 	"github.com/fatih/set"
@@ -143,6 +144,30 @@ func TestSubtitlePluginError(t *testing.T) {
 	assert.Contains(t, err.Error(), "test plugin error")
 
 	cleanRenameTest(t)
+}
+
+func TestSubtitleNoMedia(t *testing.T) {
+	app := New(defaultConfig)
+
+	_, err := app.DownloadSubtitles(nil, set.New(language.English))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no media")
+}
+
+func TestSubtitleNoLanguage(t *testing.T) {
+	app := New(defaultConfig)
+
+	_, err := app.DownloadSubtitles(list.NewLocalMedia(), nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no languages")
+}
+
+func TestSubtitleNoVideo(t *testing.T) {
+	app := New(defaultConfig)
+
+	_, err := app.DownloadSubtitles(list.NewLocalMedia(), set.New(language.English))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no video")
 }
 
 func copyTestFiles(src, dst string) error {
