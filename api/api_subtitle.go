@@ -64,10 +64,11 @@ type jsonRatedSubtitle struct {
 	types.RatedSubtitle
 }
 
-func (s jsonRatedSubtitle) MarshalJSON() ([]byte, error) {
+func (r jsonRatedSubtitle) MarshalJSON() ([]byte, error) {
 	hash := sha1.New()
+	s := r.Subtitle()
 
-	dl, ok := s.RatedSubtitle.(types.OnlineSubtitle)
+	dl, ok := s.(types.OnlineSubtitle)
 	if !ok {
 		return nil, errors.New("Could not marshal subtitle which is not online")
 	}
@@ -96,7 +97,7 @@ func (s jsonRatedSubtitle) MarshalJSON() ([]byte, error) {
 		string(infohash),
 		s.Language(),
 		dl.Link(),
-		s.Score(),
+		r.Score(),
 		s.HearingImpaired(),
 		s.ForMedia(),
 	})

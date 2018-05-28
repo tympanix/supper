@@ -34,8 +34,9 @@ var defaultConfig = struct {
 	fakeTemplates
 }{
 	fakeConfig{
-		action:   "copy",
-		scrapers: []types.Scraper{fakeScraper{}},
+		action:    "copy",
+		scrapers:  []types.Scraper{fakeScraper{}},
+		providers: []types.Provider{fakeProvider{}},
 	},
 	fakeTemplates{
 		output:         "out",
@@ -44,24 +45,34 @@ var defaultConfig = struct {
 	},
 }
 
-type fakeProvider struct{}
+type fakeProvider struct {
+	subs []types.OnlineSubtitle
+}
 
 func (f fakeProvider) ResolveSubtitle(link types.Linker) (types.Downloadable, error) {
-	return nil, nil
+	for _, l := range f.subs {
+		if l.Link() == link.Link() {
+			return l, nil
+		}
+	}
+	return nil, errors.New("mocked subtitle not found")
 }
+
 func (f fakeProvider) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitle, error) {
-	return nil, nil
+	return f.subs, nil
 }
 
 type fakeConfig struct {
-	action   string
-	strict   bool
-	force    bool
-	dry      bool
-	scrapers []types.Scraper
+	action    string
+	strict    bool
+	force     bool
+	dry       bool
+	scrapers  []types.Scraper
+	providers []types.Provider
+	languages set.Interface
 }
 
-func (c fakeConfig) Languages() set.Interface       { return nil }
+func (c fakeConfig) Languages() set.Interface       { return c.languages }
 func (c fakeConfig) APIKeys() types.APIKeys         { return fakeAPIKeys{} }
 func (c fakeConfig) Config() string                 { return "" }
 func (c fakeConfig) Delay() time.Duration           { return 0 }
@@ -76,7 +87,7 @@ func (c fakeConfig) Plugins() []types.Plugin        { return nil }
 func (c fakeConfig) Score() int                     { return 0 }
 func (c fakeConfig) Strict() bool                   { return c.strict }
 func (c fakeConfig) Verbose() bool                  { return false }
-func (c fakeConfig) Providers() []types.Provider    { return []types.Provider{fakeProvider{}} }
+func (c fakeConfig) Providers() []types.Provider    { return c.providers }
 func (c fakeConfig) Scrapers() []types.Scraper      { return c.scrapers }
 func (c fakeConfig) RenameAction() string           { return c.action }
 

@@ -7,13 +7,18 @@ import (
 )
 
 type subtitleEntry struct {
-	types.Subtitle
-	score float32
+	subtitle types.Subtitle
+	score    float32
 }
 
 // Score returns the score of the rated subtitle
 func (s subtitleEntry) Score() float32 {
 	return s.score
+}
+
+// Subtitle returns the underlying subtitles (i.e. for type assertion)
+func (s subtitleEntry) Subtitle() types.Subtitle {
+	return s.subtitle
 }
 
 // NewRatedSubtitles returns a new subtitles collection

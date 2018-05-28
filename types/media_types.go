@@ -134,7 +134,7 @@ type Rateable interface {
 // with a high score has a high probability of being synchronized with the media
 type RatedSubtitle interface {
 	Rateable
-	Subtitle
+	Subtitle() Subtitle
 }
 
 // OnlineSubtitle is a subtitle obtained from the internet and can be

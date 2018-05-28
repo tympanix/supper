@@ -29,6 +29,10 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 	video := media.FilterVideo()
 
+	if video.Len() == 0 {
+		return -1, errors.New("no media found in path")
+	}
+
 	video, err := video.FilterMissingSubs(lang)
 
 	if err != nil {
@@ -115,7 +119,7 @@ func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l t
 		ctx.Warnf("Score too low %.0f%%", sub.Score()*100.0)
 		return nil, false
 	}
-	onl, ok := sub.(types.OnlineSubtitle)
+	onl, ok := sub.Subtitle().(types.OnlineSubtitle)
 	if !ok {
 		ctx.Fatal("Subtitle could not be cast to online subtitle")
 	}

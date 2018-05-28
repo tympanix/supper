@@ -96,7 +96,7 @@ func TestSubtitleRateByMedia(t *testing.T) {
 	list := Subtitles(languages...)
 	rated := list.RateByMedia(inception)
 	for _, s := range rated.List() {
-		assert.Equal(t, inception, s.ForMedia())
+		assert.Equal(t, inception, s.Subtitle().ForMedia())
 		assert.True(t, s.Score() > 0.0)
 		assert.True(t, s.Score() <= 1.1)
 	}
