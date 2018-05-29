@@ -57,6 +57,14 @@ func (o onlineError) Link() string {
 	return ""
 }
 
+type mockSaveSubtitleError struct {
+	types.Video
+}
+
+func (mockSaveSubtitleError) SaveSubtitle(io.Reader, language.Tag) (types.LocalSubtitle, error) {
+	return nil, errors.New("test save subtitle")
+}
+
 type fakeEvaluator func(types.Media, types.Media) float32
 
 func (e fakeEvaluator) Evaluate(m types.Media, n types.Media) float32 {
@@ -66,6 +74,7 @@ func (e fakeEvaluator) Evaluate(m types.Media, n types.Media) float32 {
 type subtitleTester interface {
 	Pre(*testing.T, []types.LocalMedia)
 	Input() string
+	Mock(types.LocalMedia) types.LocalMedia
 	Test(*testing.T, types.LocalSubtitle)
 	Post(*testing.T, []types.LocalSubtitle)
 }
@@ -279,6 +288,19 @@ func TestSubtitleDownloadError(t *testing.T) {
 	cleanRenameTest(t)
 }
 
+func TestSubtitleSaveError(t *testing.T) {
+	defer cleanRenameTest(t)
+
+	config := defaultConfig
+	config.strict = true
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, saveErrorSubtitleTest{}, config)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "test save subtitle")
+}
+
 func copyTestFiles(src, dst string) error {
 	files, err := ioutil.ReadDir(src)
 	if err != nil {
@@ -318,6 +340,12 @@ func performSubtitleTest(t *testing.T, test subtitleTester, config types.Config)
 	media, err := app.FindMedia("out")
 	require.NoError(t, err)
 
+	mocked := media.List()
+	for i, m := range mocked {
+		mocked[i] = test.Mock(m)
+	}
+	media = list.NewLocalMedia(mocked...)
+
 	test.Pre(t, media.List())
 
 	list, err := app.DownloadSubtitles(media, config.Languages())
@@ -338,6 +366,10 @@ type subtitleLangTester language.Tag
 
 func (subtitleLangTester) Pre(t *testing.T, l []types.LocalMedia) {
 	assert.Equal(t, len(res), len(l))
+}
+
+func (subtitleLangTester) Mock(m types.LocalMedia) types.LocalMedia {
+	return m
 }
 
 func (subtitleLangTester) Input() string {
@@ -363,6 +395,10 @@ func (p pluginTester) Input() string {
 	return "test"
 }
 
+func (p pluginTester) Mock(m types.LocalMedia) types.LocalMedia {
+	return m
+}
+
 func (p pluginTester) Test(t *testing.T, s types.LocalSubtitle) {
 	assert.Contains(t, *p.runs, s)
 }
@@ -379,10 +415,25 @@ func (p skipSubtitlesTest) Input() string {
 	return "test"
 }
 
+func (p skipSubtitlesTest) Mock(m types.LocalMedia) types.LocalMedia {
+	return m
+}
+
 func (p skipSubtitlesTest) Test(t *testing.T, s types.LocalSubtitle) {
 	assert.Fail(t, "shuld skip all subtitles")
 }
 
 func (p skipSubtitlesTest) Post(t *testing.T, l []types.LocalSubtitle) {
 	assert.Equal(t, 0, len(l))
+}
+
+type saveErrorSubtitleTest struct {
+	skipSubtitlesTest
+}
+
+func (saveErrorSubtitleTest) Mock(m types.LocalMedia) types.LocalMedia {
+	if v, ok := m.(types.Video); ok {
+		return mockSaveSubtitleError{v}
+	}
+	return m
 }
