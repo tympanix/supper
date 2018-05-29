@@ -116,7 +116,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 }
 
 func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, error) {
-	rated := l.RateByMedia(m)
+	rated := l.RateByMedia(m, a.Config().Evaluator())
 	sub := rated.Best()
 	if sub.Score() < (float32(a.Config().Score()) / 100.0) {
 		m := fmt.Sprintf("Score too low %.0f%%", sub.Score()*100.0)
@@ -130,7 +130,7 @@ func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l t
 	srt, err := onl.Download()
 	if err != nil {
 		ctx.WithError(err).Error("Could not download subtitle")
-		return nil, errors.New("could not download subtitle")
+		return nil, err
 	}
 	defer srt.Close()
 	saved, err := m.SaveSubtitle(srt, onl.Language())

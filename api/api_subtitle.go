@@ -178,7 +178,7 @@ func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} 
 	if err != nil {
 		return err
 	}
-	rated := sublist.RateByMedia(item)
+	rated := sublist.RateByMedia(item, a.Config().Evaluator())
 	return jsonSubtitleList(rated.List())
 }
 

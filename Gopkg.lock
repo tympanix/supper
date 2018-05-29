@@ -19,6 +19,7 @@
     ".",
     "handlers/cli",
     "handlers/logfmt",
+    "handlers/memory",
     "handlers/multi",
     "handlers/text"
   ]
@@ -236,6 +237,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ab648f0160283819b509166afca48db202dcb649ba4318d2b90190ac8089def0"
+  inputs-digest = "2a3afd7612af3fd705ab8f255563484b5a6810272d067ae254fa3a48226a3352"
   solver-name = "gps-cdcl"
   solver-version = 1

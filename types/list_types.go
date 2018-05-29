@@ -21,7 +21,7 @@ type SubtitleList interface {
 	LanguageSet() set.Interface
 	FilterLanguage(language.Tag) SubtitleList
 	HearingImpaired(bool) SubtitleList
-	RateByMedia(Media) RatedSubtitleList
+	RateByMedia(Media, Evaluator) RatedSubtitleList
 }
 
 // RatedSubtitleList is a collection of subtitle ordered by rating

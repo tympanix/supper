@@ -46,6 +46,12 @@ func (o online) Link() string {
 	return ""
 }
 
+type fakeEvaluator func(types.Media, types.Media) float32
+
+func (e fakeEvaluator) Evaluate(m types.Media, n types.Media) float32 {
+	return e(m, n)
+}
+
 type subtitleTester interface {
 	Pre(*testing.T)
 	Input() string
@@ -61,6 +67,16 @@ func (p fakeplugin) Run(s types.LocalSubtitle) error {
 
 func (p fakeplugin) Name() string {
 	return "fakeplugin"
+}
+
+type fakeProviderError struct{}
+
+func (p fakeProviderError) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitle, error) {
+	return nil, errors.New("test provider error")
+}
+
+func (p fakeProviderError) ResolveSubtitle(l types.Linker) (types.Downloadable, error) {
+	return nil, errors.New("test provider does not support resolving subtitles")
 }
 
 func must(m types.LocalMedia, err error) types.LocalMedia {
@@ -83,11 +99,6 @@ func TestDownloadSubtitles(t *testing.T) {
 	config.strict = true
 
 	config.languages = set.New(language.German)
-	config.providers = []types.Provider{
-		fakeProvider{
-			subtitles,
-		},
-	}
 
 	err := performSubtitleTest(t, successTester{}, config)
 	assert.NoError(t, err)
@@ -107,12 +118,6 @@ func TestSubtitlePlugins(t *testing.T) {
 		}),
 	}
 
-	config.providers = []types.Provider{
-		fakeProvider{
-			subtitles,
-		},
-	}
-
 	config.languages = set.New(language.German)
 
 	err := performSubtitleTest(t, pluginTester{&results}, config)
@@ -129,12 +134,6 @@ func TestSubtitlePluginError(t *testing.T) {
 		fakeplugin(func(s types.LocalSubtitle) error {
 			return errors.New("test plugin error")
 		}),
-	}
-
-	config.providers = []types.Provider{
-		fakeProvider{
-			subtitles,
-		},
 	}
 
 	config.languages = set.New(language.German)
@@ -168,6 +167,43 @@ func TestSubtitleNoVideo(t *testing.T) {
 	_, err := app.DownloadSubtitles(list.NewLocalMedia(), set.New(language.English))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no video")
+}
+
+func TestSubtitleScore(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	config.evaluator = fakeEvaluator(func(m types.Media, n types.Media) float32 {
+		return 0.01
+	})
+
+	config.languages = set.New(language.German)
+
+	config.score = 100
+
+	err := performSubtitleTest(t, successTester{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Score too low")
+	assert.Contains(t, err.Error(), "1%")
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitleProviderError(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	config.providers = []types.Provider{
+		fakeProviderError{},
+	}
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, successTester{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "test provider error")
+
+	cleanRenameTest(t)
 }
 
 func copyTestFiles(src, dst string) error {

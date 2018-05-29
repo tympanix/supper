@@ -3,6 +3,8 @@ package list
 import (
 	"testing"
 
+	"github.com/tympanix/supper/score"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tympanix/supper/types"
@@ -94,7 +96,7 @@ func TestSubtitlesFromInterfaceError(t *testing.T) {
 
 func TestSubtitleRateByMedia(t *testing.T) {
 	list := Subtitles(languages...)
-	rated := list.RateByMedia(inception)
+	rated := list.RateByMedia(inception, &score.DefaultEvaluator{})
 	for _, s := range rated.List() {
 		assert.Equal(t, inception, s.Subtitle().ForMedia())
 		assert.True(t, s.Score() > 0.0)

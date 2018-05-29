@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tympanix/supper/score"
+
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/plugin"
@@ -290,4 +292,8 @@ func (v viperConfig) Scrapers() []types.Scraper {
 
 func (v viperConfig) RenameAction() string {
 	return viper.GetString("action")
+}
+
+func (v viperConfig) Evaluator() types.Evaluator {
+	return new(score.DefaultEvaluator)
 }

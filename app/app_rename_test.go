@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tympanix/supper/score"
+
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/provider"
 
@@ -36,7 +38,8 @@ var defaultConfig = struct {
 	fakeConfig{
 		action:    "copy",
 		scrapers:  []types.Scraper{fakeScraper{}},
-		providers: []types.Provider{fakeProvider{}},
+		providers: []types.Provider{fakeProvider{subtitles}},
+		evaluator: &score.DefaultEvaluator{},
 	},
 	fakeTemplates{
 		output:         "out",
@@ -67,10 +70,12 @@ type fakeConfig struct {
 	strict    bool
 	force     bool
 	dry       bool
+	score     int
 	scrapers  []types.Scraper
 	providers []types.Provider
 	languages set.Interface
 	plugins   []types.Plugin
+	evaluator types.Evaluator
 }
 
 func (c fakeConfig) Languages() set.Interface       { return c.languages }
@@ -85,12 +90,13 @@ func (c fakeConfig) Logfile() string                { return "" }
 func (c fakeConfig) MediaFilter() types.MediaFilter { return nil }
 func (c fakeConfig) Modified() time.Duration        { return 0 }
 func (c fakeConfig) Plugins() []types.Plugin        { return c.plugins }
-func (c fakeConfig) Score() int                     { return 0 }
+func (c fakeConfig) Score() int                     { return c.score }
 func (c fakeConfig) Strict() bool                   { return c.strict }
 func (c fakeConfig) Verbose() bool                  { return false }
 func (c fakeConfig) Providers() []types.Provider    { return c.providers }
 func (c fakeConfig) Scrapers() []types.Scraper      { return c.scrapers }
 func (c fakeConfig) RenameAction() string           { return c.action }
+func (c fakeConfig) Evaluator() types.Evaluator     { return c.evaluator }
 
 type fakeTemplates struct {
 	output         string
