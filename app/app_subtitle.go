@@ -8,6 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/logutil"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
@@ -78,17 +79,16 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		subs = subs.HearingImpaired(a.Config().Impaired())
 
 		// Download subtitle for each language
-		for _, l := range missingLangs.List() {
+		for _, v := range missingLangs.List() {
+			l, ok := v.(language.Tag)
+			if !ok {
+				return nil, logutil.Errorf("unknown language %v", v)
+			}
+
 			ctx = ctx.WithField("lang", display.English.Languages().Name(l))
 
 			if a.Config().Delay() > 0 {
 				time.Sleep(a.Config().Delay())
-			}
-
-			l, ok := l.(language.Tag)
-
-			if !ok {
-				return nil, err
 			}
 
 			langsubs := subs.FilterLanguage(l)

@@ -1,6 +1,8 @@
 package logutil
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/tympanix/supper/types"
@@ -46,4 +48,18 @@ func Mock() *memory.Handler {
 	h := memory.New()
 	log.SetHandler(h)
 	return h
+}
+
+// Error logs the error message and returns an error with the same message
+func Error(msg string) error {
+	log.Error(msg)
+	return errors.New(msg)
+}
+
+// Errorf formats and logs the error message and returns an error with the same
+// message
+func Errorf(msg string, v ...interface{}) error {
+	m := fmt.Sprintf(msg, v...)
+	log.Error(m)
+	return errors.New(m)
 }

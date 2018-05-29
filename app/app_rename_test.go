@@ -93,6 +93,7 @@ type fakeConfig struct {
 	force     bool
 	dry       bool
 	score     int
+	delay     time.Duration
 	scrapers  []types.Scraper
 	providers []types.Provider
 	languages set.Interface
@@ -103,7 +104,7 @@ type fakeConfig struct {
 func (c fakeConfig) Languages() set.Interface       { return c.languages }
 func (c fakeConfig) APIKeys() types.APIKeys         { return fakeAPIKeys{} }
 func (c fakeConfig) Config() string                 { return "" }
-func (c fakeConfig) Delay() time.Duration           { return 0 }
+func (c fakeConfig) Delay() time.Duration           { return c.delay }
 func (c fakeConfig) Dry() bool                      { return c.dry }
 func (c fakeConfig) Force() bool                    { return c.force }
 func (c fakeConfig) Impaired() bool                 { return false }

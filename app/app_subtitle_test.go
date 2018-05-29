@@ -3,11 +3,13 @@ package app
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/tympanix/supper/list"
 
@@ -104,6 +106,26 @@ func must(m types.LocalMedia, err error) types.LocalMedia {
 		panic(err)
 	}
 	return m
+}
+
+type fakeTimedProvider struct {
+	delay time.Duration
+	fakeProvider
+	last time.Time
+}
+
+func (p *fakeTimedProvider) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitle, error) {
+	fmt.Println(time.Since(p.last))
+	if time.Since(p.last) < p.delay {
+		return nil, errors.New("expected delay to occur")
+	}
+	p.last = time.Now()
+	fmt.Println(p.last)
+	return p.fakeProvider.SearchSubtitles(m)
+}
+
+func (p *fakeTimedProvider) reset() {
+	p.last = time.Unix(0, 0)
 }
 
 func TestDownloadSubtitles(t *testing.T) {
@@ -299,6 +321,55 @@ func TestSubtitleSaveError(t *testing.T) {
 	err := performSubtitleTest(t, saveErrorSubtitleTest{}, config)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "test save subtitle")
+}
+
+func TestSubtitleDelay(t *testing.T) {
+	defer cleanRenameTest(t)
+
+	const testDelay = 250 * time.Millisecond
+
+	config := defaultConfig
+
+	config.strict = true
+	config.languages = set.New(language.German)
+
+	timedProvider := &fakeTimedProvider{
+		testDelay,
+		fakeProvider{[]language.Tag{
+			language.German,
+		}},
+		time.Unix(0, 0),
+	}
+
+	config.providers = []types.Provider{
+		timedProvider,
+	}
+
+	// first run, without delay, should return error
+	err := performSubtitleTest(t, subtitleLangTester(language.German), config)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "expected delay to occur")
+
+	cleanRenameTest(t)
+
+	// second run, with delay, should not return error
+	timedProvider.reset()
+	config.delay = time.Duration(testDelay)
+	err = performSubtitleTest(t, subtitleLangTester(language.German), config)
+	assert.NoError(t, err)
+}
+
+func TestSubtitleInvalidLanguages(t *testing.T) {
+	defer cleanRenameTest(t)
+
+	config := defaultConfig
+	config.strict = true
+
+	config.languages = set.New(42)
+
+	err := performSubtitleTest(t, skipSubtitlesTest{}, config)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown language")
 }
 
 func copyTestFiles(src, dst string) error {
