@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/tympanix/supper/score"
+	"golang.org/x/text/language"
 
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/provider"
@@ -36,9 +37,15 @@ var defaultConfig = struct {
 	fakeTemplates
 }{
 	fakeConfig{
-		action:    "copy",
-		scrapers:  []types.Scraper{fakeScraper{}},
-		providers: []types.Provider{fakeProvider{subtitles}},
+		action:   "copy",
+		scrapers: []types.Scraper{fakeScraper{}},
+		providers: []types.Provider{
+			fakeProvider{[]language.Tag{
+				language.English,
+				language.German,
+				language.Spanish,
+			}},
+		},
 		evaluator: &score.DefaultEvaluator{},
 	},
 	fakeTemplates{
@@ -49,20 +56,35 @@ var defaultConfig = struct {
 }
 
 type fakeProvider struct {
-	subs []types.OnlineSubtitle
+	langs []language.Tag
 }
 
 func (f fakeProvider) ResolveSubtitle(link types.Linker) (types.Downloadable, error) {
-	for _, l := range f.subs {
-		if l.Link() == link.Link() {
-			return l, nil
-		}
-	}
-	return nil, errors.New("mocked subtitle not found")
+	return nil, errors.New("test provider does not support resolving of subtitles")
 }
 
 func (f fakeProvider) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitle, error) {
-	return f.subs, nil
+	var subs []types.OnlineSubtitle
+	for _, l := range f.langs {
+		subs = append(subs, online{subtitle{m, l, false}, []byte(m.Identity())})
+	}
+	return subs, nil
+}
+
+type fakeProviderDownloadError struct {
+	langs []language.Tag
+}
+
+func (f fakeProviderDownloadError) ResolveSubtitle(link types.Linker) (types.Downloadable, error) {
+	return nil, errors.New("test provider does not support resolving of subtitles")
+}
+
+func (f fakeProviderDownloadError) SearchSubtitles(m types.LocalMedia) ([]types.OnlineSubtitle, error) {
+	var subs []types.OnlineSubtitle
+	for _, l := range f.langs {
+		subs = append(subs, onlineError{subtitle{m, l, false}})
+	}
+	return subs, nil
 }
 
 type fakeConfig struct {

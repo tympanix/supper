@@ -51,7 +51,7 @@ func (s RatedSubtitles) List() []types.RatedSubtitle {
 // Best returns the best matching subtitle
 func (s RatedSubtitles) Best() types.RatedSubtitle {
 	if len(s) > 0 {
-		return (s)[0]
+		return s[0]
 	}
 	return nil
 }

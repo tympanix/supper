@@ -99,7 +99,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			}
 
 			if !a.Config().Dry() {
-				sub, err := a.downloadBestSubtitle(ctx, item, subs)
+				sub, err := a.downloadBestSubtitle(ctx, item, langsubs)
 				if err != nil {
 					if a.Config().Strict() {
 						return nil, err
@@ -117,6 +117,11 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, error) {
 	rated := l.RateByMedia(m, a.Config().Evaluator())
+	if rated.Len() == 0 {
+		m := "no subtitles satisfied media"
+		ctx.Warn(m)
+		return nil, errors.New(m)
+	}
 	sub := rated.Best()
 	if sub.Score() < (float32(a.Config().Score()) / 100.0) {
 		m := fmt.Sprintf("Score too low %.0f%%", sub.Score()*100.0)

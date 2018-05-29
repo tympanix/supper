@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/tympanix/supper/list"
-	"github.com/tympanix/supper/media"
 
 	"github.com/fatih/set"
 	"github.com/stretchr/testify/assert"
@@ -46,6 +45,18 @@ func (o online) Link() string {
 	return ""
 }
 
+type onlineError struct {
+	types.Subtitle
+}
+
+func (o onlineError) Download() (io.ReadCloser, error) {
+	return nil, errors.New("test download subtitle error")
+}
+
+func (o onlineError) Link() string {
+	return ""
+}
+
 type fakeEvaluator func(types.Media, types.Media) float32
 
 func (e fakeEvaluator) Evaluate(m types.Media, n types.Media) float32 {
@@ -53,19 +64,19 @@ func (e fakeEvaluator) Evaluate(m types.Media, n types.Media) float32 {
 }
 
 type subtitleTester interface {
-	Pre(*testing.T)
+	Pre(*testing.T, []types.LocalMedia)
 	Input() string
 	Test(*testing.T, types.LocalSubtitle)
 	Post(*testing.T, []types.LocalSubtitle)
 }
 
-type fakeplugin func(types.LocalSubtitle) error
+type fakePlugin func(types.LocalSubtitle) error
 
-func (p fakeplugin) Run(s types.LocalSubtitle) error {
+func (p fakePlugin) Run(s types.LocalSubtitle) error {
 	return p(s)
 }
 
-func (p fakeplugin) Name() string {
+func (p fakePlugin) Name() string {
 	return "fakeplugin"
 }
 
@@ -86,21 +97,13 @@ func must(m types.LocalMedia, err error) types.LocalMedia {
 	return m
 }
 
-var inception = must(media.NewLocalFile("test/Inception.2010.720p.x264.mkv"))
-var gameofthrones = must(media.NewLocalFile("test/Game.of.Thrones.s01e02.mp4"))
-
-var subtitles = []types.OnlineSubtitle{
-	online{subtitle{inception, language.German, false}, []byte("online_inception")},
-	online{subtitle{gameofthrones, language.German, false}, []byte("online_gameofthrones")},
-}
-
 func TestDownloadSubtitles(t *testing.T) {
 	config := defaultConfig
 	config.strict = true
 
 	config.languages = set.New(language.German)
 
-	err := performSubtitleTest(t, successTester{}, config)
+	err := performSubtitleTest(t, subtitleLangTester(language.German), config)
 	assert.NoError(t, err)
 
 	cleanRenameTest(t)
@@ -112,7 +115,7 @@ func TestSubtitlePlugins(t *testing.T) {
 	var results []types.LocalSubtitle
 
 	config.plugins = []types.Plugin{
-		fakeplugin(func(s types.LocalSubtitle) error {
+		fakePlugin(func(s types.LocalSubtitle) error {
 			results = append(results, s)
 			return nil
 		}),
@@ -131,14 +134,14 @@ func TestSubtitlePluginError(t *testing.T) {
 	config.strict = true
 
 	config.plugins = []types.Plugin{
-		fakeplugin(func(s types.LocalSubtitle) error {
+		fakePlugin(func(s types.LocalSubtitle) error {
 			return errors.New("test plugin error")
 		}),
 	}
 
 	config.languages = set.New(language.German)
 
-	err := performSubtitleTest(t, successTester{}, config)
+	err := performSubtitleTest(t, subtitleLangTester(language.German), config)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "test plugin error")
 
@@ -181,7 +184,7 @@ func TestSubtitleScore(t *testing.T) {
 
 	config.score = 100
 
-	err := performSubtitleTest(t, successTester{}, config)
+	err := performSubtitleTest(t, subtitleLangTester(language.German), config)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Score too low")
 	assert.Contains(t, err.Error(), "1%")
@@ -199,9 +202,79 @@ func TestSubtitleProviderError(t *testing.T) {
 
 	config.languages = set.New(language.German)
 
-	err := performSubtitleTest(t, successTester{}, config)
+	err := performSubtitleTest(t, subtitleLangTester(language.German), config)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "test provider error")
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitleNoneAvailable(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	config.languages = set.New(language.Russian)
+
+	err := performSubtitleTest(t, skipSubtitlesTest{}, config)
+	assert.NoError(t, err)
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitleDryRun(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	config.dry = true
+
+	// when dry run, provider should never be called
+	config.providers = []types.Provider{
+		fakeProviderError{},
+	}
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, skipSubtitlesTest{}, config)
+	assert.NoError(t, err)
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitleUnsatisfied(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	// media is always unsatisfied (score = 0.0)
+	config.evaluator = fakeEvaluator(func(m types.Media, n types.Media) float32 {
+		return 0.0
+	})
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, skipSubtitlesTest{}, config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no subtitles satisfied media")
+
+	cleanRenameTest(t)
+}
+
+func TestSubtitleDownloadError(t *testing.T) {
+	config := defaultConfig
+	config.strict = true
+
+	config.providers = []types.Provider{
+		fakeProviderDownloadError{[]language.Tag{
+			language.English,
+			language.German,
+			language.Spanish,
+		}},
+	}
+
+	config.languages = set.New(language.German)
+
+	err := performSubtitleTest(t, subtitleLangTester(language.German), config)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "test download subtitle error")
 
 	cleanRenameTest(t)
 }
@@ -244,9 +317,8 @@ func performSubtitleTest(t *testing.T, test subtitleTester, config types.Config)
 
 	media, err := app.FindMedia("out")
 	require.NoError(t, err)
-	assert.Equal(t, len(res), media.Len())
 
-	test.Pre(t)
+	test.Pre(t, media.List())
 
 	list, err := app.DownloadSubtitles(media, config.Languages())
 	if err != nil {
@@ -262,28 +334,29 @@ func performSubtitleTest(t *testing.T, test subtitleTester, config types.Config)
 	return nil
 }
 
-type successTester struct{}
+type subtitleLangTester language.Tag
 
-func (successTester) Pre(t *testing.T) {
+func (subtitleLangTester) Pre(t *testing.T, l []types.LocalMedia) {
+	assert.Equal(t, len(res), len(l))
 }
 
-func (successTester) Input() string {
+func (subtitleLangTester) Input() string {
 	return "test"
 }
 
-func (successTester) Test(t *testing.T, s types.LocalSubtitle) {
-
+func (l subtitleLangTester) Test(t *testing.T, s types.LocalSubtitle) {
+	assert.Equal(t, s.Language(), language.Tag(l))
 }
 
-func (successTester) Post(t *testing.T, l []types.LocalSubtitle) {
-	assert.Equal(t, len(subtitles), len(l))
+func (subtitleLangTester) Post(t *testing.T, l []types.LocalSubtitle) {
 }
 
 type pluginTester struct {
 	runs *[]types.LocalSubtitle
 }
 
-func (p pluginTester) Pre(t *testing.T) {
+func (p pluginTester) Pre(t *testing.T, l []types.LocalMedia) {
+	assert.Equal(t, len(res), len(l))
 }
 
 func (p pluginTester) Input() string {
@@ -295,5 +368,21 @@ func (p pluginTester) Test(t *testing.T, s types.LocalSubtitle) {
 }
 
 func (p pluginTester) Post(t *testing.T, l []types.LocalSubtitle) {
-	assert.Equal(t, len(subtitles), len(l))
+}
+
+type skipSubtitlesTest struct{}
+
+func (p skipSubtitlesTest) Pre(t *testing.T, l []types.LocalMedia) {
+}
+
+func (p skipSubtitlesTest) Input() string {
+	return "test"
+}
+
+func (p skipSubtitlesTest) Test(t *testing.T, s types.LocalSubtitle) {
+	assert.Fail(t, "shuld skip all subtitles")
+}
+
+func (p skipSubtitlesTest) Post(t *testing.T, l []types.LocalSubtitle) {
+	assert.Equal(t, 0, len(l))
 }
