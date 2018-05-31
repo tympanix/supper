@@ -78,7 +78,7 @@ type subtitleTester interface {
 	Input() string
 	Mock(types.LocalMedia) types.LocalMedia
 	Test(*testing.T, types.LocalSubtitle)
-	Post(*testing.T, []types.LocalSubtitle)
+	Post(*testing.T, []types.Video, []types.LocalSubtitle)
 }
 
 type fakePlugin func(types.LocalSubtitle) error
@@ -419,16 +419,16 @@ func performSubtitleTest(t *testing.T, test subtitleTester, config types.Config)
 
 	test.Pre(t, media.List())
 
-	list, err := app.DownloadSubtitles(media, config.Languages())
+	subs, err := app.DownloadSubtitles(media, config.Languages())
 	if err != nil {
 		return err
 	}
 
-	for _, s := range list {
+	for _, s := range subs {
 		test.Test(t, s)
 	}
 
-	test.Post(t, list)
+	test.Post(t, media.FilterVideo().List(), subs)
 
 	return nil
 }
@@ -451,7 +451,8 @@ func (l subtitleLangTester) Test(t *testing.T, s types.LocalSubtitle) {
 	assert.Equal(t, s.Language(), language.Tag(l))
 }
 
-func (subtitleLangTester) Post(t *testing.T, l []types.LocalSubtitle) {
+func (subtitleLangTester) Post(t *testing.T, m []types.Video, l []types.LocalSubtitle) {
+	assert.Equal(t, len(m), len(l))
 }
 
 type pluginTester struct {
@@ -474,7 +475,8 @@ func (p pluginTester) Test(t *testing.T, s types.LocalSubtitle) {
 	assert.Contains(t, *p.runs, s)
 }
 
-func (p pluginTester) Post(t *testing.T, l []types.LocalSubtitle) {
+func (p pluginTester) Post(t *testing.T, m []types.Video, l []types.LocalSubtitle) {
+	//assert.Equal(t, len(m), len(l))
 }
 
 type skipSubtitlesTest struct{}
@@ -491,10 +493,10 @@ func (p skipSubtitlesTest) Mock(m types.LocalMedia) types.LocalMedia {
 }
 
 func (p skipSubtitlesTest) Test(t *testing.T, s types.LocalSubtitle) {
-	assert.Fail(t, "shuld skip all subtitles")
+	assert.Fail(t, "should skip all subtitles")
 }
 
-func (p skipSubtitlesTest) Post(t *testing.T, l []types.LocalSubtitle) {
+func (p skipSubtitlesTest) Post(t *testing.T, m []types.Video, l []types.LocalSubtitle) {
 	assert.Equal(t, 0, len(l))
 }
 
