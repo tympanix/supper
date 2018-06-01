@@ -11,6 +11,7 @@ build:
 
 test:
 	go test -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
+.PHONY: test
 
 release:
 ifdef TAG
