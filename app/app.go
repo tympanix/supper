@@ -71,15 +71,6 @@ func WebAppHandler(path string) http.Handler {
 	})
 }
 
-func fileIsMedia(f os.FileInfo) bool {
-	for _, ext := range filetypes {
-		if ext == filepath.Ext(f.Name()) {
-			return true
-		}
-	}
-	return false
-}
-
 // Scrapers returns the list of supported scrapers
 func (a *Application) Scrapers() []types.Scraper {
 	return a.scrapers
