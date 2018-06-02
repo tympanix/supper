@@ -73,6 +73,15 @@ func (s *subscene) searchTermEpisode(episode types.Episode) string {
 	return fmt.Sprintf("%s - %s Season", episode.TVShow(), season)
 }
 
+func (s *subscene) filterTerm(m types.Media) string {
+	if movie, ok := m.TypeMovie(); ok {
+		return fmt.Sprintf("%s (%v)", movie.MovieName(), movie.Year())
+	} else if episode, ok := m.TypeEpisode(); ok {
+		return episode.TVShow()
+	}
+	return ""
+}
+
 type searchResult struct {
 	Title string
 	URL   string
@@ -139,10 +148,16 @@ func (s *subscene) FindMediaURL(media types.Media, retries int) (string, error) 
 		}
 	})
 
+	filter := s.filterTerm(media)
+
+	if filter == "" {
+		return "", errors.New("subscene unknown media")
+	}
+
 	var result string
 	min := math.MaxInt32
 	for url, name := range results {
-		score := smetrics.WagnerFischer(search, name, 1, 1, 2)
+		score := smetrics.WagnerFischer(filter, name, 1, 1, 2)
 		if score < min {
 			min = score
 			result = url
