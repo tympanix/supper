@@ -46,11 +46,28 @@ func TestAppArchivesInvalidPath(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestAppArchiveDryRun(t *testing.T) {
+	defer cleanRenameTest(t)
+
+	config := defaultConfig
+
+	config.dry = true
+
+	err := performExtractionTest(t, extractDryTest{}, config)
+	require.NoError(t, err)
+
+	files, err := ioutil.ReadDir("out")
+	require.NoError(t, err)
+	assert.Equal(t, len(files), 0)
+}
+
 func performExtractionTest(t *testing.T, test extractTest, config types.Config) error {
 	app := New(config)
 
 	arch, err := app.FindArchives(test.Input())
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
 	test.Pre(t, arch)
 
@@ -75,5 +92,15 @@ func (extractOkTest) Pre(t *testing.T, a []types.MediaArchive) {
 }
 
 func (extractOkTest) Input() string {
+	return "../test/archives"
+}
+
+type extractDryTest struct{}
+
+func (extractDryTest) Pre(t *testing.T, a []types.MediaArchive) {
+	assert.Equal(t, len(a), 2)
+}
+
+func (extractDryTest) Input() string {
 	return "../test/archives"
 }
