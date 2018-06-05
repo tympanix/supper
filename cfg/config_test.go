@@ -1,6 +1,7 @@
 package cfg
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/text/language"
 )
 
@@ -80,4 +82,33 @@ func TestConfigPlugins(t *testing.T) {
 		golden := Default.Plugins()[i]
 		assert.Equal(t, golden.Name(), p["name"])
 	}
+}
+
+func TestConfigMedia(t *testing.T) {
+
+	viper.Set("movies", map[string]interface{}{
+		"directory": "/foo/bar/movie",
+		"template":  "test_template_movie",
+	})
+
+	viper.Set("tvshows", map[string]interface{}{
+		"directory": "/foo/bar/tvshow",
+		"template":  "test_template_tvshow",
+	})
+
+	Initialize()
+
+	// test movies
+	assert.Equal(t, "/foo/bar/movie", Default.Movies().Directory())
+	var mbuf bytes.Buffer
+	err := Default.Movies().Template().Execute(&mbuf, nil)
+	require.NoError(t, err)
+	assert.Equal(t, "test_template_movie", mbuf.String())
+
+	// test tvshows
+	assert.Equal(t, "/foo/bar/tvshow", Default.TVShows().Directory())
+	var tbuf bytes.Buffer
+	err = Default.TVShows().Template().Execute(&tbuf, nil)
+	require.NoError(t, err)
+	assert.Equal(t, "test_template_tvshow", tbuf.String())
 }
