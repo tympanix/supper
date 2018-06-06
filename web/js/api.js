@@ -82,7 +82,11 @@ class Api {
 
   showError(res) {
     if (res.data.error && typeof res.data.error === 'string') {
-      Snackbar.error("Error", res.data.error)
+      if (res.status < 400) {
+        Snackbar.warning("Warning", res.data.error)
+      } else {
+        Snackbar.error("Error", res.data.error)
+      }
     } else {
       Snackbar.error("Error", "An unexprected error occurred")
     }

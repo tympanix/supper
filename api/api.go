@@ -76,7 +76,7 @@ type apiHandler func(http.ResponseWriter, *http.Request) interface{}
 func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if e := fn(w, r); e != nil {
 		if err, ok := e.(error); ok {
-			e = Error(err, http.StatusBadRequest)
+			e = fn.handleError(w, err)
 		}
 		js, err := json.MarshalIndent(e, "", "  ")
 		if err != nil {
@@ -84,13 +84,21 @@ func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		if err, ok := e.(APIError); ok {
-			w.WriteHeader(err.Status())
-		}
 		w.Write(js)
 	} else {
 		http.Error(w, "Not found", http.StatusNotFound)
 	}
+}
+
+func (fn apiHandler) handleError(w http.ResponseWriter, err error) error {
+	var apiError APIError
+	if e, ok := err.(APIError); ok {
+		apiError = e
+	} else {
+		apiError = Error(err, http.StatusBadRequest)
+	}
+	w.WriteHeader(apiError.Status())
+	return apiError
 }
 
 func Error(err error, status int) APIError {

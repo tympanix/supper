@@ -184,11 +184,9 @@ func (a *API) listSubtitles(w http.ResponseWriter, r *http.Request) interface{} 
 
 func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interface{} {
 	langs, err := a.queryLang(r)
-
 	if err != nil {
 		return errors.New("unknown language for subtitle")
 	}
-
 	var folder jsonFolder
 	dec := json.NewDecoder(r.Body)
 	if err = dec.Decode(&folder); err != nil {
@@ -206,12 +204,22 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
+	if media.Len() <= 0 {
+		return Error(errors.New("no media found"), http.StatusBadRequest)
+	}
+	v, err := media.FilterVideo().FilterMissingSubs(langs)
+	if err != nil {
+		return Error(err, http.StatusBadRequest)
+	}
+	if v.Len() <= 0 {
+		return Error(errors.New("subtitle already satisfied"), http.StatusAccepted)
+	}
 	subs, err := a.DownloadSubtitles(media, langs)
 	if err != nil {
 		return Error(err, http.StatusBadRequest)
 	}
 	if len(subs) <= 0 {
-		return Error(errors.New("no subtitles found"), http.StatusNoContent)
+		return Error(errors.New("no subtitles found"), http.StatusBadRequest)
 	}
 	files, err := a.fileList(folder)
 	if err != nil {
