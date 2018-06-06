@@ -277,6 +277,7 @@ func (uri subsceneURL) Link() string {
 }
 
 func (uri subsceneURL) Download() (io.ReadCloser, error) {
+	fmt.Println(string(uri))
 	fulluri := fmt.Sprintf("%s%s", subsceneHost, string(uri))
 
 	suburl, err := url.ParseRequestURI(fulluri)
