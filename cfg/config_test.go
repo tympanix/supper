@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tympanix/supper/media"
+
 	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/score"
 
@@ -123,4 +125,38 @@ func TestConfigMedia(t *testing.T) {
 	err = Default.TVShows().Template().Execute(&tbuf, nil)
 	require.NoError(t, err)
 	assert.Equal(t, "test_template_tvshow", tbuf.String())
+}
+
+func TestConfigMediaFilter(t *testing.T) {
+	Initialize()
+
+	assert.Nil(t, Default.MediaFilter())
+
+	inception, err := media.NewFromFilename("inception.2010.mkv")
+	require.NoError(t, err)
+	gameofthrones, err := media.NewFromFilename("game.of.thrones.s01e01.mkv")
+	require.NoError(t, err)
+	subtitle, err := media.NewFromFilename("inception.2010.en.srt")
+	require.NoError(t, err)
+
+	viper.Reset()
+	viper.Set("filter-movies", true)
+	Initialize()
+	assert.True(t, Default.MediaFilter()(inception))
+	assert.False(t, Default.MediaFilter()(gameofthrones))
+	assert.False(t, Default.MediaFilter()(subtitle))
+
+	viper.Reset()
+	viper.Set("filter-tvshows", true)
+	Initialize()
+	assert.False(t, Default.MediaFilter()(inception))
+	assert.True(t, Default.MediaFilter()(gameofthrones))
+	assert.False(t, Default.MediaFilter()(subtitle))
+
+	viper.Reset()
+	viper.Set("filter-subtitles", true)
+	Initialize()
+	assert.False(t, Default.MediaFilter()(inception))
+	assert.False(t, Default.MediaFilter()(gameofthrones))
+	assert.True(t, Default.MediaFilter()(subtitle))
 }
