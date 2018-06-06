@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tympanix/supper/provider"
 	"github.com/tympanix/supper/score"
 
 	"github.com/spf13/viper"
@@ -58,10 +59,21 @@ func TestConfigFromViper(t *testing.T) {
 	assert.True(t, Default.Languages().Has(language.Spanish))
 }
 
-func TestConfigDefaults(t *testing.T) {
+func TestConfigThirdParty(t *testing.T) {
+	viper.Set("apikeys", map[string]string{
+		"themoviedb": "tmdb_test_key",
+		"thetvdb":    "tvdb_test_key",
+	})
+
 	Initialize()
 
+	assert.Equal(t, "tmdb_test_key", Default.APIKeys().TheMovieDB())
+	assert.Equal(t, "tvdb_test_key", Default.APIKeys().TheTVDB())
+
 	assert.Equal(t, Default.Evaluator(), &score.DefaultEvaluator{})
+	assert.Contains(t, Default.Providers(), provider.Subscene())
+	assert.Contains(t, Default.Scrapers(), provider.TheMovieDB("tmdb_test_key"))
+	assert.Contains(t, Default.Scrapers(), provider.TheTVDB("tvdb_test_key"))
 }
 
 func TestConfigPlugins(t *testing.T) {
