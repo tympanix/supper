@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/nwaples/rardecode"
 
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/parse"
@@ -270,6 +273,61 @@ func (t *zipReader) Close() error {
 	return nil
 }
 
+func newRarReader(file *os.File) (*rarReader, error) {
+	r, err := rardecode.NewReader(file, "")
+
+	if err != nil {
+		return nil, err
+	}
+
+	var found bool
+	h, err := r.Next()
+	for err != io.EOF {
+		if filepath.Ext(h.Name) == ".srt" {
+			found = true
+			break
+		}
+		h, err = r.Next()
+	}
+
+	if !found {
+		return nil, errors.New("no subtitle found in rar archive")
+	}
+
+	return &rarReader{Reader: r, file: file}, nil
+}
+
+type rarReader struct {
+	*rardecode.Reader
+	file *os.File
+}
+
+func (r *rarReader) Close() error {
+	r.file.Close()
+	if err := os.Remove(r.file.Name()); err != nil {
+		log.WithError(err).Error("Could not cleaup temporary zip file")
+		return err
+	}
+	return nil
+}
+
+func newSrtReader(file *os.File) (*srtReader, error) {
+	return &srtReader{file}, nil
+}
+
+type srtReader struct {
+	*os.File
+}
+
+func (s *srtReader) Close() error {
+	s.File.Close()
+	if err := os.Remove(s.File.Name()); err != nil {
+		log.WithError(err).Error("Could not cleaup temporary zip file")
+		return err
+	}
+	return nil
+}
+
 type subsceneURL string
 
 func (uri subsceneURL) Link() string {
@@ -319,6 +377,20 @@ func (uri subsceneURL) Download() (io.ReadCloser, error) {
 		return nil, fmt.Errorf("subscene download subtitle (%v)", resp.StatusCode)
 	}
 
+	_, params, err := mime.ParseMediaType(resp.Header.Get("Content-Disposition"))
+
+	if err != nil {
+		return nil, err
+	}
+
+	filename, ok := params["filename"]
+
+	if !ok {
+		return nil, errors.New("unable to retrieve file format from subscene.com")
+	}
+
+	ext := filepath.Ext(filename)
+
 	file, err := ioutil.TempFile("", "supper")
 
 	if err != nil {
@@ -331,7 +403,20 @@ func (uri subsceneURL) Download() (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	return newZipReader(file)
+	_, err = file.Seek(0, io.SeekStart)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if ext == ".zip" {
+		return newZipReader(file)
+	} else if ext == ".rar" {
+		return newRarReader(file)
+	} else if ext == ".srt" {
+		return newSrtReader(file)
+	}
+	return nil, fmt.Errorf("unknown subtitle format %s from subscene.com", ext)
 }
 
 type subsceneSubtitle struct {
