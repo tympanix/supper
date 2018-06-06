@@ -13,16 +13,17 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/nwaples/rardecode"
+	"github.com/xrash/smetrics"
 
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/parse"
 	"github.com/tympanix/supper/types"
-	"github.com/xrash/smetrics"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/apex/log"
@@ -87,7 +88,7 @@ func (s *subscene) filterTerm(m types.Media) string {
 
 type searchResult struct {
 	Title string
-	URL   string
+	Path  string
 }
 
 var cleanRegexp = regexp.MustCompile(`\(\d{4}\)`)
@@ -98,18 +99,20 @@ func (s *subscene) cleanSearchTerm(search string) string {
 }
 
 // FindMediaURL retrieves the subscene.com URL for the given media item
-func (s *subscene) FindMediaURL(media types.Media, retries int) (string, error) {
+func (s *subscene) FindMediaURL(media types.Media, retries int) ([]searchResult, error) {
 	url, err := url.Parse("https://subscene.com/subtitles/title")
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	search := s.searchTerm(media)
 
 	if len(search) == 0 {
-		return "", fmt.Errorf("unable to search for media: %s", media)
+		return nil, fmt.Errorf("unable to search for media: %s", media)
 	}
+
+	log.WithField("query", search).Debug("Searching subscene.com")
 
 	query := url.Query()
 	query.Add("q", s.cleanSearchTerm(search))
@@ -118,7 +121,7 @@ func (s *subscene) FindMediaURL(media types.Media, retries int) (string, error) 
 	lockSubscene()
 	res, err := http.Get(url.String())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer res.Body.Close()
 
@@ -132,58 +135,117 @@ func (s *subscene) FindMediaURL(media types.Media, retries int) (string, error) 
 	}
 
 	if res.StatusCode != 200 {
-		return "", fmt.Errorf("subscene.com returned status code %v", res.StatusCode)
+		return nil, fmt.Errorf("subscene.com returned status code %v", res.StatusCode)
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	results := make(map[string]string, 0)
+	var results []searchResult
 
 	doc.Find("div.search-result div.title a").Each(func(i int, s *goquery.Selection) {
 		title := s.Text()
 		url, ok := s.Attr("href")
 		if len(title) > 0 && ok {
-			results[url] = title
+			results = append(results, searchResult{
+				Title: title,
+				Path:  url,
+			})
 		}
 	})
 
-	filter := s.filterTerm(media)
-
-	if filter == "" {
-		return "", errors.New("subscene unknown media")
+	if len(results) == 0 {
+		return nil, errors.New("no media found on subscene.com")
 	}
 
-	var result string
+	results = resultList(results).Filter(media)
+
+	return results, nil
+}
+
+type resultList []searchResult
+
+// Best returns the search result from the list with the highest probability
+// of fitting the target media. Is achieves this with the wagner fsicher
+// string similiarity measure
+func (r resultList) Best(m types.Media) (*searchResult, error) {
+	var keyword string
+	if movie, ok := m.TypeMovie(); ok {
+		keyword = fmt.Sprintf("%s (%v)", movie.MovieName(), movie.Year())
+	} else if episode, ok := m.TypeEpisode(); ok {
+		season := parse.PhoneticNumber(episode.Season())
+		keyword = fmt.Sprintf("%s - %s Season", episode.TVShow(), season)
+	}
+
+	if keyword == "" {
+		return nil, errors.New("subscene unknown media")
+	}
+
+	var result *searchResult
 	min := math.MaxInt32
-	for url, name := range results {
-		score := smetrics.WagnerFischer(filter, name, 1, 1, 2)
+	for _, e := range r {
+		score := smetrics.WagnerFischer(e.Title, keyword, 1, 1, 2)
 		if score < min {
 			min = score
-			result = url
+			result = &e
 		}
 	}
 
-	if len(result) == 0 {
-		return "", errors.New("no media found on subscene.com")
+	if result == nil {
+		return nil, errors.New("could not find best subtitle from subscene.com")
 	}
 
-	return fmt.Sprintf("%s%s", subsceneHost, result), nil
+	return result, nil
+}
+
+// Filter rules out search results which is guaranteed not to match the target media
+func (r resultList) Filter(m types.Media) resultList {
+	var include string
+	if mov, ok := m.TypeMovie(); ok {
+		include = strconv.Itoa(mov.Year())
+	} else if eps, ok := m.TypeEpisode(); ok {
+		season := parse.PhoneticNumber(eps.Season())
+		include = fmt.Sprintf("%s Season", season)
+	}
+	var result []searchResult
+	include = strings.ToLower(include)
+	for _, e := range r {
+		if strings.Contains(strings.ToLower(e.Title), include) {
+			result = append(result, e)
+		}
+	}
+	return result
 }
 
 // SearchSubtitles searches subscene.com for subtitles
 func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineSubtitle, err error) {
-	url, err := s.FindMediaURL(local, 3)
+	search, err := s.FindMediaURL(local, 3)
+
+	fmt.Println(search)
 
 	if err != nil {
 		return
 	}
 
+	best, err := resultList(search).Best(local)
+
+	if err != nil {
+		return nil, err
+	}
+
+	url, err := url.Parse(subsceneHost)
+
+	if err != nil {
+		return nil, err
+	}
+
+	url.Path = best.Path
+
 	lockSubscene()
-	doc, err := goquery.NewDocument(url)
+	doc, err := goquery.NewDocument(url.String())
 
 	if err != nil {
 		return
