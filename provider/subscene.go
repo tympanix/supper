@@ -224,8 +224,6 @@ func (r resultList) Filter(m types.Media) resultList {
 func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineSubtitle, err error) {
 	search, err := s.FindMediaURL(local, 3)
 
-	fmt.Println(search)
-
 	if err != nil {
 		return
 	}
@@ -396,7 +394,15 @@ func (uri subsceneURL) Link() string {
 	return string(uri)
 }
 
-func (uri subsceneURL) Download() (io.ReadCloser, error) {
+func (uri subsceneURL) Download() (r io.ReadCloser, err error) {
+	var file *os.File
+
+	defer func() {
+		if err != nil && file != nil {
+			os.Remove(file.Name())
+		}
+	}()
+
 	fulluri := fmt.Sprintf("%s%s", subsceneHost, string(uri))
 
 	suburl, err := url.ParseRequestURI(fulluri)
@@ -452,7 +458,7 @@ func (uri subsceneURL) Download() (io.ReadCloser, error) {
 
 	ext := filepath.Ext(filename)
 
-	file, err := ioutil.TempFile("", "supper")
+	file, err = ioutil.TempFile("", "supper")
 
 	if err != nil {
 		return nil, err
@@ -469,6 +475,11 @@ func (uri subsceneURL) Download() (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.WithFields(log.Fields{
+		"uri":    string(uri),
+		"format": strings.TrimPrefix(ext, "."),
+	}).Debug("Downloading from subscene.com")
 
 	if ext == ".zip" {
 		return newZipReader(file)
