@@ -310,7 +310,7 @@ func newZipReader(file *os.File) (*zipReader, error) {
 	}
 
 	if srt == nil {
-		return nil, errors.New("could not read srt file from subscene")
+		return nil, errors.New("no srt file found in zip")
 	}
 
 	return &zipReader{srt, data, file}, nil
