@@ -177,7 +177,7 @@ func (r resultList) Best(m types.Media) (*searchResult, error) {
 		keyword = fmt.Sprintf("%s (%v)", movie.MovieName(), movie.Year())
 	} else if episode, ok := m.TypeEpisode(); ok {
 		season := parse.PhoneticNumber(episode.Season())
-		keyword = fmt.Sprintf("%s - %s Season", episode.TVShow(), season)
+		keyword = fmt.Sprintf("%s - %v Season", episode.TVShow(), season)
 	}
 
 	if keyword == "" {
@@ -186,11 +186,11 @@ func (r resultList) Best(m types.Media) (*searchResult, error) {
 
 	var result *searchResult
 	min := math.MaxInt32
-	for _, e := range r {
-		score := smetrics.WagnerFischer(e.Title, keyword, 1, 1, 2)
+	for i, e := range r {
+		score := smetrics.WagnerFischer(keyword, e.Title, 1, 1, 2)
 		if score < min {
 			min = score
-			result = &e
+			result = &r[i]
 		}
 	}
 
@@ -233,6 +233,8 @@ func (s *subscene) SearchSubtitles(local types.LocalMedia) (subs []types.OnlineS
 	if err != nil {
 		return nil, err
 	}
+
+	log.WithField("uri", best.Path).Debug("Best match subscene.com")
 
 	url, err := url.Parse(subsceneHost)
 
