@@ -1,11 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const extractSass = new ExtractTextPlugin({
-  filename: "styles.css",
-  disable: process.env.NODE_ENV === "development"
-});
+var devMode = process.env.NODE_ENV === "development"
 
 module.exports = {
   entry: './web/js/index.js',
@@ -14,38 +11,36 @@ module.exports = {
     publicPath: "/static/",
     filename: 'bundle.js'
   },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: "styles.css",
+    }),
+  ],
   module: {
     rules: [
       {
         test: /\.scss$/,
-        use: extractSass.extract({
-          use: [
-            {
-              loader: "css-loader"
-            }, {
-              loader: "sass-loader"
-            }
-          ],
-          // use style-loader in development
-          fallback: "style-loader"
-        })
+        use: [
+          devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader',
+        ],
       }, {
         test: /\.js$/,
         loader: 'babel-loader',
         query: {
-          presets: ['es2015', 'react']
+          presets: ['env', 'react']
         }
       }, {
         test: /\.svg$/,
         loader: 'file-loader',
         options: {
-          publicPath: './',
-          outputPath: 'img/',
+          publicPath: './img',
+          outputPath: './img',
         }
       }
     ]
   },
-  plugins: [extractSass],
   stats: {
     colors: true
   },
