@@ -18,6 +18,8 @@ func TestCleanName(t *testing.T) {
 	assert.Equal(t, "this is a (test)", CleanName("this?_=is#.,a_(test)"))
 	assert.Equal(t, "abc ABC abc", CleanName("abc.A.B.C.abc"))
 	assert.Equal(t, "abc ABC abc", CleanName("abc A B C abc"))
+	assert.Equal(t, "A Good Day To Die Hard", CleanName("A.Good.Day.To.Die.Hard"))
+	assert.Equal(t, "This Is A Test", CleanName("This.Is.A.Test"))
 }
 
 func TestFileName(t *testing.T) {
