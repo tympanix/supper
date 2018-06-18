@@ -31,6 +31,9 @@ func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 	if s == nil || s.Meta() == nil {
 		return 0.0
 	}
+	if !f.Similar(s) {
+		return 0.0
+	}
 	if !f.Meta().Misc().Has(misc.Video3D) && s.Meta().Misc().Has(misc.Video3D) {
 		return 0.0
 	}
@@ -49,22 +52,8 @@ func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 	}
 }
 
-// AbsInt returns the absoulute value of an integer
-func AbsInt(a int) int {
-	if a < 0 {
-		return -a
-	}
-	return a
-}
-
 // EvaluateMovie returns the matching score for a movie
 func (e *DefaultEvaluator) evaluateMovie(media types.Movie, sub types.Movie) float32 {
-	if media.Year() > 0 && sub.Year() > 0 {
-		if AbsInt(media.Year()-sub.Year()) > 1 {
-			return 0.0
-		}
-	}
-
 	prob := NewWeighted()
 	score := smetrics.JaroWinkler(media.MovieName(), sub.MovieName(), 0.7, 4)
 
@@ -77,9 +66,6 @@ func (e *DefaultEvaluator) evaluateMovie(media types.Movie, sub types.Movie) flo
 }
 
 func (e *DefaultEvaluator) evaluateEpisode(media types.Episode, sub types.Episode) float32 {
-	if media.Season() != sub.Season() || media.Episode() != sub.Episode() {
-		return 0
-	}
 	prob := NewWeighted()
 	show := smetrics.JaroWinkler(media.TVShow(), sub.TVShow(), 0.7, 4)
 

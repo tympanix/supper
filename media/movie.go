@@ -68,14 +68,31 @@ func (m *Movie) String() string {
 
 // Merge merges metadata from another movie into this one
 func (m *Movie) Merge(other types.Media) error {
+	if !m.Similar(other) {
+		return errors.New("invalid merge movie is not similar")
+	}
 	if movie, ok := other.TypeMovie(); ok {
-		if m.Year() != movie.Year() {
-			return errors.New("invalid media merge year does not match")
-		}
 		m.NameX = movie.MovieName()
+		m.YearX = movie.Year()
 		return nil
 	}
 	return errors.New("invalid media merge not same media type")
+}
+
+// AbsInt returns the absoulute value of an integer
+func AbsInt(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+
+// Similar returns true if two movies are within 1 year of each other
+func (m *Movie) Similar(other types.Media) bool {
+	if o, ok := other.TypeMovie(); ok {
+		return AbsInt(m.Year()-o.Year()) <= 1
+	}
+	return false
 }
 
 // Meta returnes the metadata interface for a movie

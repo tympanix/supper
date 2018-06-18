@@ -72,6 +72,14 @@ func (l *Subtitle) Merge(other types.Media) error {
 	return l.ForMedia().Merge(other)
 }
 
+// Similar returns true if other media is also a subtitle for the a similar media
+func (l *Subtitle) Similar(other types.Media) bool {
+	if o, ok := other.TypeSubtitle(); ok {
+		return l.ForMedia().Similar(o.ForMedia())
+	}
+	return false
+}
+
 // String returns the language of the subtitle
 func (l *Subtitle) String() string {
 	return display.English.Languages().Name(l.Language())

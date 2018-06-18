@@ -38,6 +38,7 @@ type Media interface {
 	Merge(Media) error
 	String() string
 	Identity() string
+	Similar(Media) bool
 	TypeMovie() (Movie, bool)
 	TypeEpisode() (Episode, bool)
 	TypeSubtitle() (Subtitle, bool)

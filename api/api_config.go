@@ -31,8 +31,7 @@ func (a *API) config(w http.ResponseWriter, r *http.Request) interface{} {
 		return jsonConfig{
 			langs,
 		}
-	} else {
-		err := errors.New("Method not allowed")
-		return Error(err, http.StatusMethodNotAllowed)
 	}
+	err := errors.New("Method not allowed")
+	return Error(err, http.StatusMethodNotAllowed)
 }

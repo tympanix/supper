@@ -95,18 +95,27 @@ func (e *Episode) IsVideo() bool {
 
 // Merge merges metadata from another episode
 func (e *Episode) Merge(other types.Media) error {
+	if !e.Similar(other) {
+		return errors.New("invalid merge episodes not similar")
+	}
 	if episode, ok := other.TypeEpisode(); ok {
-		if e.Season() != episode.Season() {
-			return errors.New("invalid media merge of different seasons")
-		}
-		if e.Episode() != episode.Episode() {
-			return errors.New("invalid media merge of different episodes")
-		}
 		e.NameX = episode.TVShow()
 		e.EpisodeNameX = episode.EpisodeName()
 		return nil
 	}
 	return errors.New("invalid media merge of different media")
+}
+
+// Similar returns true if other media is also an episode from the same season
+// and with the same episode number
+func (e *Episode) Similar(other types.Media) bool {
+	if o, ok := other.TypeEpisode(); ok {
+		if e.Season() != o.Season() || e.Episode() != o.Episode() {
+			return false
+		}
+		return true
+	}
+	return false
 }
 
 // Meta returns the metadata interface for the episode
