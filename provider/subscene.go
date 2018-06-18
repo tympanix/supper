@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -203,17 +202,17 @@ func (r resultList) Best(m types.Media) (*searchResult, error) {
 
 // Filter rules out search results which is guaranteed not to match the target media
 func (r resultList) Filter(m types.Media) resultList {
-	var include string
+	var include *regexp.Regexp
 	if mov, ok := m.TypeMovie(); ok {
-		include = strconv.Itoa(mov.Year())
+		years := fmt.Sprintf("%v|%v|%v", mov.Year()-1, mov.Year(), mov.Year()+1)
+		include = regexp.MustCompile(years)
 	} else if eps, ok := m.TypeEpisode(); ok {
 		season := parse.PhoneticNumber(eps.Season())
-		include = fmt.Sprintf("%s Season", season)
+		include = regexp.MustCompile(fmt.Sprintf("%s Season", season))
 	}
 	var result []searchResult
-	include = strings.ToLower(include)
 	for _, e := range r {
-		if strings.Contains(strings.ToLower(e.Title), include) {
+		if include.MatchString(e.Title) {
 			result = append(result, e)
 		}
 	}

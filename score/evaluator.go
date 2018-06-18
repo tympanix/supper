@@ -49,10 +49,20 @@ func (e *DefaultEvaluator) Evaluate(f types.Media, s types.Media) float32 {
 	}
 }
 
+// AbsInt returns the absoulute value of an integer
+func AbsInt(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+
 // EvaluateMovie returns the matching score for a movie
 func (e *DefaultEvaluator) evaluateMovie(media types.Movie, sub types.Movie) float32 {
-	if media.Year() > 0 && sub.Year() > 0 && media.Year() != sub.Year() {
-		return 0.0
+	if media.Year() > 0 && sub.Year() > 0 {
+		if AbsInt(media.Year()-sub.Year()) > 1 {
+			return 0.0
+		}
 	}
 
 	prob := NewWeighted()
