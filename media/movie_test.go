@@ -62,10 +62,20 @@ func TestMovieMergeError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestMovieMergeYearError(t *testing.T) {
+func TestMovieMergeOneYearDiff(t *testing.T) {
 	m1, err := NewMovie("iron.man.2008")
 	require.NoError(t, err)
 	m2, err := NewMovie("iron.man.2009")
+	require.NoError(t, err)
+
+	err = m1.Merge(m2)
+	assert.NoError(t, err)
+}
+
+func TestMovieMergeTwoYearDiff(t *testing.T) {
+	m1, err := NewMovie("iron.man.2008")
+	require.NoError(t, err)
+	m2, err := NewMovie("iron.man.2010")
 	require.NoError(t, err)
 
 	err = m1.Merge(m2)

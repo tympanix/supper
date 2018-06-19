@@ -31,6 +31,7 @@ func (fakemedia) Merge(types.Media) error              { return nil }
 func (fakemedia) TypeEpisode() (types.Episode, bool)   { return nil, false }
 func (fakemedia) TypeMovie() (types.Movie, bool)       { return nil, false }
 func (fakemedia) TypeSubtitle() (types.Subtitle, bool) { return nil, false }
+func (fakemedia) Similar(other types.Media) bool       { return false }
 
 type fakelocal struct{ types.Media }
 
