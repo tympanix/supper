@@ -29,4 +29,8 @@ const (
 	AC3
 	// Extended is a tag for extended versions of the theatrical release
 	Extended
+	// Surround5x1 is a tag for media supporting 5.1 surround sound
+	Surround5x1
+	// Surround7x1 is a tag for media supporting 7.1 surround sound
+	Surround7x1
 )

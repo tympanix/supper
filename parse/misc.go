@@ -3,11 +3,13 @@ package parse
 import "github.com/tympanix/supper/meta/misc"
 
 var miscMap = map[string]interface{}{
-	"3D":                        misc.Video3D,
-	"HC|Hardcoded?":             misc.HC,
-	"DTS(.?HD)?":                misc.DTS,
-	"DD(\\+|5\\.1|P)?|TrueHD":   misc.DolbyDigital,
-	"Extended(.(Cut|Edition))?": misc.Extended,
+	"3D":                              misc.Video3D,
+	"HC|Hardcoded?":                   misc.HC,
+	"DTS(.?HD)?":                      misc.DTS,
+	"DD(\\+|5\\.1|P)?|TrueHD|Atmos":   misc.DolbyDigital,
+	"Extended(.(Cut|Edition))?":       misc.Extended,
+	"(DD[\\+P]?|TrueHD|MA|DTS)?5\\.1": misc.Surround5x1,
+	"(DD[\\+P]?|TrueHD|MA|DTS)?7\\.1": misc.Surround7x1,
 	"AC3": misc.AC3,
 }
 
