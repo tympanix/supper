@@ -38,7 +38,7 @@ func TestEpisodeGroup(t *testing.T) {
 		"Friends.S01E01.the.one.where.monica.gets.a.roommate.bluray.GROUP",
 		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.DTS.GROUP",
 		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.DivX.GROUP",
-		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.TS.GROUP",
+		"FRIENDS.S01E01.THE.ONE.WHERE.MONICA.GETS.A.ROOMMATE.TS.GROUP",
 	} {
 		e, err := NewEpisode(str)
 		require.NoError(t, err)

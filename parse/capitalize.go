@@ -3,6 +3,7 @@ package parse
 import (
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 var nonCapitalized = []string{
@@ -71,8 +72,23 @@ func isRoman(str string) bool {
 
 var breakRegex = regexp.MustCompile(`[\.;:-]\s*[\p{L}0-9]+`)
 
+func isUpper(str string) bool {
+	var upper int
+	for _, char := range str {
+		if unicode.IsLower(char) {
+			return false
+		} else if unicode.IsUpper(char) {
+			upper++
+		}
+	}
+	return upper > 0
+}
+
 // Capitalize returns the string with proper english capitalization
 func Capitalize(str string) string {
+	if isUpper(str) && len(str) > 3 {
+		str = strings.ToLower(str)
+	}
 	str = strings.Title(str)
 	var i int
 	str = wordRegex.ReplaceAllStringFunc(str, func(word string) string {

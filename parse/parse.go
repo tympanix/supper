@@ -64,7 +64,7 @@ func Filename(filename string) string {
 	return strings.TrimSuffix(f, filepath.Ext(f))
 }
 
-var abbreviationRegexp = regexp.MustCompile(`[A-Z]\s[A-Z](\s[A-Z])*\s`)
+var abbreviationRegexp = regexp.MustCompile(`\s[A-Z]\s[A-Z](\s[A-Z])*\s`)
 var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)-]`)
 var spaceReplaceRegexp = regexp.MustCompile(`[\.\s_]+`)
 
@@ -74,7 +74,7 @@ func CleanName(name string) string {
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
 
 	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
-		return strings.Replace(match, " ", "", -1) + " "
+		return " " + strings.Replace(match, " ", "", -1) + " "
 	})
 
 	name = Capitalize(name)
