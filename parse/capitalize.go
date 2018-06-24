@@ -109,6 +109,9 @@ func Capitalize(str string) string {
 	str = breakRegex.ReplaceAllStringFunc(str, func(word string) string {
 		return strings.Title(word)
 	})
+	str = abbreviationRegexp.ReplaceAllStringFunc(str, func(abbr string) string {
+		return strings.ToUpper(abbr)
+	})
 	str = strings.Replace(str, "'S", "'s", -1)
 	return str
 }

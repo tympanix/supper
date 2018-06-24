@@ -38,6 +38,8 @@ const subsceneDelay = 500 * time.Millisecond
 
 var subsceneLock = new(sync.Mutex)
 
+var subsceneIllegal = regexp.MustCompile(`[^\p{L}0-9\s]`)
+
 // lockSubscene is used to limit the number of calls to subscene to prevent spamming
 func lockSubscene() {
 	subsceneLock.Lock()
@@ -59,12 +61,13 @@ func (s *subscene) ResolveSubtitle(l types.Linker) (types.Downloadable, error) {
 }
 
 func (s *subscene) searchTerm(m types.Media) string {
+	var term string
 	if movie, ok := m.TypeMovie(); ok {
-		return s.searchTermMovie(movie)
+		term = s.searchTermMovie(movie)
 	} else if episode, ok := m.TypeEpisode(); ok {
-		return s.searchTermEpisode(episode)
+		term = s.searchTermEpisode(episode)
 	}
-	return ""
+	return subsceneIllegal.ReplaceAllString(term, "")
 }
 
 func (s *subscene) searchTermMovie(movie types.Movie) string {

@@ -64,8 +64,25 @@ func Filename(filename string) string {
 	return strings.TrimSuffix(f, filepath.Ext(f))
 }
 
-var abbreviationRegexp = regexp.MustCompile(`\s[A-Z]\s[A-Z](\s[A-Z])*\s`)
-var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)-]`)
+var abbreviationList = []string{
+	"mr",
+	"mrs",
+	"dr",
+	"vol",
+}
+
+func isAbbreviation(str string) bool {
+	lower := strings.ToLower(str)
+	for _, v := range abbreviationList {
+		if lower == v {
+			return true
+		}
+	}
+	return false
+}
+
+var abbreviationRegexp = regexp.MustCompile(`\b[A-Za-z]([\s\.][A-Za-z])+\b`)
+var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)\-,:]`)
 var spaceReplaceRegexp = regexp.MustCompile(`[\.\s_]+`)
 
 // CleanName returns the media name cleaned from punctuation
@@ -74,7 +91,14 @@ func CleanName(name string) string {
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
 
 	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
-		return " " + strings.Replace(match, " ", "", -1) + " "
+		return strings.Replace(match, " ", ".", -1) + "."
+	})
+
+	name = wordRegex.ReplaceAllStringFunc(name, func(match string) string {
+		if isAbbreviation(match) {
+			return match + "."
+		}
+		return match
 	})
 
 	name = Capitalize(name)
