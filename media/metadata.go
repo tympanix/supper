@@ -47,6 +47,11 @@ func ParseMetadataIndex(tags string) (int, Metadata) {
 		idx = append(idx, m...)
 	}
 
+	m, i := parse.MiscellaneousIndex(tags)
+	if m != nil {
+		idx = append(idx, m...)
+	}
+
 	var min = len(tags)
 	for _, v := range idx {
 		if v < min {
@@ -61,8 +66,8 @@ func ParseMetadataIndex(tags string) (int, Metadata) {
 		codec:   c,
 		source:  s,
 		quality: q,
+		misc:    i,
 		tags:    parse.Tags(tags),
-		misc:    parse.Miscellaneous(tags),
 	}
 }
 

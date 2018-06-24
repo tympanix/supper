@@ -33,13 +33,18 @@ func TestEpisodeNoGroup(t *testing.T) {
 }
 
 func TestEpisodeGroup(t *testing.T) {
-	e, err := NewEpisode("Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.720p.GROUP")
-	require.NoError(t, err)
-	assert.Equal(t, 1, e.Season())
-	assert.Equal(t, 1, e.Episode())
-	assert.Equal(t, "GROUP", e.Group())
-	assert.Equal(t, quality.HD720p, e.Quality())
-	assert.Equal(t, "The One Where Monica Gets a Roommate", e.EpisodeName())
+	for _, str := range []string{
+		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.720p.GROUP",
+		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.BluRay.GROUP",
+		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.DTS.GROUP",
+		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.DivX.GROUP",
+		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.TS.GROUP",
+	} {
+		e, err := NewEpisode(str)
+		require.NoError(t, err)
+		assert.Equal(t, "GROUP", e.Group())
+		assert.Equal(t, "The One Where Monica Gets a Roommate", e.EpisodeName())
+	}
 }
 
 func TestEpisodeError(t *testing.T) {

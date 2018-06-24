@@ -11,11 +11,19 @@ var miscMap = map[string]interface{}{
 
 var miscMatcher = makeMatcher(miscMap)
 
-// Miscellaneous returns a list of miscellaneous media tags from a string
-func Miscellaneous(name string) misc.List {
+// MiscellaneousIndex returns all miscellaneous tags with all their indexes
+func MiscellaneousIndex(str string) ([]int, misc.List) {
 	var list misc.List
-	for _, l := range miscMatcher.FindAll(name) {
+	var idx []int
+	idx, lx := miscMatcher.FindAllTagsIndex(str)
+	for _, l := range lx {
 		list = append(list, l.(misc.Tag))
 	}
-	return list
+	return idx, list
+}
+
+// Miscellaneous returns a list of miscellaneous media tags from a string
+func Miscellaneous(str string) misc.List {
+	_, misc := MiscellaneousIndex(str)
+	return misc
 }

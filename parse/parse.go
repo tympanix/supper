@@ -39,15 +39,22 @@ func (r regexMatcher) FindTag(str string) interface{} {
 	return nil
 }
 
-// FindAll returns a list of all matched tags
-func (r regexMatcher) FindAll(str string) []interface{} {
+func (r regexMatcher) FindAllTagsIndex(str string) ([]int, []interface{}) {
 	var tags []interface{}
+	var idx []int
 	lower := strings.ToLower(str)
 	for reg, tag := range r {
-		if reg.MatchString(lower) {
+		if loc := reg.FindStringIndex(lower); loc != nil {
+			idx = append(idx, loc...)
 			tags = append(tags, tag)
 		}
 	}
+	return idx, tags
+}
+
+// FindAll returns a list of all matched tags
+func (r regexMatcher) FindAllTags(str string) []interface{} {
+	_, tags := r.FindAllTagsIndex(str)
 	return tags
 }
 
