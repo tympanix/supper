@@ -14,12 +14,12 @@ func TestIdentity(t *testing.T) {
 }
 
 func TestCleanName(t *testing.T) {
-	assert.Equal(t, "this is a test", CleanName("this.is.a.test"))
-	assert.Equal(t, "this is a (test)", CleanName("this?_=is#.,a_(test)"))
-	assert.Equal(t, "abc ABC abc", CleanName("abc.A.B.C.abc"))
-	assert.Equal(t, "abc ABC abc", CleanName("abc A B C abc"))
-	assert.Equal(t, "A Good Day To Die Hard", CleanName("A.Good.Day.To.Die.Hard"))
-	assert.Equal(t, "This Is A Test", CleanName("This.Is.A.Test"))
+	assert.Equal(t, "This Is a Test", CleanName("this.is.a.test"))
+	assert.Equal(t, "This Is a (Test)", CleanName("this?_=is#.,a_(test)"))
+	assert.Equal(t, "Abc ABC Abc", CleanName("abc.A.B.C.abc"))
+	assert.Equal(t, "Abc ABC Abc", CleanName("abc A B C abc"))
+	assert.Equal(t, "A Good Day to Die Hard", CleanName("A.Good.Day.To.Die.Hard"))
+	assert.Equal(t, "This Is a Test", CleanName("This.Is.A.Test"))
 }
 
 func TestFileName(t *testing.T) {

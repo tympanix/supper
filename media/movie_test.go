@@ -85,7 +85,7 @@ func TestMovieMergeTwoYearDiff(t *testing.T) {
 func TestForeignMovie(t *testing.T) {
 	m, err := NewMovie("Den_utrolige_historie_om_den_kæmpestore_pære_2017")
 	require.NoError(t, err)
-	assert.Equal(t, "Den utrolige historie om den kæmpestore pære", m.MovieName())
+	assert.Equal(t, "Den Utrolige Historie Om Den Kæmpestore Pære", m.MovieName())
 	assert.Equal(t, 2017, m.Year())
 
 	m, err = NewMovie("Les.Misérables.2012")

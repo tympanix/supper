@@ -77,6 +77,8 @@ func CleanName(name string) string {
 		return strings.Replace(match, " ", "", -1) + " "
 	})
 
+	name = Capitalize(name)
+
 	return strings.TrimSpace(name)
 }
 

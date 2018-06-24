@@ -35,7 +35,7 @@ func TestEpisodeNoGroup(t *testing.T) {
 func TestEpisodeGroup(t *testing.T) {
 	for _, str := range []string{
 		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.720p.GROUP",
-		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.BluRay.GROUP",
+		"Friends.S01E01.the.one.where.monica.gets.a.roommate.bluray.GROUP",
 		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.DTS.GROUP",
 		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.DivX.GROUP",
 		"Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.TS.GROUP",
