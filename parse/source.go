@@ -20,3 +20,18 @@ var sourceMap = map[string]interface{}{
 
 // Sources lists all prossible sources to parse
 var Sources = makeMatcher(sourceMap)
+
+// SourceIndex returns the source tag and the index in the string
+func SourceIndex(str string) ([]int, source.Tag) {
+	i, s := Sources.FindTagIndex(str)
+	if s != nil {
+		return i, s.(source.Tag)
+	}
+	return nil, source.None
+}
+
+// Source returns the source tag, if found, in a string
+func Source(str string) source.Tag {
+	_, s := SourceIndex(str)
+	return s
+}

@@ -7,9 +7,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/tympanix/supper/meta/codec"
-	"github.com/tympanix/supper/meta/quality"
-	"github.com/tympanix/supper/meta/source"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -25,12 +22,19 @@ func makeMatcher(tags map[string]interface{}) regexMatcher {
 	return regs
 }
 
-func (r regexMatcher) FindTag(str string) interface{} {
+func (r regexMatcher) FindTagIndex(str string) ([]int, interface{}) {
 	lower := strings.ToLower(str)
 	for reg, tag := range r {
-		if reg.MatchString(lower) {
-			return tag
+		if m := reg.FindStringIndex(lower); m != nil {
+			return m, tag
 		}
+	}
+	return nil, nil
+}
+
+func (r regexMatcher) FindTag(str string) interface{} {
+	if _, t := r.FindTagIndex(str); t != nil {
+		return t
 	}
 	return nil
 }
@@ -88,33 +92,6 @@ func Identity(str string) string {
 	ident = illegalIdentity.ReplaceAllString(ident, "")
 	ident = strings.ToLower(ident)
 	return ident
-}
-
-// Source parses the source from a filename
-func Source(name string) source.Tag {
-	s := Sources.FindTag(name)
-	if s != nil {
-		return s.(source.Tag)
-	}
-	return source.None
-}
-
-// Quality finds the quality of the media
-func Quality(name string) quality.Tag {
-	q := Qualities.FindTag(name)
-	if q != nil {
-		return q.(quality.Tag)
-	}
-	return quality.None
-}
-
-// Codec parses the codec from a file name
-func Codec(name string) codec.Tag {
-	c := Codecs.FindTag(name)
-	if c != nil {
-		return c.(codec.Tag)
-	}
-	return codec.None
 }
 
 var tagsRegexp = regexp.MustCompile(`[^\p{L}0-9]+`)

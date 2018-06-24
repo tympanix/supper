@@ -21,13 +21,46 @@ type Metadata struct {
 	tags    []string
 }
 
-// ParseMetadata generates meta data from a string
+// ParseMetadata generates metadata from a string
 func ParseMetadata(tags string) Metadata {
-	return Metadata{
-		group:   parse.Group(tags),
-		codec:   parse.Codec(tags),
-		quality: parse.Quality(tags),
-		source:  parse.Source(tags),
+	_, m := ParseMetadataIndex(tags)
+	return m
+}
+
+// ParseMetadataIndex generates metadata from a string and returns the index
+// of the first occurrence of metdata information in the string
+func ParseMetadataIndex(tags string) (int, Metadata) {
+	var idx []int
+
+	m, c := parse.CodecIndex(tags)
+	if m != nil {
+		idx = append(idx, m...)
+	}
+
+	m, q := parse.QualityIndex(tags)
+	if m != nil {
+		idx = append(idx, m...)
+	}
+
+	m, s := parse.SourceIndex(tags)
+	if m != nil {
+		idx = append(idx, m...)
+	}
+
+	var min = len(tags)
+	for _, v := range idx {
+		if v < min {
+			min = v
+		}
+	}
+
+	g := parse.GroupAfter(min, tags)
+
+	return min, Metadata{
+		group:   g,
+		codec:   c,
+		source:  s,
+		quality: q,
 		tags:    parse.Tags(tags),
 		misc:    parse.Miscellaneous(tags),
 	}

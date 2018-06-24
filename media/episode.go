@@ -64,12 +64,14 @@ func NewEpisode(filename string) (*Episode, error) {
 	}
 
 	tags := groups[4]
+	end, metadata := ParseMetadataIndex(tags)
 
 	return &Episode{
-		Metadata: ParseMetadata(tags),
-		NameX:    parse.CleanName(name),
-		EpisodeX: episode,
-		SeasonX:  season,
+		Metadata:     metadata,
+		NameX:        parse.CleanName(name),
+		EpisodeX:     episode,
+		SeasonX:      season,
+		EpisodeNameX: parse.CleanName(tags[:end]),
 	}, nil
 }
 

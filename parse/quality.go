@@ -13,3 +13,18 @@ var qualityMap = map[string]interface{}{
 
 // Qualities list all possible qualities to parse
 var Qualities = makeMatcher(qualityMap)
+
+// QualityIndex returns the quality tag and the index in the string
+func QualityIndex(str string) ([]int, quality.Tag) {
+	i, q := Qualities.FindTagIndex(str)
+	if q != nil {
+		return i, q.(quality.Tag)
+	}
+	return nil, quality.None
+}
+
+// Quality returns the quality tag, if found, in the string
+func Quality(str string) quality.Tag {
+	_, q := QualityIndex(str)
+	return q
+}

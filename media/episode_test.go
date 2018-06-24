@@ -23,6 +23,25 @@ func TestEpisode(t *testing.T) {
 	assert.Equal(t, "theofficeus:2:4", e.Identity())
 }
 
+func TestEpisodeNoGroup(t *testing.T) {
+	e, err := NewEpisode("Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate")
+	require.NoError(t, err)
+	assert.Equal(t, 1, e.Season())
+	assert.Equal(t, 1, e.Episode())
+	assert.Equal(t, "", e.Group())
+	assert.Equal(t, "The One Where Monica Gets a Roommate", e.EpisodeName())
+}
+
+func TestEpisodeGroup(t *testing.T) {
+	e, err := NewEpisode("Friends.S01E01.The.One.Where.Monica.Gets.a.Roommate.720p.GROUP")
+	require.NoError(t, err)
+	assert.Equal(t, 1, e.Season())
+	assert.Equal(t, 1, e.Episode())
+	assert.Equal(t, "GROUP", e.Group())
+	assert.Equal(t, quality.HD720p, e.Quality())
+	assert.Equal(t, "The One Where Monica Gets a Roommate", e.EpisodeName())
+}
+
 func TestEpisodeError(t *testing.T) {
 	_, err := NewEpisode("blablatestest")
 	assert.Error(t, err)
