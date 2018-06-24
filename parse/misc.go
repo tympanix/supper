@@ -3,9 +3,10 @@ package parse
 import "github.com/tympanix/supper/meta/misc"
 
 var miscMap = map[string]interface{}{
-	"3D":  misc.Video3D,
-	"HC":  misc.HC,
-	"DTS": misc.DTS,
+	"3D":                      misc.Video3D,
+	"HC|Hardcoded?":           misc.HC,
+	"DTS(.?HD)?":              misc.DTS,
+	"DD(\\+|5\\.1|P)?|TrueHD": misc.DolbyDigital,
 	"AC3": misc.AC3,
 }
 

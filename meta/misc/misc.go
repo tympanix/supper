@@ -21,8 +21,10 @@ const (
 	Video3D Tag = iota
 	// HC is a tag for hard coded media
 	HC
-	// DTS is a tag for the DTS Coherent Acoustics audio codec
+	// DTS is a tag for the DTS multichannel audio technology
 	DTS
+	// DolbyDigital is a tag for the DolbyDigital multichannel audio technology
+	DolbyDigital
 	// AC3 is a tag for the Dolby Digital AC3 audio codec
 	AC3
 	// Extended is a tag for extended versions of the theatrical release
