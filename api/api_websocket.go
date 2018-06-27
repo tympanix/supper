@@ -58,10 +58,6 @@ func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api.Register(conn)
-	go func() {
-		time.Sleep(1 * time.Second)
-		api.Broadcast([]byte("hello websocket!"))
-	}()
 }
 
 // Register registers a new client in the hub

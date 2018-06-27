@@ -3,9 +3,10 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"math/rand"
 	"net/http"
 
+	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/gorilla/mux"
 	"github.com/tympanix/supper/notify"
@@ -117,11 +118,18 @@ func NewError(err error, status int) Error {
 	}
 }
 
-func (a *API) sendToWebsocket() chan<- *notify.Entry {
+func (a *API) asyncSendToWebsocket() chan<- *notify.Entry {
 	c := make(chan *notify.Entry)
+	job := rand.Uint32()
 	go func() {
 		for v := range c {
-			fmt.Println(v)
+			v.Context = v.Context.WithField("job", job)
+			data, err := json.Marshal(v)
+			if err != nil {
+				log.WithError(err).Error("Websocket error")
+				continue
+			}
+			a.Broadcast(data)
 		}
 	}()
 	return c

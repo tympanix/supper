@@ -35,6 +35,11 @@ func (l Level) String() string {
 	}
 }
 
+// MarshalJSON returns the notification level as a string
+func (l Level) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + l.String() + "\""), nil
+}
+
 // Fields is a collection of key, value pairs
 type Fields map[string]interface{}
 

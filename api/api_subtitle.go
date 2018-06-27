@@ -216,9 +216,8 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 		return NewError(errors.New("subtitle already satisfied"), http.StatusAccepted)
 	}
 
-	c := a.sendToWebsocket()
-
 	go func() {
+		c := a.asyncSendToWebsocket()
 		defer close(c)
 		subs, err := a.DownloadSubtitles(media, langs, c)
 		if err != nil {
