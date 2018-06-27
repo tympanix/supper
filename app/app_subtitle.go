@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/fatih/set"
 	"github.com/tympanix/supper/list"
 	"github.com/tympanix/supper/logutil"
+	"github.com/tympanix/supper/notify"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
@@ -16,10 +16,10 @@ import (
 
 // DownloadSubtitles downloads subtitles for a whole list of mediafiles for every
 // langauge in the language set
-func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Interface) ([]types.LocalSubtitle, error) {
+func (a *Application) DownloadSubtitles(input types.LocalMediaList, lang set.Interface, c chan<- *notify.Entry) ([]types.LocalSubtitle, error) {
 	var result []types.LocalSubtitle
 
-	if media == nil {
+	if input == nil {
 		return nil, errors.New("no media supplied for subtitles")
 	}
 
@@ -27,7 +27,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 		return nil, errors.New("no languages supplied for subtitles")
 	}
 
-	video := media.FilterVideo()
+	video := input.FilterVideo()
 
 	if video.Len() == 0 {
 		return nil, errors.New("no video media found in path")
@@ -41,7 +41,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 
 	// Iterate all media files in the list
 	for i, item := range video.List() {
-		ctx := log.WithFields(log.Fields{
+		ctx := notify.WithFields(notify.Fields{
 			"media": item,
 			"item":  fmt.Sprintf("%v/%v", i+1, video.Len()),
 		})
@@ -64,7 +64,7 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			var search []types.OnlineSubtitle
 			search, err = a.SearchSubtitles(item)
 			if err != nil {
-				ctx.WithError(err).Error("Subtitle failed")
+				c <- ctx.WithError(err).Error("Subtitle failed")
 				if a.Config().Strict() {
 					return nil, err
 				}
@@ -94,39 +94,36 @@ func (a *Application) DownloadSubtitles(media types.LocalMediaList, lang set.Int
 			langsubs := subs.FilterLanguage(l)
 
 			if langsubs.Len() == 0 && !a.Config().Dry() {
-				ctx.Warn("No subtitle available")
+				c <- ctx.Warn("No subtitle available")
 				continue
 			}
 
 			if !a.Config().Dry() {
-				sub, err := a.downloadBestSubtitle(ctx, item, langsubs)
+				sub, err := a.downloadBestSubtitle(ctx, item, langsubs, c)
 				if err != nil {
 					if a.Config().Strict() {
 						return nil, err
 					}
+					c <- ctx.WithError(err).Error("Could not download subtitle")
 					continue
 				}
 				result = append(result, sub)
 			} else {
-				ctx.WithField("reason", "dry-run").Info("Skip download")
+				c <- ctx.WithField("reason", "dry-run").Info("Skip download")
 			}
 		}
 	}
 	return result, nil
 }
 
-func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l types.SubtitleList) (types.LocalSubtitle, error) {
+func (a *Application) downloadBestSubtitle(ctx notify.Context, m types.Video, l types.SubtitleList, c chan<- *notify.Entry) (types.LocalSubtitle, error) {
 	rated := l.RateByMedia(m, a.Config().Evaluator())
 	if rated.Len() == 0 {
-		m := "no subtitles satisfied media"
-		ctx.Warn(m)
-		return nil, errors.New(m)
+		return nil, ctx.Warn("No subtitles satisfied media")
 	}
 	sub := rated.Best()
 	if sub.Score() < (float32(a.Config().Score()) / 100.0) {
-		m := fmt.Sprintf("Score too low %.0f%%", sub.Score()*100.0)
-		ctx.Warnf(m)
-		return nil, errors.New(m)
+		return nil, ctx.Warn("Score too low %.0f%%", sub.Score()*100.0)
 	}
 	onl, ok := sub.Subtitle().(types.OnlineSubtitle)
 	if !ok {
@@ -134,14 +131,12 @@ func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l t
 	}
 	srt, err := onl.Download()
 	if err != nil {
-		ctx.WithError(err).Error("Could not download subtitle")
-		return nil, err
+		return nil, ctx.Error(err.Error())
 	}
 	defer srt.Close()
 	saved, err := m.SaveSubtitle(srt, onl.Language())
 	if err != nil {
-		ctx.WithError(err).Error("Subtitle error")
-		return nil, err
+		return nil, ctx.Error(err.Error())
 	}
 
 	var strscore string
@@ -151,22 +146,22 @@ func (a *Application) downloadBestSubtitle(ctx log.Interface, m types.Video, l t
 		strscore = fmt.Sprintf("%.0f%%", sub.Score()*100.0)
 	}
 
-	ctx.WithField("score", strscore).Info("Subtitle downloaded")
+	c <- ctx.WithField("score", strscore).Info("Subtitle downloaded")
 
-	if err := a.execPluginsOnSubtitle(ctx, saved); err != nil {
+	if err := a.execPluginsOnSubtitle(ctx, saved, c); err != nil {
 		return nil, err
 	}
 	return saved, nil
 }
 
-func (a *Application) execPluginsOnSubtitle(ctx log.Interface, s types.LocalSubtitle) error {
+func (a *Application) execPluginsOnSubtitle(ctx notify.Context, s types.LocalSubtitle, c chan<- *notify.Entry) error {
 	for _, plugin := range a.Config().Plugins() {
-		err := plugin.Run(s)
-		if err != nil {
-			ctx.WithField("plugin", plugin.Name()).Error("Plugin failed")
+		ctx = ctx.WithField("plugin", plugin.Name())
+		if err := plugin.Run(s); err != nil {
+			c <- ctx.Error("Plugin failed")
 			return err
 		}
-		ctx.WithField("plugin", plugin.Name()).Info("Plugin finished")
+		c <- ctx.Info("Plugin finished")
 	}
 	return nil
 }

@@ -6,7 +6,9 @@ import (
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/tympanix/supper/app"
+	"github.com/tympanix/supper/notify"
 	"github.com/tympanix/supper/cfg"
 )
 
@@ -73,7 +75,10 @@ func downloadSubtitles(cmd *cobra.Command, args []string) {
 		}).Fatal("Media limit exceeded")
 	}
 
-	numsubs, err := app.DownloadSubtitles(media, config.Languages())
+	c := notify.AsyncLogger()
+	defer close(c)
+
+	numsubs, err := app.DownloadSubtitles(media, config.Languages(), c)
 
 	if err != nil {
 		log.WithError(err).Fatal("Download incomplete")

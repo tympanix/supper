@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/notify"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 )
@@ -190,40 +191,44 @@ func (a *API) downloadSubtitles(w http.ResponseWriter, r *http.Request) interfac
 	var folder jsonFolder
 	dec := json.NewDecoder(r.Body)
 	if err = dec.Decode(&folder); err != nil {
-		return Error(err, http.StatusBadRequest)
+		return NewError(err, http.StatusBadRequest)
 	}
 	path, err := folder.getPath(a)
 	if err != nil {
-		return Error(err, http.StatusBadRequest)
+		return NewError(err, http.StatusBadRequest)
 	}
 	if _, busy := busyFolders.LoadOrStore(path, true); busy {
-		return Error(errors.New("folder is busy"), http.StatusTooManyRequests)
+		return NewError(errors.New("folder is busy"), http.StatusTooManyRequests)
 	}
 	defer busyFolders.Delete(path)
 	media, err := a.FindMedia(path)
 	if err != nil {
-		return Error(err, http.StatusBadRequest)
+		return NewError(err, http.StatusBadRequest)
 	}
 	if media.Len() <= 0 {
-		return Error(errors.New("no media found"), http.StatusBadRequest)
+		return NewError(errors.New("no media found"), http.StatusBadRequest)
 	}
 	v, err := media.FilterVideo().FilterMissingSubs(langs)
 	if err != nil {
-		return Error(err, http.StatusBadRequest)
+		return NewError(err, http.StatusBadRequest)
 	}
 	if v.Len() <= 0 {
-		return Error(errors.New("subtitle already satisfied"), http.StatusAccepted)
+		return NewError(errors.New("subtitle already satisfied"), http.StatusAccepted)
 	}
-	subs, err := a.DownloadSubtitles(media, langs)
-	if err != nil {
-		return Error(err, http.StatusBadRequest)
-	}
-	if len(subs) <= 0 {
-		return Error(errors.New("no subtitles found"), http.StatusBadRequest)
-	}
-	files, err := a.fileList(folder)
-	if err != nil {
-		return Error(err, http.StatusBadRequest)
-	}
-	return files
+
+	c := a.sendToWebsocket()
+
+	go func() {
+		defer close(c)
+		subs, err := a.DownloadSubtitles(media, langs, c)
+		if err != nil {
+			c <- notify.Error(err.Error())
+			return
+		}
+		if len(subs) <= 0 {
+			c <- notify.Error("no subtitle(s) found")
+		}
+	}()
+
+	return NewError(errors.New("Downloading subtitles"), http.StatusAccepted)
 }

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/notify"
 
 	"github.com/fatih/set"
 	"github.com/stretchr/testify/assert"
@@ -182,7 +183,10 @@ func TestSubtitlePluginError(t *testing.T) {
 func TestSubtitleNoMedia(t *testing.T) {
 	app := New(defaultConfig)
 
-	_, err := app.DownloadSubtitles(nil, set.New(language.English))
+	c := notify.AsyncDiscard()
+	defer close(c)
+
+	_, err := app.DownloadSubtitles(nil, set.New(language.English), c)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no media")
 }
@@ -190,7 +194,10 @@ func TestSubtitleNoMedia(t *testing.T) {
 func TestSubtitleNoLanguage(t *testing.T) {
 	app := New(defaultConfig)
 
-	_, err := app.DownloadSubtitles(list.NewLocalMedia(), nil)
+	c := notify.AsyncDiscard()
+	defer close(c)
+
+	_, err := app.DownloadSubtitles(list.NewLocalMedia(), nil, c)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no languages")
 }
@@ -198,7 +205,10 @@ func TestSubtitleNoLanguage(t *testing.T) {
 func TestSubtitleNoVideo(t *testing.T) {
 	app := New(defaultConfig)
 
-	_, err := app.DownloadSubtitles(list.NewLocalMedia(), set.New(language.English))
+	c := notify.AsyncDiscard()
+	defer close(c)
+
+	_, err := app.DownloadSubtitles(list.NewLocalMedia(), set.New(language.English), c)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no video")
 }
@@ -284,7 +294,7 @@ func TestSubtitleUnsatisfied(t *testing.T) {
 
 	err := performSubtitleTest(t, skipSubtitlesTest{}, config)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no subtitles satisfied media")
+	assert.Contains(t, err.Error(), "No subtitles satisfied media")
 
 	cleanRenameTest(t)
 }
@@ -419,7 +429,10 @@ func performSubtitleTest(t *testing.T, test subtitleTester, config types.Config)
 
 	test.Pre(t, media.List())
 
-	subs, err := app.DownloadSubtitles(media, config.Languages())
+	c := notify.AsyncDiscard()
+	defer close(c)
+
+	subs, err := app.DownloadSubtitles(media, config.Languages(), c)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fatih/set"
+	"github.com/tympanix/supper/notify"
 )
 
 // App is the interface for the top level capabilities of the application.
@@ -17,7 +18,7 @@ type App interface {
 	Config() Config
 	Scrapers() []Scraper
 	FindMedia(...string) (LocalMediaList, error)
-	DownloadSubtitles(LocalMediaList, set.Interface) ([]LocalSubtitle, error)
+	DownloadSubtitles(LocalMediaList, set.Interface, chan<- *notify.Entry) ([]LocalSubtitle, error)
 	RenameMedia(LocalMediaList) error
 	FindArchives(...string) ([]MediaArchive, error)
 	ExtractMedia(MediaReadCloser) error

@@ -86,7 +86,7 @@ func (a *API) media(w http.ResponseWriter, r *http.Request) interface{} {
 		return a.detailsMedia(w, r)
 	} else {
 		err := errors.New("method not allowed")
-		return Error(err, http.StatusMethodNotAllowed)
+		return NewError(err, http.StatusMethodNotAllowed)
 	}
 }
 
@@ -100,7 +100,7 @@ func (a *API) allMedia(w http.ResponseWriter, r *http.Request) interface{} {
 		if path != "" {
 			list, err := findMediaFolders(mtype, path)
 			if err != nil {
-				return Error(err, 500)
+				return NewError(err, 500)
 			}
 			media = append(media, list...)
 		}
@@ -114,11 +114,11 @@ func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
 	var media jsonFolder
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&media); err != nil {
-		return Error(err, http.StatusBadRequest)
+		return NewError(err, http.StatusBadRequest)
 	}
 	files, err := a.fileList(media)
 	if err != nil {
-		return Error(err, http.StatusBadRequest)
+		return NewError(err, http.StatusBadRequest)
 	}
 	return files
 }
@@ -126,18 +126,18 @@ func (a *API) detailsMedia(w http.ResponseWriter, r *http.Request) interface{} {
 func (a *API) fileList(folder jsonFolder) (interface{}, error) {
 	path, err := folder.getPath(a)
 	if err != nil {
-		return nil, Error(err, http.StatusBadRequest)
+		return nil, NewError(err, http.StatusBadRequest)
 	}
 	list, err := a.FindMedia(path)
 	if err != nil {
-		return nil, Error(err, http.StatusInternalServerError)
+		return nil, NewError(err, http.StatusInternalServerError)
 	}
 	video := list.FilterVideo()
 	medialist := make([]interface{}, 0)
 	for _, m := range video.List() {
 		subs, err := m.ExistingSubtitles()
 		if err != nil {
-			return nil, Error(err, http.StatusInternalServerError)
+			return nil, NewError(err, http.StatusInternalServerError)
 		}
 		var mtype string
 		if _, ok := m.TypeEpisode(); ok {

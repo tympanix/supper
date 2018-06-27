@@ -3,34 +3,44 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/fatih/set"
 	"github.com/gorilla/mux"
+	"github.com/tympanix/supper/notify"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 )
 
+// API exposes endpoints for the webapp to perform HTTP RESTFull actions
 type API struct {
 	types.App
+	*Hub
 	*mux.Router
 }
 
-type APIError interface {
+// Error is an error occurring in an API endpoint
+type Error interface {
 	error
 	Status() int
 }
 
+// New creates a new API handler
 func New(app types.App) http.Handler {
 	api := &API{
-		app,
-		mux.NewRouter(),
+		App:    app,
+		Hub:    newHub(),
+		Router: mux.NewRouter(),
 	}
 
 	api.Handle("/media", apiHandler(api.media))
 	api.Handle("/config", apiHandler(api.config))
+	api.HandleFunc("/ws", api.serveWebsocket)
 	apiSubs := api.PathPrefix("/subtitles").Subrouter()
 	api.subtitleRouter(apiSubs)
+
+	go api.Hub.run()
 
 	return api
 }
@@ -61,14 +71,12 @@ func (a *API) queryLang(r *http.Request) (set.Interface, error) {
 	lang := v.Get("lang")
 	if lang == "" {
 		return a.Config().Languages(), nil
-	} else {
-		l := language.Make(lang)
-		if l == language.Und {
-			return set.New(), errors.New("unknown language")
-		} else {
-			return set.New(l), nil
-		}
 	}
+	l := language.Make(lang)
+	if l == language.Und {
+		return set.New(), errors.New("unknown language")
+	}
+	return set.New(l), nil
 }
 
 type apiHandler func(http.ResponseWriter, *http.Request) interface{}
@@ -91,19 +99,30 @@ func (fn apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (fn apiHandler) handleError(w http.ResponseWriter, err error) error {
-	var apiError APIError
-	if e, ok := err.(APIError); ok {
+	var apiError Error
+	if e, ok := err.(Error); ok {
 		apiError = e
 	} else {
-		apiError = Error(err, http.StatusBadRequest)
+		apiError = NewError(err, http.StatusBadRequest)
 	}
 	w.WriteHeader(apiError.Status())
 	return apiError
 }
 
-func Error(err error, status int) APIError {
+// NewError returns a new error
+func NewError(err error, status int) Error {
 	return &apiError{
 		err,
 		status,
 	}
+}
+
+func (a *API) sendToWebsocket() chan<- *notify.Entry {
+	c := make(chan *notify.Entry)
+	go func() {
+		for v := range c {
+			fmt.Println(v)
+		}
+	}()
+	return c
 }

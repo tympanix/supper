@@ -33,5 +33,5 @@ func (a *API) config(w http.ResponseWriter, r *http.Request) interface{} {
 		}
 	}
 	err := errors.New("Method not allowed")
-	return Error(err, http.StatusMethodNotAllowed)
+	return NewError(err, http.StatusMethodNotAllowed)
 }

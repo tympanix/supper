@@ -1,5 +1,9 @@
 package media
 
+import (
+	"github.com/tympanix/supper/types"
+)
+
 // ErrUnknown is an error for unrecognized media
 type ErrUnknown struct{}
 
@@ -39,5 +43,33 @@ func IsExistsErr(err error) bool {
 		return false
 	}
 	_, ok := err.(*ErrExists)
+	return ok
+}
+
+// Error is an error concerning some media
+type Error struct {
+	media types.Media
+	err   error
+}
+
+// Error returns the error message of the media error
+func (err *Error) Error() string {
+	return err.Error()
+}
+
+// NewError returns a new erro
+func NewError(err error, media types.Media) *Error {
+	return &Error{
+		media,
+		err,
+	}
+}
+
+// IsMediaError returns true if the error is of type *media.Error
+func IsMediaError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*Error)
 	return ok
 }
