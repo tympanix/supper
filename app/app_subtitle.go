@@ -139,14 +139,8 @@ func (a *Application) downloadBestSubtitle(ctx notify.Context, m types.Video, l 
 		return nil, ctx.Error(err.Error())
 	}
 
-	var strscore string
-	if sub.Score() == 0.0 {
-		strscore = "N/A"
-	} else {
-		strscore = fmt.Sprintf("%.0f%%", sub.Score()*100.0)
-	}
-
-	c <- ctx.WithField("score", strscore).Info("Subtitle downloaded")
+	score := fmt.Sprintf("%.0f%%", sub.Score()*100.0)
+	c <- ctx.WithField("score", score).Info("Subtitle downloaded")
 
 	if err := a.execPluginsOnSubtitle(ctx, saved, c); err != nil {
 		return nil, err
