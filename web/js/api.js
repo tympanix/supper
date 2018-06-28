@@ -82,7 +82,9 @@ class Api {
 
   showError(res) {
     if (res.data.error && typeof res.data.error === 'string') {
-      if (res.status < 400) {
+      if (res.status < 300) {
+        Snackbar.success("Success", res.data.error)
+      } else if (res.status < 400) {
         Snackbar.warning("Warning", res.data.error)
       } else {
         Snackbar.error("Error", res.data.error)
