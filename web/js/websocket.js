@@ -2,6 +2,14 @@ import Snackbar from './comp/Snackbar'
 
 var ws = new WebSocket("ws://" + document.location.host + "/api/ws")
 
+const loggers = {
+  "debug": Snackbar.notify,
+  "info": Snackbar.success,
+  "warn": Snackbar.warning,
+  "error": Snackbar.error,
+  "fatal": Snackbar.error,
+}
+
 ws.onmessage = function(event) {
   console.log(event.data)
   var data
@@ -9,15 +17,9 @@ ws.onmessage = function(event) {
     data = JSON.parse(event.data)
   } catch (e) {
     console.log(e)
-    return Snackbar.error("Websocket", "Could not read websocket message")
+    return Snackbar.error("Websocket", "Could not read websocket message", "WS")
   }
-  if (data.level == "info") {
-    Snackbar.notify("Update", data.message)
-  } else if (data.level == "error") {
-    Snackbar.error("Update", data.message)
-  } else if (data.level == "warn") {
-    Snackbar.warning("Update", data.message)
-  } else {
-    Snackbar.error("Update", data.message)
-  }
+
+  var log = loggers[data.level] || Snackbar.error
+  log("Update", data.message, data.data.job)
 }

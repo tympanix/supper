@@ -4,12 +4,12 @@ import { EventEmitter} from 'events'
 
 let snackEvent = new EventEmitter()
 
-function push(type, title, message, delay) {
+function push(type, title, message, tag) {
   snackEvent.emit("change", {
     type: type,
     title: capitalizeFirstLetter(title),
     message: capitalizeFirstLetter(message),
-    delay: delay || 8000,
+    tag: tag,
   })
 }
 
@@ -35,16 +35,46 @@ class Snackbar extends Component {
 
     snack = Object.assign({}, snack, {
       id: _id,
-      created: new Date().getTime()
+      created: new Date().getTime(),
+      timer: this.removeSnackTimer(_id)
     })
 
+    if (snack.tag !== undefined) {
+      this.upsertSnack(snack)
+    } else {
+      this.insertSnack(snack)
+    }
+
+  }
+
+  insertSnack(snack) {
     this.setState((prev) => {
       return {snacks: prev.snacks.concat([snack])}
     })
+  }
 
-    setTimeout(() => {
+  upsertSnack(snack) {
+    this.setState((prev) => {
+      let found = prev.snacks.find(s => s.tag === snack.tag)
+      if (found) {
+        return {snacks: prev.snacks.map(s => {
+          if (s === found) {
+            clearTimeout(found.timer)
+            return Object.assign(found, snack)
+          } else {
+            return s
+          }
+        })}
+      } else {
+        return {snacks: prev.snacks.concat([snack])}
+      }
+    })
+  }
+
+  removeSnackTimer(id) {
+    return setTimeout(() => {
       this.setState((prev) => {
-        return {snacks: prev.snacks.filter((s) => s.id !== _id)}
+        return {snacks: prev.snacks.filter((s) => s.id !== id)}
       })
     }, 5000)
   }
@@ -57,20 +87,20 @@ class Snackbar extends Component {
     snackEvent.removeListener("change", this.handleSnack)
   }
 
-  static notify(title, message, delay) {
-    push("notify", title, message, delay)
+  static notify(title, message, tag) {
+    push("notify", title, message, tag)
   }
 
-  static error(title, message, delay) {
-    push("error", title, message, delay)
+  static error(title, message, tag) {
+    push("error", title, message, tag)
   }
 
-  static success(title, message, delay) {
-    push("success", title, message, delay)
+  static success(title, message, tag) {
+    push("success", title, message, tag)
   }
 
-  static warning(title, message, delay) {
-    push("warning", title, message, delay)
+  static warning(title, message, tag) {
+    push("warning", title, message, tag)
   }
 
   render() {
