@@ -50,7 +50,7 @@ class Websocket extends EventEmitter {
   }
 
   remove(fn) {
-    this.off("ws", fn)
+    this.removeListener("ws", fn)
   }
 }
 
