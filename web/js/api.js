@@ -97,7 +97,7 @@ class Api {
   handleError(res) {
     if (res.status !== 200) {
       this.showError(res)
-      throw new Error(res.data.message || 'Unknown error')
+      throw new Error(res.data.error || res.data)
     } else {
       return res.data
     }

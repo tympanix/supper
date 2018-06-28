@@ -1,6 +1,6 @@
-import Snackbar from './comp/Snackbar'
+import { EventEmitter } from 'events'
 
-var ws = new WebSocket("ws://" + document.location.host + "/api/ws")
+import Snackbar from './comp/Snackbar'
 
 const loggers = {
   "debug": Snackbar.notify,
@@ -10,16 +10,48 @@ const loggers = {
   "fatal": Snackbar.error,
 }
 
-ws.onmessage = function(event) {
-  console.log(event.data)
-  var data
-  try {
-    data = JSON.parse(event.data)
-  } catch (e) {
-    console.log(e)
-    return Snackbar.error("Websocket", "Could not read websocket message", "WS")
+class Websocket extends EventEmitter {
+
+  constructor() {
+    super()
+    this.ws = new WebSocket("ws://" + document.location.host + "/api/ws")
+    this.ws.onmessage = this.__handle.bind(this)
+    this.__handlers = []
   }
 
-  var log = loggers[data.level] || Snackbar.error
-  log("Update", data.message, data.data.job)
+  __handle(event) {
+    console.log(event.data)
+    var data = this.__json(event.data)
+
+    if (data === undefined) {
+      return Snackbar.error("Websocket", "Could not read websocket message", "WS")
+    }
+
+    this.emit("ws", data)
+
+    var log = loggers[data.level] || Snackbar.error
+    log("Update", data.message, data.data.job)
+  }
+
+  __json(data) {
+    try {
+      return JSON.parse(data)
+    } catch (e) {
+      console.log(e)
+      return undefined
+    }
+  }
+
+  subscribe(fn) {
+    this.on("ws", fn)
+    return function() {
+      this.off("ws", fn)
+    }.bind(this)
+  }
+
+  remove(fn) {
+    this.off("ws", fn)
+  }
 }
+
+export default new Websocket()

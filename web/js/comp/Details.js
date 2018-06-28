@@ -12,12 +12,14 @@ import DownloadButtons from './DownloadButtons'
 import SubtitleList from './SubtitleList'
 
 import API from '../api'
+import websocket from '../websocket'
 
 class Details extends Component {
   constructor() {
     super()
 
     this.subHotkey = this.subHotkey.bind(this)
+    this.subtitleFromWebsocket = this.subtitleFromWebsocket.bind(this)
 
     this.state = {
       tabIndex: 0,
@@ -31,6 +33,7 @@ class Details extends Component {
 
   componentDidMount() {
     subtitleStore.reset()
+    websocket.subscribe(this.subtitleFromWebsocket)
     window.addEventListener("keyup", this.subHotkey)
   }
 
@@ -40,7 +43,27 @@ class Details extends Component {
     }
   }
 
+  subtitleFromWebsocket(msg) {
+    if (!msg.data.media || !msg.extra.sub) {
+      return
+    }
+
+    let media = msg.data.media
+    let sub = msg.extra.sub
+
+    this.setState((prev) => {
+      var found = prev.media.find(m => m.media.id === media.id)
+
+      if (found) {
+        found.subtitles.push(sub)
+      }
+
+      return {"media": prev.media}
+    })
+  }
+
   componentWillUnmount() {
+    websocket.remove(this.subtitleFromWebsocket)
     window.removeEventListener("keyup", this.subHotkey)
   }
 
@@ -74,9 +97,7 @@ class Details extends Component {
   downloadSubtitles(lang) {
     this.setState({busy: true})
     let folder = this.state.folder
-    API.downloadSubtitles(folder, lang).then((data) => {
-      this.setState({media: data})
-    }).catch((err) => {
+    API.downloadSubtitles(folder, lang).catch((err) => {
       console.log(err)
     }).then(() => {
       this.setState({busy: false})
@@ -85,7 +106,7 @@ class Details extends Component {
 
   render() {
     if (this.state.failed) {
-      return <h1>No media found</h1>
+      return <h1 className="center">No media found</h1>
     }
 
     if (this.state.loading) {
