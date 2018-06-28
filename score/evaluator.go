@@ -19,9 +19,14 @@ const (
 )
 
 const (
-	missingMultiplier      = 1.75
-	missingCodecMultiplier = 1.25
+	missingMultiplier     = 2.25
+	unavailableMultiplier = 0.18
+	diffMultiplier        = 0.66
 )
+
+func diffVal(f float64) float64 {
+	return math.Sqrt(f)
+}
 
 // DefaultEvaluator uses string similarity to rate subtitles against media files
 type DefaultEvaluator struct{}
@@ -58,9 +63,7 @@ func (e *DefaultEvaluator) evaluateMovie(media types.Movie, sub types.Movie) flo
 	score := smetrics.JaroWinkler(media.MovieName(), sub.MovieName(), 0.7, 4)
 
 	prob.AddScore(score, 0.5)
-
 	e.evaluateMetadata(prob, media, sub)
-	prob.AddEquals(media.Year(), sub.Year(), groupWeight)
 
 	return float32(prob.Score())
 }
@@ -76,38 +79,67 @@ func (e *DefaultEvaluator) evaluateEpisode(media types.Episode, sub types.Episod
 }
 
 func (e *DefaultEvaluator) evaluateMetadata(p *Weighted, media types.Metadata, sub types.Metadata) {
-	p.AddEquals(media.Group(), sub.Group(), 1)
+	if media.Group() != "" {
+		p.AddEquals(media.Group(), sub.Group(), groupWeight)
+	} else {
+		if sub.Group() == "" {
+			p.AddScore(0.0, unavailableMultiplier*groupWeight)
+		}
+	}
 
+	if sub.Quality() == quality.None {
+		p.AddScore(0.0, missingMultiplier*qualityWeight)
+	}
 	if media.Quality() != quality.None {
-		if sub.Quality() == quality.None {
-			p.AddScore(0.0, missingMultiplier*qualityWeight)
-		} else if media.Quality() == sub.Quality() {
+		if media.Quality() == sub.Quality() {
 			p.AddScore(1.0, qualityWeight)
 		} else {
 			diff := math.Abs(float64(media.Quality() - sub.Quality()))
-			p.AddScore(0.0, diff*qualityWeight)
+			p.AddScore(0.0, diffVal(diff)*diffMultiplier*qualityWeight)
+		}
+	} else {
+		if sub.Quality() == quality.None {
+			// unavailable quality, apply penalty
+			p.AddScore(0.0, unavailableMultiplier*qualityWeight)
+		} else {
+			// not comparable, favour 720p
+			diff := math.Abs(float64(sub.Quality() - quality.HD720p))
+			p.AddScore(0.0, diffVal(diff)*unavailableMultiplier*diffMultiplier*qualityWeight)
 		}
 	}
 
+	if sub.Source() == source.None {
+		p.AddScore(0.0, missingMultiplier*sourceWeight)
+	}
 	if media.Source() != source.None {
-		if sub.Source() == source.None {
-			p.AddScore(0.0, missingMultiplier*sourceWeight)
-		} else if media.Source() == sub.Source() {
+		if media.Source() == sub.Source() {
 			p.AddScore(1.0, sourceWeight)
 		} else {
 			diff := math.Abs(float64(media.Source() - sub.Source()))
-			p.AddScore(0.0, diff*sourceWeight)
+			p.AddScore(0.0, diffVal(diff)*diffMultiplier*sourceWeight)
+		}
+	} else {
+		if sub.Source() == source.None {
+			p.AddScore(0.0, unavailableMultiplier*sourceWeight)
+		} else {
+			diff := math.Abs(float64(sub.Source() - source.BluRay))
+			p.AddScore(0.0, diffVal(diff)*unavailableMultiplier*diffMultiplier*sourceWeight)
 		}
 	}
 
+	if sub.Codec() == codec.None {
+		p.AddScore(0.0, missingMultiplier*codecWeight)
+	}
 	if media.Codec() != codec.None {
-		if sub.Codec() == codec.None {
-			p.AddScore(0.0, missingCodecMultiplier*codecWeight)
-		} else if media.Codec() == sub.Codec() {
+		if media.Codec() == sub.Codec() {
 			p.AddScore(1.0, codecWeight)
 		} else {
 			diff := math.Abs(float64(media.Codec() - sub.Codec()))
-			p.AddScore(0.0, diff*codecWeight)
+			p.AddScore(0.0, diffVal(diff)*diffMultiplier*codecWeight)
+		}
+	} else {
+		if sub.Codec() == codec.None {
+			p.AddScore(0.0, unavailableMultiplier*codecWeight)
 		}
 	}
 }
