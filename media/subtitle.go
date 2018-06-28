@@ -3,6 +3,7 @@ package media
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -64,7 +65,7 @@ func (l *Subtitle) Language() language.Tag {
 
 // Identity returns the identity string for the media which the subtitle matches
 func (l *Subtitle) Identity() string {
-	return l.ForMedia().Identity()
+	return fmt.Sprintf("%v:%v", l.ForMedia().Identity(), l.Language().String())
 }
 
 // Merge merges the media belonging to the subtitle

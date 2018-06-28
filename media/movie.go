@@ -26,12 +26,14 @@ func (m *Movie) MarshalJSON() (b []byte, err error) {
 		Meta Metadata `json:"metadata"`
 		Name string   `json:"name"`
 		Year int      `json:"year"`
+		ID   string   `json:"id"`
 	}
 
 	return json.Marshal(jsonMovie{
 		m.Metadata,
 		m.NameX,
 		m.YearX,
+		m.Identity(),
 	})
 }
 

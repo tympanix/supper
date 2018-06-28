@@ -30,6 +30,7 @@ func (e *Episode) MarshalJSON() (b []byte, err error) {
 		Name    string   `json:"name"`
 		Episode int      `json:"episode"`
 		Seasion int      `json:"season"`
+		ID      string   `json:"id"`
 	}
 
 	return json.Marshal(jsonEpisode{
@@ -37,6 +38,7 @@ func (e *Episode) MarshalJSON() (b []byte, err error) {
 		e.TVShow(),
 		e.Episode(),
 		e.Season(),
+		e.Identity(),
 	})
 }
 
