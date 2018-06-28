@@ -9,7 +9,7 @@ func AsyncLogger() chan<- *Entry {
 	c := make(chan *Entry)
 	go func() {
 		for e := range c {
-			ctx := log.WithFields(log.Fields(e.Context))
+			ctx := log.WithFields(log.Fields(e.Fields))
 			switch e.Level {
 			case LevelDebug:
 				ctx.Debug(e.Message)

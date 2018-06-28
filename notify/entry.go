@@ -45,9 +45,9 @@ type Fields map[string]interface{}
 
 // Entry is a single instance of a notification
 type Entry struct {
-	Context Context `json:"data"`
-	Message string  `json:"message"`
-	Level   Level   `json:"level"`
+	Context
+	Message string `json:"message"`
+	Level   Level  `json:"level"`
 }
 
 // Error returns a string representation of the notification
@@ -57,23 +57,24 @@ func (e *Entry) Error() string {
 
 // WithField creates a new context with a single field
 func WithField(name string, value interface{}) Context {
-	ctx := make(map[string]interface{})
-	ctx[name] = value
-	return Context(ctx)
+	return empty().addField(name, value)
 }
 
 // WithFields creates a new context with multiple fields
 func WithFields(f Fields) Context {
-	ctx := make(map[string]interface{})
+	c := empty()
 	for k, v := range f {
-		ctx[k] = v
+		c.addField(k, v)
 	}
-	return Context(ctx)
+	return c
 }
 
 // WithError creates a new context with an error
 func WithError(err error) Context {
-	ctx := make(map[string]interface{})
-	ctx["error"] = err
-	return Context(ctx)
+	return empty().addField("error", err)
+}
+
+// WithExtra creates a new context with an extra property
+func WithExtra(name string, value interface{}) Context {
+	return empty().addExtra(name, value)
 }

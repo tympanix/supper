@@ -2,29 +2,57 @@ package notify
 
 import "fmt"
 
-// Context holds stateful information for notifications
-type Context map[string]interface{}
+// Map holds stateful information of key, value pairs
+type Map map[string]interface{}
 
-func (c Context) copy() Context {
+func (m Map) copy() Map {
 	ctx := make(map[string]interface{})
-	for k, v := range c {
+	for k, v := range m {
 		ctx[k] = v
 	}
-	return Context(ctx)
+	return Map(ctx)
+}
+
+// Context holds stateful information for notifications
+type Context struct {
+	Fields Map `json:"data"`
+	Extra  Map `json:"extra"`
+}
+
+func empty() Context {
+	return Context{
+		Fields: make(map[string]interface{}),
+		Extra:  make(map[string]interface{}),
+	}
+}
+
+func (c Context) addField(name string, value interface{}) Context {
+	c.Fields[name] = value
+	return c
+}
+
+func (c Context) addExtra(name string, value interface{}) Context {
+	c.Extra[name] = value
+	return c
+}
+
+func (c Context) copy() Context {
+	return Context{
+		Fields: c.Fields.copy(),
+		Extra:  c.Extra.copy(),
+	}
 }
 
 // WithField extends the current context with anohter field
 func (c Context) WithField(name string, value interface{}) Context {
-	copy := c.copy()
-	copy[name] = value
-	return copy
+	return c.copy().addField(name, value)
 }
 
 // WithFields extends the current context with multiple fields
 func (c Context) WithFields(f Fields) Context {
 	copy := c.copy()
 	for k, v := range f {
-		copy[k] = v
+		copy.addField(k, v)
 	}
 	return copy
 }
@@ -32,14 +60,19 @@ func (c Context) WithFields(f Fields) Context {
 // WithError extedns the current context with an error
 func (c Context) WithError(err error) Context {
 	copy := c.copy()
-	copy["error"] = err
+	copy.addField("error", err)
 	return copy
+}
+
+// WithExtra adds additional information which is only used internally
+func (c Context) WithExtra(name string, value interface{}) Context {
+	return c.copy().addExtra(name, value)
 }
 
 // Notify creates a new notification entry
 func (c Context) Notify(l Level, s string, v ...interface{}) *Entry {
 	return &Entry{
-		Context: c.copy(),
+		Context: c,
 		Level:   l,
 		Message: fmt.Sprintf(s, v...),
 	}

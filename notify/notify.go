@@ -1,9 +1,5 @@
 package notify
 
-func empty() Context {
-	return Context(make(map[string]interface{}))
-}
-
 // Debug creates a debuggin notification
 func Debug(s string, v ...interface{}) *Entry {
 	return empty().Debug(s, v...)
