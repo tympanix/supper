@@ -45,7 +45,7 @@ class Websocket extends EventEmitter {
   subscribe(fn) {
     this.on("ws", fn)
     return function() {
-      this.off("ws", fn)
+      this.removeListener("ws", fn)
     }.bind(this)
   }
 
