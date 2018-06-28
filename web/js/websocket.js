@@ -16,6 +16,7 @@ class Websocket extends EventEmitter {
     super()
     this.ws = new WebSocket("ws://" + document.location.host + "/api/ws")
     this.ws.onmessage = this.__handle.bind(this)
+    this.__id = 0
     this.__handlers = []
   }
 
@@ -27,6 +28,8 @@ class Websocket extends EventEmitter {
       return Snackbar.error("Websocket", "Could not read websocket message", "WS")
     }
 
+    Object.assign(data, {wsid: this.__id})
+    this.__id++
     this.emit("ws", data)
 
     var log = loggers[data.level] || Snackbar.error

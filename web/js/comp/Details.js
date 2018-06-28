@@ -10,6 +10,7 @@ import FileList from './FileList'
 import Flag from './Flag'
 import DownloadButtons from './DownloadButtons'
 import SubtitleList from './SubtitleList'
+import ActivityLog from './ActivityLog'
 
 import API from '../api'
 import websocket from '../websocket'
@@ -28,6 +29,7 @@ class Details extends Component {
       busy: false,
       loading: true,
       failed: false,
+      logs: [],
     }
   }
 
@@ -58,7 +60,10 @@ class Details extends Component {
         found.subtitles.push(sub)
       }
 
-      return {"media": prev.media}
+      return {
+        "media": prev.media,
+        "logs": prev.logs.concat([msg]),
+      }
     })
   }
 
@@ -136,6 +141,13 @@ class Details extends Component {
               <TabList className="tablist">
                 <Tab selectedClassName="active">Files</Tab>
                 <Tab selectedClassName="active">Subtitles</Tab>
+                <Tab selectedClassName="active">
+                  Activity
+                  {this.state.logs.length
+                    ? <span className="tag pad">{this.state.logs.length}</span>
+                    : null
+                  }
+                </Tab>
               </TabList>
 
               <TabPanel className="tab-panel">
@@ -150,6 +162,12 @@ class Details extends Component {
                 <section>
                   <h2>Subtitles</h2>
                   <SubtitleList/>
+                </section>
+              </TabPanel>
+              <TabPanel className="tab-panel">
+                <section>
+                  <h2>Activity</h2>
+                  <ActivityLog log={this.state.logs}/>
                 </section>
               </TabPanel>
             </Tabs>
