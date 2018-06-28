@@ -2,7 +2,6 @@ package media
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 
 	"github.com/tympanix/supper/types"
@@ -17,10 +16,7 @@ type File struct {
 
 // MarshalJSON returns the JSON represnetation of a media file
 func (f *File) MarshalJSON() (b []byte, err error) {
-	if js, ok := f.Media.(json.Marshaler); ok {
-		return js.MarshalJSON()
-	}
-	return nil, errors.New("media could not be json encoded")
+	return json.Marshal(f.Media)
 }
 
 // String returns a string representation of the media in the file
