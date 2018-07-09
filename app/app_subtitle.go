@@ -131,8 +131,11 @@ func (a *Application) downloadBestSubtitle(ctx notify.Context, m types.Video, l 
 	}
 	srt, err := onl.Download()
 	if err != nil && retries > 0 {
-		c <- ctx.WithError(err).Debug("Retrying subtitle")
 		p := list.RatedSubtitles(l.List()[1:])
+		if p.Len() <= 0 {
+			return nil, ctx.Error(err.Error())
+		}
+		c <- ctx.WithError(err).Debug("Retrying subtitle")
 		return a.downloadBestSubtitle(ctx, m, p, retries-1, c)
 	}
 	if err != nil {
