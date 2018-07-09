@@ -41,11 +41,7 @@ type RatedSubtitles []types.RatedSubtitle
 
 // List returns the list of subtitles as a slice
 func (s RatedSubtitles) List() []types.RatedSubtitle {
-	subs := make([]types.RatedSubtitle, len(s))
-	for i, v := range s {
-		subs[i] = v
-	}
-	return subs
+	return s
 }
 
 // Best returns the best matching subtitle

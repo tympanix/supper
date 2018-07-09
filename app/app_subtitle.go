@@ -99,7 +99,8 @@ func (a *Application) DownloadSubtitles(input types.LocalMediaList, lang set.Int
 			}
 
 			if !a.Config().Dry() {
-				sub, err := a.downloadBestSubtitle(ctx, item, langsubs, c)
+				rated := langsubs.RateByMedia(item, a.Config().Evaluator())
+				sub, err := a.downloadBestSubtitle(ctx, item, rated, 3, c)
 				if err != nil {
 					if a.Config().Strict() {
 						return nil, err
@@ -116,12 +117,11 @@ func (a *Application) DownloadSubtitles(input types.LocalMediaList, lang set.Int
 	return result, nil
 }
 
-func (a *Application) downloadBestSubtitle(ctx notify.Context, m types.Video, l types.SubtitleList, c chan<- *notify.Entry) (types.LocalSubtitle, error) {
-	rated := l.RateByMedia(m, a.Config().Evaluator())
-	if rated.Len() == 0 {
+func (a *Application) downloadBestSubtitle(ctx notify.Context, m types.Video, l types.RatedSubtitleList, retries int, c chan<- *notify.Entry) (types.LocalSubtitle, error) {
+	if l.Len() == 0 {
 		return nil, ctx.Warn("No subtitles satisfied media")
 	}
-	sub := rated.Best()
+	sub := l.Best()
 	if sub.Score() < (float32(a.Config().Score()) / 100.0) {
 		return nil, ctx.Warn("Score too low %.0f%%", sub.Score()*100.0)
 	}
@@ -130,6 +130,11 @@ func (a *Application) downloadBestSubtitle(ctx notify.Context, m types.Video, l 
 		ctx.Fatal("Subtitle could not be cast to online subtitle")
 	}
 	srt, err := onl.Download()
+	if err != nil && retries > 0 {
+		c <- ctx.WithError(err).Debug("Retrying subtitle")
+		p := list.RatedSubtitles(l.List()[1:])
+		return a.downloadBestSubtitle(ctx, m, p, retries-1, c)
+	}
 	if err != nil {
 		return nil, ctx.Error(err.Error())
 	}
