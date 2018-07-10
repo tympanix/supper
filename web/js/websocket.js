@@ -24,8 +24,11 @@ class Websocket extends EventEmitter {
 
   __create() {
     this.__proto = document.location.protocol === "http:" ? "ws://" : "wss://"
-    this.__path = join(document.location.host, this.__proxypath || "", "/api/ws")
+    this.__path = join(document.location.host, this.__proxypath || "", "/api/wss")
     this.ws = new WebSocket(this.__proto + this.__path)
+    this.ws.onerror = function(evt) {
+      Snackbar.error("Websocket", "Could not instantiate connection :(", "WS")
+    }
     this.ws.onmessage = this.__handle.bind(this)
   }
 
