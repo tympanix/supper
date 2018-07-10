@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events'
 
 import Snackbar from './comp/Snackbar'
+import { configStore } from './stores'
+import { join } from 'path'
 
 const loggers = {
   "debug": Snackbar.notify,
@@ -14,10 +16,31 @@ class Websocket extends EventEmitter {
 
   constructor() {
     super()
-    this.ws = new WebSocket("ws://" + document.location.host + "/api/ws")
-    this.ws.onmessage = this.__handle.bind(this)
+    this.__listen()
+    this.__connect()
     this.__id = 0
     this.__handlers = []
+  }
+
+  __create() {
+    this.__proto = document.location.protocol === "http:" ? "ws://" : "wss://"
+    this.__path = join(document.location.host, this.__proxypath || "", "/api/ws")
+    this.ws = new WebSocket(this.__proto + this.__path)
+    this.ws.onmessage = this.__handle.bind(this)
+  }
+
+  __connect() {
+    this.__proxypath = configStore.getAll().proxypath
+    if (this.__proxypath) {
+      this.__create()
+    }
+  }
+
+  __listen() {
+    let self = this
+    configStore.on("change", () => {
+      self.__connect()
+    })
   }
 
   __handle(event) {

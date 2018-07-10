@@ -13,9 +13,11 @@ import (
 func init() {
 	webCmd.Flags().IntP("port", "p", 5670, "port used to serve the web application")
 	webCmd.Flags().String("static", "", "path to the web files to serve")
+	webCmd.Flags().String("proxypath", "/", "base path for reverse proxy")
 
 	viper.BindPFlag("port", webCmd.Flags().Lookup("port"))
 	viper.BindPFlag("static", webCmd.Flags().Lookup("static"))
+	viper.BindPFlag("proxypath", webCmd.Flags().Lookup("proxypath"))
 
 	rootCmd.AddCommand(webCmd)
 }

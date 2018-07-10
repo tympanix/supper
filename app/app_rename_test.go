@@ -120,6 +120,7 @@ func (c fakeConfig) Providers() []types.Provider    { return c.providers }
 func (c fakeConfig) Scrapers() []types.Scraper      { return c.scrapers }
 func (c fakeConfig) RenameAction() string           { return c.action }
 func (c fakeConfig) Evaluator() types.Evaluator     { return c.evaluator }
+func (c fakeConfig) ProxyPath() string              { return "/" }
 
 type fakeTemplates struct {
 	output         string

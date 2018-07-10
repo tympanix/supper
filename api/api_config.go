@@ -9,7 +9,8 @@ import (
 )
 
 type jsonConfig struct {
-	Lang []jsonLang `json:"languages"`
+	Lang      []jsonLang `json:"languages"`
+	Proxypath string     `json:"proxypath"`
 }
 
 type jsonLang struct {
@@ -30,6 +31,7 @@ func (a *API) config(w http.ResponseWriter, r *http.Request) interface{} {
 		}
 		return jsonConfig{
 			langs,
+			a.Config().ProxyPath(),
 		}
 	}
 	err := errors.New("Method not allowed")

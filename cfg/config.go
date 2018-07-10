@@ -297,3 +297,7 @@ func (v viperConfig) RenameAction() string {
 func (v viperConfig) Evaluator() types.Evaluator {
 	return new(score.DefaultEvaluator)
 }
+
+func (v viperConfig) ProxyPath() string {
+	return viper.GetString("proxypath")
+}

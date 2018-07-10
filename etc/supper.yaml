@@ -15,6 +15,9 @@ impared: false
 # Bind web server to port
 port: 5670
 
+# Base path for reverse proxy
+proxypath: "/"
+
 # Location of web root for static resources
 static: /var/lib/supper
 
