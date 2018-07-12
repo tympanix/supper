@@ -28,6 +28,7 @@ func TestConfigFromViper(t *testing.T) {
 	viper.Set("delay", "32s")
 	viper.Set("logfile", "/foo/bar/baz/log")
 	viper.Set("action", "move")
+	viper.Set("proxypath", "/somepath")
 
 	viper.Set("limit", 64)
 	viper.Set("score", 89)
@@ -51,6 +52,7 @@ func TestConfigFromViper(t *testing.T) {
 	assert.Equal(t, Default.Delay(), 32*time.Second)
 	assert.Equal(t, Default.Logfile(), "/foo/bar/baz/log")
 	assert.Equal(t, Default.RenameAction(), "move")
+	assert.Equal(t, Default.ProxyPath(), "/somepath")
 
 	assert.Equal(t, Default.Limit(), 64)
 	assert.Equal(t, Default.Score(), 89)
