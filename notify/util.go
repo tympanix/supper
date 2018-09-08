@@ -5,9 +5,13 @@ import (
 )
 
 // AsyncLogger receives notification entries from a channel and logs them
-func AsyncLogger() chan<- *Entry {
+func AsyncLogger() (chan<- *Entry, chan bool) {
 	c := make(chan *Entry)
-	go func() {
+	d := make(chan bool, 1)
+	go func(c <-chan *Entry, d chan<- bool) {
+		defer func() {
+			d <- true
+		}()
 		for e := range c {
 			ctx := log.WithFields(log.Fields(e.Fields))
 			switch e.Level {
@@ -25,8 +29,8 @@ func AsyncLogger() chan<- *Entry {
 				ctx.Error(e.Message)
 			}
 		}
-	}()
-	return c
+	}(c, d)
+	return c, d
 }
 
 // AsyncDiscard discards all notifications

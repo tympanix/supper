@@ -75,10 +75,12 @@ func downloadSubtitles(cmd *cobra.Command, args []string) {
 		}).Fatal("Media limit exceeded")
 	}
 
-	c := notify.AsyncLogger()
-	defer close(c)
+	c, done := notify.AsyncLogger()
 
 	numsubs, err := app.DownloadSubtitles(media, config.Languages(), c)
+
+	close(c)
+	<-done
 
 	if err != nil {
 		log.WithError(err).Fatal("Download incomplete")
