@@ -104,6 +104,13 @@ func TestForeignMovie(t *testing.T) {
 	assert.Equal(t, 2003, m.Year())
 }
 
+func TestMovieWebsite(t *testing.T) {
+	m, err := NewMovie("[www.example.com] Inception (2010) x264 1080p")
+	require.NoError(t, err)
+	assert.Equal(t, "Inception", m.MovieName())
+	assert.Equal(t, 2010, m.Year())
+}
+
 func TestMovieJSON(t *testing.T) {
 	m, err := NewMovie("Inception.2010.720p")
 	require.NoError(t, err)

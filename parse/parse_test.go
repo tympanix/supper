@@ -51,6 +51,11 @@ func TestCleanNameMovieTitles(t *testing.T) {
 	}
 }
 
+func TestCleanNameWebsites(t *testing.T) {
+	assert.Equal(t, "Inception", CleanName("www.example.com - Inception"))
+	assert.Equal(t, "Inception", CleanName("[www.example.com].Inception"))
+}
+
 func TestIdentity(t *testing.T) {
 	assert.Equal(t, "thisisatest", Identity("thìs is â tést"))
 	assert.Equal(t, "vyzkousejtetentoretezec", Identity("vyzkoušejte tento řetězec"))
