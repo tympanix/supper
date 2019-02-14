@@ -38,7 +38,7 @@ const subsceneDelay = 500 * time.Millisecond
 
 var subsceneLock = new(sync.Mutex)
 
-var subsceneIllegal = regexp.MustCompile(`[^\p{L}0-9\s]`)
+var subsceneIllegal = regexp.MustCompile(`[^\p{L}0-9\-\s]`)
 
 // lockSubscene is used to limit the number of calls to subscene to prevent spamming
 func lockSubscene() {
@@ -197,7 +197,7 @@ func (r resultList) Best(m types.Media) (*searchResult, error) {
 	}
 
 	if result == nil {
-		return nil, errors.New("could not find best subtitle from subscene.com")
+		return nil, errors.New("could not find media on subscene.com")
 	}
 
 	return result, nil
