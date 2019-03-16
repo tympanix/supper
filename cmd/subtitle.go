@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/tympanix/supper/app"
-	"github.com/tympanix/supper/notify"
 	"github.com/tympanix/supper/cfg"
+	"github.com/tympanix/supper/notify"
 )
 
 func init() {
@@ -90,6 +90,5 @@ func downloadSubtitles(cmd *cobra.Command, args []string) {
 		ctx := log.WithField("reason", "dry-run")
 		ctx.Warn("Nothing performed")
 		ctx.Warnf("Media files: %v", media.Len())
-		ctx.Warnf("Missing subtitles: %v", numsubs)
 	}
 }
