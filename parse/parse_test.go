@@ -44,6 +44,7 @@ var testMovieTitles = []string{
 	"10 Things I Hate About You",
 	"Berlin, I Love You",
 	"To All the Boys I've Loved Before",
+	"Mamma Mia!",
 }
 
 func TestCleanNameMovieTitles(t *testing.T) {

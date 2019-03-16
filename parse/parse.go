@@ -86,10 +86,10 @@ func isAbbreviation(str string) bool {
 	return false
 }
 
-var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)\-,:]`)
+var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)\-,:!]`)
 var spaceReplaceRegexp = regexp.MustCompile(`[\.\s_]+`)
 var websiteRegexp = regexp.MustCompile(`((https?|ftp|smtp):\/\/)?(www.)[a-z0-9]+\.[a-z]+(\/[a-zA-Z0-9#]+\/?)*`)
-var trimRegexp = regexp.MustCompile(`^[^\p{L}0-9]*(.+?[\.\)]?)[^\p{L}0-9]*$`)
+var trimRegexp = regexp.MustCompile(`^[^\p{L}0-9]*(.+?[\.\)]?)[^\p{L}0-9!]*$`)
 
 // CleanName returns the media name cleaned from punctuation
 func CleanName(name string) string {
