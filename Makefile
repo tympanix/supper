@@ -15,6 +15,7 @@ test:
 
 release:
 ifdef TAG
+	git status
 	curl -sL http://git.io/goreleaser | bash
 else
 	@echo "Skip publish..."
