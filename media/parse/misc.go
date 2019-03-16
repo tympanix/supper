@@ -1,6 +1,6 @@
 package parse
 
-import "github.com/tympanix/supper/meta/misc"
+import "github.com/tympanix/supper/media/meta/misc"
 
 var miscMap = map[string]interface{}{
 	"3D":                              misc.Video3D,

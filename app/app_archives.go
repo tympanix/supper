@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/apex/log"
-	"github.com/tympanix/supper/extract"
 	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/media/extract"
 	"github.com/tympanix/supper/types"
 )
 

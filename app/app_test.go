@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tympanix/supper/cfg"
+	"github.com/tympanix/supper/app/cfg"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

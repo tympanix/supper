@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tympanix/supper/score"
+	"github.com/tympanix/supper/media/score"
 	"golang.org/x/text/language"
 
 	"github.com/tympanix/supper/media"
-	"github.com/tympanix/supper/provider"
+	"github.com/tympanix/supper/media/provider"
 
 	"github.com/fatih/set"
 	"github.com/stretchr/testify/assert"

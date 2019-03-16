@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/media/parse"
 	"github.com/tympanix/supper/types"
 )
 

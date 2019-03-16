@@ -1,6 +1,6 @@
 package parse
 
-import "github.com/tympanix/supper/meta/source"
+import "github.com/tympanix/supper/media/meta/source"
 
 var sourceMap = map[string]interface{}{
 	"CAM.?Rip|CAM|HD.?CAM":                      source.Cam,

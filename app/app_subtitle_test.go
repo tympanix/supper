@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tympanix/supper/list"
-	"github.com/tympanix/supper/notify"
+	"github.com/tympanix/supper/media/list"
+	"github.com/tympanix/supper/app/notify"
 
 	"github.com/fatih/set"
 	"github.com/stretchr/testify/assert"

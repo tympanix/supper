@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/fatih/set"
-	"github.com/tympanix/supper/notify"
+	"github.com/tympanix/supper/app/notify"
 )
 
 // App is the interface for the top level capabilities of the application.

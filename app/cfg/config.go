@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tympanix/supper/score"
+	"github.com/tympanix/supper/media/score"
 
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/tympanix/supper/parse"
-	"github.com/tympanix/supper/plugin"
-	"github.com/tympanix/supper/provider"
+	"github.com/tympanix/supper/app/plugin"
+	"github.com/tympanix/supper/media/parse"
+	"github.com/tympanix/supper/media/provider"
 	"github.com/tympanix/supper/types"
 
 	"github.com/apex/log"

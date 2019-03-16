@@ -12,7 +12,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/tympanix/supper/media"
-	"github.com/tympanix/supper/provider"
+	"github.com/tympanix/supper/media/provider"
 	"github.com/tympanix/supper/types"
 )
 

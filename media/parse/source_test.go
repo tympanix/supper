@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tympanix/supper/meta/source"
+	"github.com/tympanix/supper/media/meta/source"
 )
 
 func TestSource(t *testing.T) {

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/fatih/set"
-	"github.com/tympanix/supper/list"
-	"github.com/tympanix/supper/logutil"
-	"github.com/tympanix/supper/notify"
+	"github.com/tympanix/supper/app/logutil"
+	"github.com/tympanix/supper/app/notify"
+	"github.com/tympanix/supper/media/list"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"

@@ -4,8 +4,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --open --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "start": "webpack-dev-server --open --config web/webpack/webpack.dev.js",
+    "build": "webpack --config web/webpack/webpack.prod.js"
   },
   "repository": {
     "type": "git",

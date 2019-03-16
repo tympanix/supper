@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/media/parse"
 	"github.com/tympanix/supper/types"
 )
 

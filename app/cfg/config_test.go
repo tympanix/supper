@@ -7,8 +7,8 @@ import (
 
 	"github.com/tympanix/supper/media"
 
-	"github.com/tympanix/supper/provider"
-	"github.com/tympanix/supper/score"
+	"github.com/tympanix/supper/media/provider"
+	"github.com/tympanix/supper/media/score"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

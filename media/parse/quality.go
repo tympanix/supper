@@ -1,6 +1,6 @@
 package parse
 
-import "github.com/tympanix/supper/meta/quality"
+import "github.com/tympanix/supper/media/meta/quality"
 
 var qualityMap = map[string]interface{}{
 	"2160p|4K|UHD|Ultra.?HD": quality.UHD2160p,

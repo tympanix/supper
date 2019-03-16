@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"strconv"
@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/tympanix/supper/app"
-	"github.com/tympanix/supper/cfg"
-	"github.com/tympanix/supper/notify"
+	"github.com/tympanix/supper/app/cfg"
+	"github.com/tympanix/supper/app/notify"
 )
 
 func init() {

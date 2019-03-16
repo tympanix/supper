@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tympanix/supper/meta/codec"
+	"github.com/tympanix/supper/media/meta/codec"
 )
 
 func TestCodec(t *testing.T) {

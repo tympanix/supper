@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tympanix/supper/cfg"
-	"github.com/tympanix/supper/logutil"
+	"github.com/tympanix/supper/app/cfg"
+	"github.com/tympanix/supper/app/logutil"
 )
 
 var (

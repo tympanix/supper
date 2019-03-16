@@ -1,7 +1,7 @@
 package main
 
-import "github.com/tympanix/supper/cmd"
+import "github.com/tympanix/supper/app/cli"
 
 func main() {
-	cmd.Execute()
+	cli.Execute()
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/media/meta/quality"
 )
 
 func TestQuality(t *testing.T) {

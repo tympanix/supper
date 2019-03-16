@@ -3,7 +3,7 @@ package list
 import (
 	"testing"
 
-	"github.com/tympanix/supper/score"
+	"github.com/tympanix/supper/media/score"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

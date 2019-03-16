@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/tympanix/supper/meta/quality"
+	"github.com/tympanix/supper/media/meta/quality"
 	"golang.org/x/text/language"
 )
 

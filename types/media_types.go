@@ -4,10 +4,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/tympanix/supper/meta/codec"
-	"github.com/tympanix/supper/meta/misc"
-	"github.com/tympanix/supper/meta/quality"
-	"github.com/tympanix/supper/meta/source"
+	"github.com/tympanix/supper/media/meta/codec"
+	"github.com/tympanix/supper/media/meta/misc"
+	"github.com/tympanix/supper/media/meta/quality"
+	"github.com/tympanix/supper/media/meta/source"
 	"golang.org/x/text/language"
 )
 

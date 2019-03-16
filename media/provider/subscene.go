@@ -21,7 +21,7 @@ import (
 	"github.com/xrash/smetrics"
 
 	"github.com/tympanix/supper/media"
-	"github.com/tympanix/supper/parse"
+	"github.com/tympanix/supper/media/parse"
 	"github.com/tympanix/supper/types"
 
 	"github.com/PuerkitoBio/goquery"

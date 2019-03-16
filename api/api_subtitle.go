@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/tympanix/supper/list"
-	"github.com/tympanix/supper/notify"
+	"github.com/tympanix/supper/app/notify"
+	"github.com/tympanix/supper/media/list"
 	"github.com/tympanix/supper/types"
 	"golang.org/x/text/language"
 )

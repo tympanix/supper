@@ -1,6 +1,6 @@
 package parse
 
-import "github.com/tympanix/supper/meta/codec"
+import "github.com/tympanix/supper/media/meta/codec"
 
 var codecMap = map[string]interface{}{
 	"HEVC":      codec.HEVC,

@@ -9,9 +9,9 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/tympanix/supper/api"
-	"github.com/tympanix/supper/cfg"
-	"github.com/tympanix/supper/list"
+	"github.com/tympanix/supper/app/cfg"
 	"github.com/tympanix/supper/media"
+	"github.com/tympanix/supper/media/list"
 	"github.com/tympanix/supper/types"
 )
 
