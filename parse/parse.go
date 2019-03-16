@@ -81,7 +81,6 @@ func isAbbreviation(str string) bool {
 	return false
 }
 
-var abbreviationRegexp = regexp.MustCompile(`\b[A-Za-z]([\s\.][A-Za-z])+\b`)
 var illegalcharsRegexp = regexp.MustCompile(`[^\p{L}0-9\s&'_\(\)\-,:]`)
 var spaceReplaceRegexp = regexp.MustCompile(`[\.\s_]+`)
 var websiteRegexp = regexp.MustCompile(`((https?|ftp|smtp):\/\/)?(www.)[a-z0-9]+\.[a-z]+(\/[a-zA-Z0-9#]+\/?)*`)
@@ -93,9 +92,7 @@ func CleanName(name string) string {
 	name = spaceReplaceRegexp.ReplaceAllString(name, " ")
 	name = illegalcharsRegexp.ReplaceAllString(name, "")
 
-	name = abbreviationRegexp.ReplaceAllStringFunc(name, func(match string) string {
-		return strings.Replace(match, " ", ".", -1) + "."
-	})
+	name = cleanAbbreviations(name)
 
 	name = wordRegex.ReplaceAllStringFunc(name, func(match string) string {
 		if isAbbreviation(match) {
@@ -110,9 +107,27 @@ func CleanName(name string) string {
 
 	if len(match) > 1 {
 		return match[1]
-	} else {
-		return ""
 	}
+	return ""
+}
+
+var abbrevRegex = regexp.MustCompile(`(?:^|[\.\s])((?:\p{L})(?:[\.\s]\p{L})+)(?:[\.\s]|$)`)
+
+func cleanAbbreviations(s string) string {
+	g := abbrevRegex.FindAllStringSubmatchIndex(s, -1)
+	if g == nil {
+		return s
+	}
+	var res string
+	i := 0
+	for _, p := range g {
+		abbrev := s[p[2]:p[3]]
+		r := strings.Join(spaceReplaceRegexp.Split(abbrev, -1), ".")
+		res = s[i:p[2]] + r + "."
+		i = p[3]
+	}
+	res = res + s[i:]
+	return res
 }
 
 var illegalIdentity = regexp.MustCompile(`[^\p{L}0-9]`)

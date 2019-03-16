@@ -84,6 +84,8 @@ func isUpper(str string) bool {
 	return upper > 0
 }
 
+var omissionRegex = regexp.MustCompile(`'[a-zA-Z]+`)
+
 // Capitalize returns the string with proper english capitalization
 func Capitalize(str string) string {
 	if isUpper(str) && len(str) > 3 {
@@ -109,9 +111,11 @@ func Capitalize(str string) string {
 	str = breakRegex.ReplaceAllStringFunc(str, func(word string) string {
 		return strings.Title(word)
 	})
-	str = abbreviationRegexp.ReplaceAllStringFunc(str, func(abbr string) string {
+	str = abbrevRegex.ReplaceAllStringFunc(str, func(abbr string) string {
 		return strings.ToUpper(abbr)
 	})
-	str = strings.Replace(str, "'S", "'s", -1)
+	str = omissionRegex.ReplaceAllStringFunc(str, func(omm string) string {
+		return strings.ToLower(omm)
+	})
 	return str
 }

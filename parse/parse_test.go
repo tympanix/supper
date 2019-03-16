@@ -40,6 +40,10 @@ var testMovieTitles = []string{
 	"Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
 	"X-Men Origins: Wolverine",
 	"Mr. & Mrs. Smith",
+	"Don't Think Twice",
+	"10 Things I Hate About You",
+	"Berlin, I Love You",
+	"To All the Boys I've Loved Before",
 }
 
 func TestCleanNameMovieTitles(t *testing.T) {
