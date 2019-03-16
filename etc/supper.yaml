@@ -42,7 +42,7 @@ tvshows:
     {{ .TVShow }} - S{{ .Season | pad }}E{{ .Episode | pad }} - {{ .Name }}
 
 # Plugins are run after downloading a subtitle. The plugin is a simple shell
-# command which is given the .srt file path as it's only argument
+# command which is given the .srt file path in the SUBTITLE environment variable
 plugins:
   # - name: my-plugin-name
-  #   exec: echo "Hello, world!"
+  #   exec: echo $SUBTITLE
