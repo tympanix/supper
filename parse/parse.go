@@ -22,6 +22,8 @@ func makeMatcher(tags map[string]interface{}) regexMatcher {
 	return regs
 }
 
+// FindTagIndex finds an index contained in the regex map and, if found, returns
+// the position of the tag in the string and the tag itself as an interface value
 func (r regexMatcher) FindTagIndex(str string) ([]int, interface{}) {
 	lower := strings.ToLower(str)
 	for reg, tag := range r {
@@ -32,6 +34,7 @@ func (r regexMatcher) FindTagIndex(str string) ([]int, interface{}) {
 	return nil, nil
 }
 
+// FindTag is a helper function for FindTagIndex which only returns the tag value itself
 func (r regexMatcher) FindTag(str string) interface{} {
 	if _, t := r.FindTagIndex(str); t != nil {
 		return t
@@ -39,6 +42,8 @@ func (r regexMatcher) FindTag(str string) interface{} {
 	return nil
 }
 
+// FindAllTagsIndex find all tags in a string and returns two slices, the index positions
+// of the tags and the tag values themselves
 func (r regexMatcher) FindAllTagsIndex(str string) ([]int, []interface{}) {
 	var tags []interface{}
 	var idx []int
