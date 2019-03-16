@@ -77,7 +77,7 @@ func downloadSubtitles(cmd *cobra.Command, args []string) {
 
 	c, done := notify.AsyncLogger()
 
-	numsubs, err := app.DownloadSubtitles(media, config.Languages(), c)
+	_, err = app.DownloadSubtitles(media, config.Languages(), c)
 
 	close(c)
 	<-done
