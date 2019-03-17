@@ -11,7 +11,6 @@ build:
 
 test:
 	go test -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
-.PHONY: test
 
 release:
 ifdef TAG
@@ -24,4 +23,12 @@ endif
 codecov:
 	curl -sL https://codecov.io/bash | bash
 
+docs:
+	rm -rf docs/public
+	git worktree prune
+	git worktree add docs/public gh-pages
+	cd docs && hugo && cd ..
+
 ci: build test codecov release
+
+.PHONY: test docs
