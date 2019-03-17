@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Supper</title>
-    <link>https://github.com/</link>
+    <link>https://tympanix.github.io/supper/</link>
     <description>Recent content on Supper</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Made with ❤️ by tympanix</copyright>
     
-	<atom:link href="https://github.com/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://tympanix.github.io/supper/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Installation</title>
-      <link>https://github.com/installation/</link>
+      <link>https://tympanix.github.io/supper/installation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://github.com/installation/</guid>
+      <guid>https://tympanix.github.io/supper/installation/</guid>
       <description>Visit the github releaes page for binaries
 Linux For debian based systems supper is available as a debian package. The package will install supper and set up a systemd unit for ease of use. Download the debian package from the github releaes page and install with
 dpkg -i supper-1.0.0.deb Windows Download the .tar.gz file from the github releaes page and extract the contents to a desired location. This could for example be:</description>

@@ -3,21 +3,21 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://github.com/installation/</loc>
+    <loc>https://tympanix.github.io/supper/installation/</loc>
   </url>
   
   <url>
-    <loc>https://github.com/categories/</loc>
+    <loc>https://tympanix.github.io/supper/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://github.com/</loc>
+    <loc>https://tympanix.github.io/supper/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://github.com/tags/</loc>
+    <loc>https://tympanix.github.io/supper/tags/</loc>
     <priority>0</priority>
   </url>
   
