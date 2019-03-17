@@ -28,3 +28,6 @@ coverage.txt
 # Packd
 /packrd
 *-packr.go
+
+# Web
+/web/build

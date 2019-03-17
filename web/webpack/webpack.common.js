@@ -1,19 +1,23 @@
 const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var devMode = process.env.NODE_ENV === "development"
 
 module.exports = {
   entry: path.join(__dirname, '../js/index.js'),
   output: {
-    path: path.join(__dirname, '../static'),
-    publicPath: "/static/",
+    path: path.join(__dirname, '../build'),
     filename: 'bundle.js'
   },
   plugins: [
     new MiniCssExtractPlugin({
       filename: "styles.css",
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: path.resolve(__dirname, '../index.html')
     }),
   ],
   module: {

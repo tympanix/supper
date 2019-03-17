@@ -502,7 +502,6 @@
     "github.com/apex/log/handlers/text",
     "github.com/fatih/set",
     "github.com/gobuffalo/packr/v2",
-    "github.com/gobuffalo/packr/v2/file/resolver",
     "github.com/gorilla/mux",
     "github.com/gorilla/websocket",
     "github.com/mitchellh/go-homedir",

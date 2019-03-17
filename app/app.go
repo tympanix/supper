@@ -17,7 +17,7 @@ import (
 	"github.com/tympanix/supper/types"
 )
 
-const webRoot = "../web"
+const webRoot = "../web/build"
 
 var filetypes = []string{
 	".avi", ".mkv", ".mp4", ".m4v", ".flv", ".mov", ".wmv", ".webm", ".mpg", ".mpeg",
