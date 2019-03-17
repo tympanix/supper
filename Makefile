@@ -19,7 +19,10 @@ clean:
 mest:
 	go test -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
 
-release:
+prerelease:
+	packr2
+
+release: prerelease
 ifdef TAG
 	git status
 	curl -sL http://git.io/goreleaser | bash
