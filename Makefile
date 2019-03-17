@@ -40,6 +40,9 @@ docs:
 	git submodule update --recursive --remote
 	cd docs && hugo && cd ..
 
+dist: clean build prerelease
+	goreleaser release --skip-publish --skip-validate
+
 ci: build test codecov release
 
 .PHONY: test docs clean
