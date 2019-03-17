@@ -27,6 +27,7 @@ docs:
 	rm -rf docs/public
 	git worktree prune
 	git worktree add docs/public gh-pages
+	git submodule update --recursive --remote
 	cd docs && hugo && cd ..
 
 ci: build test codecov release
