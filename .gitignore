@@ -18,3 +18,8 @@ supper*
 web/static
 web/js/mock
 coverage.txt
+
+
+# Hugo
+/public
+/docs/resources

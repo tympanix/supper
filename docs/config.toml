@@ -1,0 +1,7 @@
+baseURL = "https://github.com/"
+languageCode = "en-us"
+title = "Supper"
+copyright = "Made with ❤️ by tympanix"
+theme = "apex"
+pygmentsCodeFences = true
+pygmentsStyle = "dracula"
