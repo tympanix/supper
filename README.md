@@ -5,6 +5,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/tympanix/supper)](https://goreportcard.com/report/github.com/tympanix/supper)
 [![codecov](https://codecov.io/gh/tympanix/supper/branch/master/graph/badge.svg)](https://codecov.io/gh/tympanix/supper)
 
+## [Documentation](https://tympanix.github.io/supper/)
+
 ## Features
  - [x] Download subtitles for movies & TV shows
  - [x] Rename and organize your media collection
