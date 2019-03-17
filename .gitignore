@@ -24,3 +24,7 @@ coverage.txt
 /public
 /docs/resources
 /docs/public
+
+# Packd
+/packrd
+*-packr.go

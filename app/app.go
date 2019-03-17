@@ -4,16 +4,20 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"github.com/spf13/viper"
+	packr "github.com/gobuffalo/packr/v2"
 	"github.com/tympanix/supper/api"
 	"github.com/tympanix/supper/app/cfg"
 	"github.com/tympanix/supper/media"
 	"github.com/tympanix/supper/media/list"
 	"github.com/tympanix/supper/types"
 )
+
+const webRoot = "../web"
 
 var filetypes = []string{
 	".avi", ".mkv", ".mp4", ".m4v", ".flv", ".mov", ".wmv", ".webm", ".mpg", ".mpeg",
@@ -23,6 +27,7 @@ var filetypes = []string{
 type Application struct {
 	types.Provider
 	*http.ServeMux
+	box      *packr.Box
 	cfg      types.Config
 	scrapers []types.Scraper
 }
@@ -31,18 +36,16 @@ type Application struct {
 func New(cfg types.Config) *Application {
 	app := &Application{
 		Provider: cfg.Providers()[0],
+		box:      packr.New("webfiles", webRoot),
 		cfg:      cfg,
 		ServeMux: http.NewServeMux(),
 		scrapers: cfg.Scrapers(),
 	}
 
-	static := viper.GetString("static")
-
 	api := api.New(app)
 	app.ServeMux.Handle("/api/", http.StripPrefix("/api", api))
 
-	fs := WebAppHandler(static)
-	app.ServeMux.Handle("/", fs)
+	app.ServeMux.Handle("/", app.webAppHandler())
 
 	return app
 }
@@ -57,17 +60,18 @@ func (a *Application) Config() types.Config {
 	return a.cfg
 }
 
-// WebAppHandler serves a single-page web application
-func WebAppHandler(path string) http.Handler {
-	files := http.FileServer(http.Dir(path))
+func (a *Application) webAppHandler() http.Handler {
+	const index = "index.html"
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		uri := filepath.Join(path, r.URL.Path)
-		if _, err := os.Stat(uri); os.IsNotExist(err) {
-			http.ServeFile(w, r, filepath.Join(path, "index.html"))
-		} else {
-			files.ServeHTTP(w, r)
+		f, err := a.box.Open(r.URL.Path)
+		if len(path.Ext(r.URL.Path)) == 0 || err != nil {
+			if f, err = a.box.Open(index); err != nil {
+				http.Error(w, "404: not found", http.StatusNotFound)
+				return
+			}
 		}
+		http.ServeContent(w, r, r.URL.Path, time.Unix(0, 0), f)
 	})
 }
 
