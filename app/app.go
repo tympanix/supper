@@ -12,6 +12,7 @@ import (
 
 	"github.com/rakyll/statik/fs"
 
+	// Importing static files for webapp
 	_ "github.com/tympanix/supper/statik"
 
 	"github.com/tympanix/supper/api"
