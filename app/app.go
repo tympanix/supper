@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -9,7 +10,10 @@ import (
 	"strings"
 	"time"
 
-	packr "github.com/gobuffalo/packr/v2"
+	"github.com/rakyll/statik/fs"
+
+	_ "github.com/tympanix/supper/statik"
+
 	"github.com/tympanix/supper/api"
 	"github.com/tympanix/supper/app/cfg"
 	"github.com/tympanix/supper/media"
@@ -27,7 +31,6 @@ var filetypes = []string{
 type Application struct {
 	types.Provider
 	*http.ServeMux
-	box      *packr.Box
 	cfg      types.Config
 	scrapers []types.Scraper
 }
@@ -36,7 +39,6 @@ type Application struct {
 func New(cfg types.Config) *Application {
 	app := &Application{
 		Provider: cfg.Providers()[0],
-		box:      packr.New("webfiles", webRoot),
 		cfg:      cfg,
 		ServeMux: http.NewServeMux(),
 		scrapers: cfg.Scrapers(),
@@ -61,12 +63,18 @@ func (a *Application) Config() types.Config {
 }
 
 func (a *Application) webAppHandler() http.Handler {
-	const index = "index.html"
+	webfs, err := fs.New()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	const index = "/index.html"
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		f, err := a.box.Open(r.URL.Path)
+		f, err := webfs.Open(r.URL.Path)
 		if len(path.Ext(r.URL.Path)) == 0 || err != nil {
-			if f, err = a.box.Open(index); err != nil {
+			if f, err = webfs.Open(index); err != nil {
 				http.Error(w, "404: not found", http.StatusNotFound)
 				return
 			}

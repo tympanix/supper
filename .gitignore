@@ -25,9 +25,8 @@ coverage.txt
 /docs/resources
 /docs/public
 
-# Packd
-/packrd
-*-packr.go
+# Statik
+statik
 
 # Web
 /web/build

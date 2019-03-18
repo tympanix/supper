@@ -3,26 +3,23 @@ TAG := $(shell git tag -l --points-at @)
 setup:
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	go get -u golang.org/x/tools/cmd/cover
-	go get -u github.com/gobuffalo/packr/v2/packr2
+	go get -u github.com/rakyll/statik
 	npm install
 	dep ensure
 
 build:
 	npm run build
+	go generate
 
 clean:
 	rm -rf web/build
 	rm -rf docs/public
 	rm -rf dist
-	packr2 clean
 
 mest:
 	go test -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
 
-prerelease:
-	packr2
-
-release: prerelease
+release:
 ifdef TAG
 	git status
 	curl -sL http://git.io/goreleaser | bash
@@ -40,7 +37,7 @@ docs:
 	git submodule update --recursive --remote
 	cd docs && hugo && cd ..
 
-dist: clean build prerelease
+dist: clean build
 	goreleaser release --skip-publish --skip-validate
 
 ci: build test codecov release
