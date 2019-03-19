@@ -76,17 +76,223 @@
 
 <p>How to download subtitles with supper</p>
 
-<p>You can download subtitles with supper for individual files of whole directories easily</p>
+<p>You can download subtitles with supper for individual files of whole directories easily.</p>
+
+<h3 id="flags">Flags</h3>
+
+<p><code>--lang|-l</code>:
+Which language(s) subtitles will be downloaded in. Multiple languages
+can be specified using the flag multiple times. If no languages are specified
+those is the configuration file will be sued by default.</p>
+
+<p><code>--modified|-m</code>: Only download subtitles for media modified since the given duration.
+Durations are specified using numbers and letters (e.g. <code>2d12h30m</code>)</p>
+
+<p><code>--score|-s</code>: Specifies a minimum score for any subtitle to be downloaded. If a subtitle is
+not available satisfying the minimum score, no subtitle will be downloaded. The score of
+a subtitle is determined by the likelyhood of the subtitle being synchronized to the media
+according to an internal scoring algorithm. Values are given in percent (withput the percent sign)</p>
+
+<p><code>--imapired|-i</code>: Only download hearing impaired subtitles. By default Supper will not consider
+or download hearing impaired subtitles. This flagg reverses this behaviour.</p>
+
+<p><code>--limit|-l</code>: Limit the number of media to process. A default values is applied as a safeguard
+agains accidental filepaths. Therefore this flag must be specified for large quantaties of media.
+Specifying a negative number will disable the limit.</p>
+
+<p>To see all applicable flags see <code>supper sub --help</code>.</p>
+
+<h2 id="languages">Languages:</h2>
+
+<p>Here is a list of the supported languages. The language <code>tag</code> specified in the table
+below can be used as an argument to the <code>--lang|-l</code> flag.</p>
+
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>Tag</th>
+<th>Language</th>
+<th>Tag</th>
+<th>Language</th>
+<th>Tag</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Albanian</td>
+<td><code>sq</code></td>
+<td>Greek</td>
+<td><code>el</code></td>
+<td>Portuguese</td>
+<td><code>pt</code></td>
+</tr>
+
+<tr>
+<td>Latvian</td>
+<td><code>lv</code></td>
+<td>Hebrew</td>
+<td><code>he</code></td>
+<td>Portuguese</td>
+<td><code>pt</code></td>
+</tr>
+
+<tr>
+<td>Arabic</td>
+<td><code>ar</code></td>
+<td>Hindi</td>
+<td><code>hi</code></td>
+<td>Romanian</td>
+<td><code>ro</code></td>
+</tr>
+
+<tr>
+<td>Armenian</td>
+<td><code>hy</code></td>
+<td>Hungarian</td>
+<td><code>hu</code></td>
+<td>Russian</td>
+<td><code>ru</code></td>
+</tr>
+
+<tr>
+<td>Azerbaijani</td>
+<td><code>az</code></td>
+<td>Icelandic</td>
+<td><code>is</code></td>
+<td>Serbian</td>
+<td><code>sr</code></td>
+</tr>
+
+<tr>
+<td>Bangla</td>
+<td><code>bn</code></td>
+<td>Indonesian</td>
+<td><code>id</code></td>
+<td>Slovak</td>
+<td><code>sk</code></td>
+</tr>
+
+<tr>
+<td>Bulgarian</td>
+<td><code>bg</code></td>
+<td>Italian</td>
+<td><code>it</code></td>
+<td>Slovenian</td>
+<td><code>sl</code></td>
+</tr>
+
+<tr>
+<td>Catalan</td>
+<td><code>ca</code></td>
+<td>Japanese</td>
+<td><code>ja</code></td>
+<td>Spanish</td>
+<td><code>es</code></td>
+</tr>
+
+<tr>
+<td>Chinese</td>
+<td><code>zh</code></td>
+<td>Korean</td>
+<td><code>ko</code></td>
+<td>Swahili</td>
+<td><code>sw</code></td>
+</tr>
+
+<tr>
+<td>Croatian</td>
+<td><code>hr</code></td>
+<td>Lithuanian</td>
+<td><code>lt</code></td>
+<td>Swedish</td>
+<td><code>sv</code></td>
+</tr>
+
+<tr>
+<td>Czech</td>
+<td><code>cs</code></td>
+<td>Macedonian</td>
+<td><code>mk</code></td>
+<td>Tamil</td>
+<td><code>ta</code></td>
+</tr>
+
+<tr>
+<td>Danish</td>
+<td><code>da</code></td>
+<td>Malay</td>
+<td><code>ms</code></td>
+<td>Telugu</td>
+<td><code>te</code></td>
+</tr>
+
+<tr>
+<td>Dutch</td>
+<td><code>nl</code></td>
+<td>Malayalam</td>
+<td><code>ml</code></td>
+<td>Thai</td>
+<td><code>th</code></td>
+</tr>
+
+<tr>
+<td>English</td>
+<td><code>en</code></td>
+<td>Mongolian</td>
+<td><code>mn</code></td>
+<td>Turkish</td>
+<td><code>tr</code></td>
+</tr>
+
+<tr>
+<td>Finnish</td>
+<td><code>fi</code></td>
+<td>Norwegian</td>
+<td><code>no</code></td>
+<td>Ukrainian</td>
+<td><code>uk</code></td>
+</tr>
+
+<tr>
+<td>French</td>
+<td><code>fr</code></td>
+<td>Persian</td>
+<td><code>fa</code></td>
+<td>Urdu</td>
+<td><code>ur</code></td>
+</tr>
+
+<tr>
+<td>Georgian</td>
+<td><code>ka</code></td>
+<td>Persian</td>
+<td><code>fa</code></td>
+<td>Vietnamese</td>
+<td><code>vi</code></td>
+</tr>
+
+<tr>
+<td>German</td>
+<td><code>de</code></td>
+<td>Polish</td>
+<td><code>pl</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 <h2 id="examples">Examples:</h2>
 
 <p>Download subtitles for all media in the <code>/media/movies</code> folder in english, german and spanish for files
-added or modified in the last 24 hours:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -len -lde -les -m 24h /media/movies</code></pre></div>
-<p>Download english subtitles for the file <code>tvshow.mp4</code> if the subtitles has a score better than 75%:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -len -s <span style="color:#bd93f9">75</span> tvshow.mp4</code></pre></div>
+added or modified within the last 24 hours:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -l en -l de -l es -m 24h /media/movies</code></pre></div>
+<p>Download english subtitles for the file <code>tvshow.mp4</code> if a subtitle can be found with a score higher or equal to 75%:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -l en -s <span style="color:#bd93f9">75</span> tvshow.mp4</code></pre></div>
 <p>Download and overwrite existing english subtitles for all media in <code>/media/tvshows</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -len --force /media/tvshows</code></pre></div></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -l en --force /media/tvshows</code></pre></div></div>
 
 						<div class="Footer">
 	<p>Made with ❤️ by tympanix</p>

@@ -17,7 +17,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://tympanix.github.io/supper/01-installation/</guid>
-      <description>Visit the github releaes page for binaries
+      <description>Visit the github releases page for binaries
 Linux For debian based systems supper is available as a debian package. The package will install supper and set up a systemd unit for ease of use. Download the debian package from the github releaes page and install with
 dpkg -i supper-1.0.0.deb Windows Download the .tar.gz file from the github releaes page and extract the contents to a desired location. This could for example be:</description>
     </item>
@@ -40,10 +40,9 @@ You can specify the configuration of how supper function in a .yaml configuratio
       
       <guid>https://tympanix.github.io/supper/03-subtitles/</guid>
       <description>How to download subtitles with supper
-You can download subtitles with supper for individual files of whole directories easily
-Examples: Download subtitles for all media in the /media/movies folder in english, german and spanish for files added or modified in the last 24 hours:
-supper sub -len -lde -les -m 24h /media/movies Download english subtitles for the file tvshow.mp4 if the subtitles has a score better than 75%:
-supper sub -len -s 75 tvshow.</description>
+You can download subtitles with supper for individual files of whole directories easily.
+Flags --lang|-l: Which language(s) subtitles will be downloaded in. Multiple languages can be specified using the flag multiple times. If no languages are specified those is the configuration file will be sued by default.
+--modified|-m: Only download subtitles for media modified since the given duration. Durations are specified using numbers and letters (e.</description>
     </item>
     
     <item>
@@ -52,12 +51,14 @@ supper sub -len -s 75 tvshow.</description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://tympanix.github.io/supper/04-renaming/</guid>
-      <description> How to rename and organize media
+      <description>How to rename and organize media
 You can organize and rename individual files or whole directories with supper
-Examples: Rename all media in the /media/downloads folder using hardlink (default action):
-supper ren /media/downloads Rename only movies in the /media/downloads folder using copy:
-supper ren --action copy --movies /media/downloads Rename all media in the /media/downloads folder and extract media from archives (rar/zip):
-supper ren --extract /media/downloads</description>
+Flags --action|-a: The action to perform when renaming media. Can be one of move, symlink, hardlink or copy. Default operation is to hardlink files
+--extract|-x: Additionally extract media from archives (zip/rar).
+--movies&#39;-m: Only rename movies
+--subtitles|-s: Only rename subtitles
+--tvshows|-t: Only rename tv shows
+To see all applicable flags see: supper ren --help</description>
     </item>
     
   </channel>

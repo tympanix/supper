@@ -78,7 +78,23 @@
 
 <p>You can organize and rename individual files or whole directories with supper</p>
 
-<h3 id="examples">Examples:</h3>
+<h3 id="flags">Flags</h3>
+
+<p><code>--action|-a</code>: The action to perform when renaming media. Can be one of
+<code>move</code>, <code>symlink</code>, <code>hardlink</code> or <code>copy</code>. Default operation is to hardlink
+files</p>
+
+<p><code>--extract|-x</code>: Additionally extract media from archives (zip/rar).</p>
+
+<p><code>--movies'-m</code>: Only rename movies</p>
+
+<p><code>--subtitles|-s</code>: Only rename subtitles</p>
+
+<p><code>--tvshows|-t</code>: Only rename tv shows</p>
+
+<p>To see all applicable flags see: <code>supper ren --help</code></p>
+
+<h3 id="examples">Examples</h3>
 
 <p>Rename all media in the <code>/media/downloads</code> folder using hardlink (default action):</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper ren /media/downloads</code></pre></div>
