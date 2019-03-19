@@ -16,7 +16,7 @@ clean:
 	rm -rf docs/public
 	rm -rf dist
 
-mest:
+test:
 	go test -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
 
 release:
