@@ -3,7 +3,7 @@
 
 <html>
 	<head>
-		<title>404 Page not found &middot; Supper</title>
+		<title>Renaming &middot; Supper</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
@@ -71,9 +71,21 @@
 					<div class="Content">
 						
 	<div class="Page" id="">
-		<h1>Page not found!</h1>
-		<p>Sorry, the requested page wasn’t found on the server.</p>
-	</div>
+		<h1>Renaming</h1>
+		
+
+<p>How to rename and organize media</p>
+
+<p>You can organize and rename individual files or whole directories with supper</p>
+
+<h3 id="examples">Examples:</h3>
+
+<p>Rename all media in the <code>/media/downloads</code> folder using hardlink (default action):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper ren /media/downloads</code></pre></div>
+<p>Rename only movies in the <code>/media/downloads</code> folder using copy:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper ren --action copy --movies /media/downloads</code></pre></div>
+<p>Rename all media in the <code>/media/downloads</code> folder and extract media from archives (rar/zip):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper ren --extract /media/downloads</code></pre></div></div>
 
 						<div class="Footer">
 	<p>Made with ❤️ by tympanix</p>

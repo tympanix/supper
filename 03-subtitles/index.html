@@ -3,7 +3,7 @@
 
 <html>
 	<head>
-		<title>404 Page not found &middot; Supper</title>
+		<title>Subtitles &middot; Supper</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
@@ -71,9 +71,22 @@
 					<div class="Content">
 						
 	<div class="Page" id="">
-		<h1>Page not found!</h1>
-		<p>Sorry, the requested page wasn’t found on the server.</p>
-	</div>
+		<h1>Subtitles</h1>
+		
+
+<p>How to download subtitles with supper</p>
+
+<p>You can download subtitles with supper for individual files of whole directories easily</p>
+
+<h2 id="examples">Examples:</h2>
+
+<p>Download subtitles for all media in the <code>/media/movies</code> folder in english, german and spanish for files
+added or modified in the last 24 hours:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -len -lde -les -m 24h /media/movies</code></pre></div>
+<p>Download english subtitles for the file <code>tvshow.mp4</code> if the subtitles has a score better than 75%:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -len -s <span style="color:#bd93f9">75</span> tvshow.mp4</code></pre></div>
+<p>Download and overwrite existing english subtitles for all media in <code>/media/tvshows</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">supper sub -len --force /media/tvshows</code></pre></div></div>
 
 						<div class="Footer">
 	<p>Made with ❤️ by tympanix</p>

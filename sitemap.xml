@@ -3,7 +3,19 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://tympanix.github.io/supper/installation/</loc>
+    <loc>https://tympanix.github.io/supper/01-installation/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tympanix.github.io/supper/02-configuration/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tympanix.github.io/supper/03-subtitles/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tympanix.github.io/supper/04-renaming/</loc>
   </url>
   
   <url>
