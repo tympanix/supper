@@ -10,7 +10,7 @@ Visit the [github releases](https://github.com/tympanix/supper/releases) page fo
 For debian based systems supper is available as a debian package. The package will install supper and set up a systemd unit for ease of use. Download the debian package from the github releaes page and install with
 
 ```bash
-dpkg -i supper-1.0.0.deb
+dpkg -i supper-1.x.x.deb
 ```
 
 ## Windows
