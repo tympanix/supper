@@ -8,9 +8,9 @@ builds:
       - amd64
     ldflags: >
       -s -w
-      -X github.com/tympanix/supper/cmd.appVersion={{.Version}}
-      -X github.com/tympanix/supper/cmd.appCommit={{.Commit}}
-      -X github.com/tympanix/supper/cmd.appDate={{.Date}}
+      -X github.com/tympanix/supper/app/cli.appVersion={{.Version}}
+      -X github.com/tympanix/supper/app/cli.appCommit={{.Commit}}
+      -X github.com/tympanix/supper/app/cli.appDate={{.Date}}
 
       -X github.com/tympanix/supper/media/provider.tmdbToken={{.Env.TMDB_TOKEN}}
       -X github.com/tympanix/supper/media/provider.thetvdbToken={{.Env.THETVDB_TOKEN}}
