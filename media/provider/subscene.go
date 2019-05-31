@@ -102,7 +102,7 @@ func (s *subscene) cleanSearchTerm(search string) string {
 
 // FindMediaURL retrieves the subscene.com URL for the given media item
 func (s *subscene) FindMediaURL(media types.Media, retries int) ([]searchResult, error) {
-	url, err := url.Parse("https://subscene.com/subtitles/title")
+	url, err := url.Parse("https://subscene.com/subtitles/searching")
 
 	if err != nil {
 		return nil, err
