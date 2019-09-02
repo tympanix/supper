@@ -102,7 +102,7 @@ func (s *subscene) cleanSearchTerm(search string) string {
 
 // FindMediaURL retrieves the subscene.com URL for the given media item
 func (s *subscene) FindMediaURL(media types.Media, retries int) ([]searchResult, error) {
-	url, err := url.Parse("https://subscene.com/subtitles/titlesearch")
+	searchURL, err := url.Parse("https://subscene.com/subtitles/searchbytitle")
 
 	if err != nil {
 		return nil, err
@@ -116,12 +116,11 @@ func (s *subscene) FindMediaURL(media types.Media, retries int) ([]searchResult,
 
 	log.WithField("query", search).Debug("Searching subscene.com")
 
-	query := url.Query()
-	query.Add("q", s.cleanSearchTerm(search))
-	url.RawQuery = query.Encode()
+	data := url.Values{}
+	data.Add("query", s.cleanSearchTerm(search))
 
 	lockSubscene()
-	res, err := http.Get(url.String())
+	res, err := http.Post(searchURL.String(), "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, err
 	}
