@@ -26,7 +26,7 @@ coverage.txt
 /docs/public
 
 # Statik
-statik
+statik/*.go
 
 # Web
 /web/build
