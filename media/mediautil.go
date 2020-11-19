@@ -14,6 +14,9 @@ func IsSample(m types.Media) bool {
 			return true
 		}
 	}
+	if strings.HasPrefix(strings.ToLower(m.String()), "sample") {
+		return true
+	}
 	return false
 }
 
