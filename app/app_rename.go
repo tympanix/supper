@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"os"
 	"path/filepath"
@@ -140,7 +141,11 @@ func (a *Application) RenameMedia(list types.LocalMediaList) error {
 		dest, err := a.scrapeAndRenameMedia(m, m)
 
 		if err != nil {
-			return err
+			if a.Config().Strict() {
+				return err
+			}
+			ctx.Error("Could not scrape media")
+			continue
 		}
 
 		if !a.Config().Dry() {
@@ -243,7 +248,8 @@ func (a *Application) renameMovie(info os.FileInfo, m types.Movie) (string, erro
 	if buf.String() == "" {
 		return "", errors.New("empty movie template")
 	}
-	filename := truncateSpaces(buf.String()) + filepath.Ext(info.Name())
+	base := html.UnescapeString(buf.String())
+	filename := truncateSpaces(base) + filepath.Ext(info.Name())
 	return filepath.Join(a.Config().Movies().Directory(), filename), nil
 }
 
@@ -278,7 +284,8 @@ func (a *Application) renameEpisode(info os.FileInfo, e types.Episode) (string, 
 	if buf.String() == "" {
 		return "", errors.New("empty episode template")
 	}
-	filename := truncateSpaces(buf.String()) + filepath.Ext(info.Name())
+	base := html.UnescapeString(buf.String())
+	filename := truncateSpaces(base) + filepath.Ext(info.Name())
 	return filepath.Join(a.Config().TVShows().Directory(), filename), nil
 }
 
