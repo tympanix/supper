@@ -14,17 +14,17 @@ builds:
 
       -X github.com/tympanix/supper/media/provider.tmdbToken={{.Env.TMDB_TOKEN}}
       -X github.com/tympanix/supper/media/provider.thetvdbToken={{.Env.THETVDB_TOKEN}}
-nfpm:
-  vendor: github.com/tympanix
-  maintainer: tympanix <tympanix@gmail.com>
-  description: A blazingly fast multimedia manager
-  license: GNU-v3.0
-  formats:
-    - deb
-  files:
-    ./etc/supper.service: /lib/systemd/system/supper.service
-  config_files:
-    ./etc/supper.yaml: /etc/supper/supper.yaml
-  scripts:
-    preinstall: ./etc/preinstall.sh
-    postinstall: ./etc/postinstall.sh
+nfpms:
+  - vendor: github.com/tympanix
+    maintainer: tympanix <tympanix@gmail.com>
+    description: A blazingly fast multimedia manager
+    license: GNU-v3.0
+    formats:
+      - deb
+    files:
+      ./etc/supper.service: /lib/systemd/system/supper.service
+    config_files:
+      ./etc/supper.yaml: /etc/supper/supper.yaml
+    scripts:
+      preinstall: ./etc/preinstall.sh
+      postinstall: ./etc/postinstall.sh
