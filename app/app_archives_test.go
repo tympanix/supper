@@ -56,9 +56,8 @@ func TestAppArchiveDryRun(t *testing.T) {
 	err := performExtractionTest(t, extractDryTest{}, config)
 	require.NoError(t, err)
 
-	files, err := ioutil.ReadDir("out")
-	require.NoError(t, err)
-	assert.Equal(t, len(files), 0)
+	_, err = ioutil.ReadDir("out")
+	require.Error(t, err)
 }
 
 func performExtractionTest(t *testing.T, test extractTest, config types.Config) error {
