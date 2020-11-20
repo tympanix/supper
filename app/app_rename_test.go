@@ -252,7 +252,9 @@ func TestRenameDryRun(t *testing.T) {
 }
 
 func TestRenameTemplateEmpty(t *testing.T) {
+	defer cleanRenameTest(t)
 	config := defaultConfig
+	config.strict = true
 
 	for _, sp := range []**template.Template{
 		&config.movieTemplate,
@@ -273,7 +275,9 @@ func TestRenameTemplateEmpty(t *testing.T) {
 }
 
 func TestRenameTemplateError(t *testing.T) {
+	defer cleanRenameTest(t)
 	config := defaultConfig
+	config.strict = true
 
 	for sp, templ := range map[**template.Template]string{
 		&config.movieTemplate:  "{{ .Movie }} {{ .InvalidTestField }}",
@@ -293,7 +297,9 @@ func TestRenameTemplateError(t *testing.T) {
 }
 
 func TestRenameTemplateNil(t *testing.T) {
+	defer cleanRenameTest(t)
 	config := defaultConfig
+	config.strict = true
 
 	for _, tp := range []**template.Template{
 		&config.movieTemplate,
@@ -348,6 +354,7 @@ func TestRenameScrapeError(t *testing.T) {
 		fakeScraper{},
 		fakeUnsupportedScraper{},
 	}
+	config.strict = true
 
 	err := performRenameTest(t, copyTester{}, config)
 	assert.Error(t, err)
@@ -363,6 +370,7 @@ func TestRenameNoScrapers(t *testing.T) {
 		fakeUnsupportedScraper{},
 		fakeUnsupportedScraper{},
 	}
+	config.strict = true
 
 	err := performRenameTest(t, copyTester{}, config)
 	assert.Error(t, err)
