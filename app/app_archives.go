@@ -63,14 +63,14 @@ func (a *Application) ExtractMedia(m types.MediaReadCloser) error {
 		return err
 	}
 
-	if err = ensurePath(dest, a.Config().Force()); err != nil {
-		if media.IsExistsErr(err) {
-			ctx.WithField("reason", "media already exists").Warn("Extraction skipped")
-		}
-		return err
-	}
-
 	if !a.Config().Dry() {
+		if err = ensurePath(dest, a.Config().Force()); err != nil {
+			if media.IsExistsErr(err) {
+				ctx.WithField("reason", "media already exists").Warn("Extraction skipped")
+			}
+			return err
+		}
+
 		if err := copyMedia(m, dest); err != nil {
 			ctx.WithError(err).Error("Extraction failed")
 		} else {
