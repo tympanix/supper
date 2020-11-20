@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"testing"
@@ -74,7 +73,6 @@ func performExtractionTest(t *testing.T, test extractTest, config types.Config) 
 		f, err := a.Next()
 
 		for err != io.EOF {
-			fmt.Println(f.String())
 			if err = app.ExtractMedia(f); err != nil {
 				return err
 			}
